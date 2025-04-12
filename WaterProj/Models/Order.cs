@@ -1,0 +1,21 @@
+﻿using Dprog.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WaterProj.Models
+{
+    public class Order
+    {
+        [Key]
+        public int OrderId { get; set; }
+
+        public int RouteId { get; set; }
+        [ForeignKey("RouteId")]
+        public Route Route { get; set; }
+        public int ConsumerId { get; set; }
+
+        [ForeignKey("ConsumerId")]
+        public Consumer Consumer { get; set; }
+        public string Status { get; set; }
+    }
+}
