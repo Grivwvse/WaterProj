@@ -1,0 +1,29 @@
+﻿@model WaterProj.Models.Consumer
+@{
+    ViewData["Title"] = "Редактирование профиля";
+}
+
+<h2>Редактирование профиля</h2>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.Message
+    </div>
+}
+
+<form asp-action="Edit" method="post" id="editForm">
+    <div class="form-group">
+        <label asp-for="Login"></label>
+        <input asp-for="Login" class="form-control" id="login" readonly="readonly" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" id="name" readonly="readonly" />
+    </div>
+    <!-- Добавьте другие поля по необходимости -->
+    <br />
+</form>
+
+<button id="editButton" class="btn btn-primary">Редактировать</button>

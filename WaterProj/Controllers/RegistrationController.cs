@@ -1,16 +1,17 @@
-﻿using Dprog.Models;
+﻿using WaterProj.Models;
 using Microsoft.AspNetCore.Mvc;
 using WaterProj.DB;
+using WaterProj.Services;
 
-namespace Dprog.Controllers
+namespace WaterProj.Controllers
 {
     public class RegistrationController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IConsumerService _consumerService;
 
-        public RegistrationController(ApplicationDbContext context)
+        public RegistrationController(IConsumerService consumerService)
         {
-            _context = context;
+            _consumerService = consumerService;
         }
 
         [HttpGet]
@@ -20,7 +21,7 @@ namespace Dprog.Controllers
         }
 
         [HttpPost]
-        public IActionResult Index(Consumer model)
+        public async Task<IActionResult> Index(Consumer model)
         {
             if (!ModelState.IsValid)
             {
@@ -37,12 +38,16 @@ namespace Dprog.Controllers
 
                 // Можно добавить логику хеширования пароля, например:
                 // model.PasswordHash = PasswordHasher.Hash(model.PasswordHash);
+                var serviceResult = await _consumerService.AddCounsumerAsync(model);
+                if (!serviceResult.Success)
+                {
+                    // Если произошла ошибка, можно добавить сообщение в ModelState
+                    ModelState.AddModelError(string.Empty, serviceResult.ErrorMessage);
+                    return View(model);
+                }
 
-                _context.Consumers.Add(model);
-                _context.SaveChanges();
-
-                // После успешной регистрации перенаправляем пользователя на страницу авторизации.
-                return RedirectToAction("Index", "Authorization");
+                // После успешной регистрации перенаправляем пользователя на страницу основную.
+                return RedirectToAction("Index", "HomeController");
            }
             // Если валидация не проходит, добавляем общее сообщение об ошибке
             ModelState.AddModelError(string.Empty, "Пожалуйста, проверьте введенные данные.");

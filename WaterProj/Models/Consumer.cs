@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WaterProj.Models;
 
-namespace Dprog.Models
+namespace WaterProj.Models
 {
     public class Consumer
     {

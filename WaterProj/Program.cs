@@ -1,7 +1,18 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WaterProj.DB;
+using WaterProj.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Authorization/Index";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // задаём время жизни cookie
+        options.SlidingExpiration = true; //  продление сессии при активности
+        // options.LogoutPath = "/Authorization/Logout"; //  выход
+    });
 
 // Получаем строку подключения из конфигурации (appsettings.Development.json)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -12,6 +23,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IConsumerService, ConsumerService>();
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 
 var app = builder.Build();
 
@@ -28,6 +42,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

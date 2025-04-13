@@ -1,5 +1,4 @@
-﻿using Dprog.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WaterProj.Models;
 
 namespace WaterProj.DB

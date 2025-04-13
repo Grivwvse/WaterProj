@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using WaterProj.Models;
 
-namespace Dprog.Models
+namespace WaterProj.Models
 {
     public class Stop
     {
