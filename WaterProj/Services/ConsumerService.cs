@@ -21,24 +21,6 @@ namespace WaterProj.Services
             return await _context.Consumers.FindAsync(id);
         }
 
-        public async Task<ServiceResult> AddCounsumerAsync(Consumer model)
-        {
-            try
-            {
-                await _context.Consumers.AddAsync(model);
-                await _context.SaveChangesAsync();
-                return new ServiceResult { Success = true };
-            }
-            catch (Exception ex)
-            {
-                return new ServiceResult
-                {
-                    Success = false,
-                    ErrorMessage = ex.Message 
-                };
-            }
-        }
-
         public async Task<ServiceResult> UpdateConsumerAsync(int userId, Consumer model)
         {
             var consumer = await _context.Consumers.FindAsync(userId);
@@ -52,6 +34,7 @@ namespace WaterProj.Services
             await _context.SaveChangesAsync();
             return new ServiceResult { Success = true };
         }
+
     }
 
 

@@ -6,6 +6,5 @@ namespace WaterProj.Services
     {
         Task<Consumer> GetByIdAsync(int id);
         Task<ServiceResult> UpdateConsumerAsync(int userId, Consumer model);
-        Task<ServiceResult> AddCounsumerAsync(Consumer model);
     }
 }

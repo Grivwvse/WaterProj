@@ -21,7 +21,7 @@ namespace WaterProj.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Dprog.Models.Consumer", b =>
+            modelBuilder.Entity("WaterProj.Models.Consumer", b =>
                 {
                     b.Property<int>("ConsumerId")
                         .ValueGeneratedOnAdd()
@@ -52,29 +52,6 @@ namespace WaterProj.Migrations
                     b.HasKey("ConsumerId");
 
                     b.ToTable("Consumers");
-                });
-
-            modelBuilder.Entity("Dprog.Models.Stop", b =>
-                {
-                    b.Property<int>("StopId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StopId"));
-
-                    b.Property<float>("Latitude")
-                        .HasColumnType("real");
-
-                    b.Property<float>("Longitude")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("StopId");
-
-                    b.ToTable("Stop");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Feedback", b =>
@@ -168,7 +145,7 @@ namespace WaterProj.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("TransporterId")
+                    b.Property<int>("TransporterId")
                         .HasColumnType("integer");
 
                     b.HasKey("RouteId");
@@ -231,6 +208,29 @@ namespace WaterProj.Migrations
                     b.ToTable("Ships");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.Stop", b =>
+                {
+                    b.Property<int>("StopId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StopId"));
+
+                    b.Property<float>("Latitude")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Longitude")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("StopId");
+
+                    b.ToTable("Stop");
+                });
+
             modelBuilder.Entity("WaterProj.Models.Transporter", b =>
                 {
                     b.Property<int>("TransporterId")
@@ -266,9 +266,6 @@ namespace WaterProj.Migrations
                     b.Property<float>("Rating")
                         .HasColumnType("real");
 
-                    b.Property<int>("RouteId")
-                        .HasColumnType("integer");
-
                     b.HasKey("TransporterId");
 
                     b.ToTable("Transporters");
@@ -276,7 +273,7 @@ namespace WaterProj.Migrations
 
             modelBuilder.Entity("WaterProj.Models.Feedback", b =>
                 {
-                    b.HasOne("Dprog.Models.Consumer", "Consumer")
+                    b.HasOne("WaterProj.Models.Consumer", "Consumer")
                         .WithMany("Feedbacks")
                         .HasForeignKey("ConsumerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -295,7 +292,7 @@ namespace WaterProj.Migrations
 
             modelBuilder.Entity("WaterProj.Models.Order", b =>
                 {
-                    b.HasOne("Dprog.Models.Consumer", "Consumer")
+                    b.HasOne("WaterProj.Models.Consumer", "Consumer")
                         .WithMany("Orders")
                         .HasForeignKey("ConsumerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -320,11 +317,15 @@ namespace WaterProj.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WaterProj.Models.Transporter", null)
+                    b.HasOne("WaterProj.Models.Transporter", "Transporter")
                         .WithMany("Routes")
-                        .HasForeignKey("TransporterId");
+                        .HasForeignKey("TransporterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Ship");
+
+                    b.Navigation("Transporter");
                 });
 
             modelBuilder.Entity("WaterProj.Models.RouteStop", b =>
@@ -335,7 +336,7 @@ namespace WaterProj.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Dprog.Models.Stop", "Stop")
+                    b.HasOne("WaterProj.Models.Stop", "Stop")
                         .WithMany("RouteStops")
                         .HasForeignKey("StopId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -346,16 +347,11 @@ namespace WaterProj.Migrations
                     b.Navigation("Stop");
                 });
 
-            modelBuilder.Entity("Dprog.Models.Consumer", b =>
+            modelBuilder.Entity("WaterProj.Models.Consumer", b =>
                 {
                     b.Navigation("Feedbacks");
 
                     b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("Dprog.Models.Stop", b =>
-                {
-                    b.Navigation("RouteStops");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Route", b =>
@@ -370,6 +366,11 @@ namespace WaterProj.Migrations
             modelBuilder.Entity("WaterProj.Models.Ship", b =>
                 {
                     b.Navigation("Routes");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.Stop", b =>
+                {
+                    b.Navigation("RouteStops");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Transporter", b =>

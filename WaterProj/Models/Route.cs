@@ -21,6 +21,9 @@ namespace WaterProj.Models
         public List<Feedback> Feedbacks { get; set; }
         public List<Order> Orders { get; set; }
 
+        [ForeignKey("TransporterId")]
+        public Transporter Transporter { get; set; }
+
         // Навигационное свойство для связи с остановками
         public List<RouteStop> RouteStops { get; set; }
 

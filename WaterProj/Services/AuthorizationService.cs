@@ -69,11 +69,13 @@ namespace WaterProj.Services
                 // Формируем клаймы и выполняем вход
                 claims.Add(new Claim(ClaimTypes.Name, consumer.Login));
                 claims.Add(new Claim(ClaimTypes.NameIdentifier, consumer.ConsumerId.ToString()));
+                claims.Add(new Claim(ClaimTypes.Role, "consumer"));
             }
             else if (user is Transporter transporter)
             {
                 claims.Add(new Claim(ClaimTypes.Name, transporter.Login));
                 claims.Add(new Claim(ClaimTypes.NameIdentifier, transporter.TransporterId.ToString()));
+                claims.Add(new Claim(ClaimTypes.Role, "transporter"));
             }
             else
             {

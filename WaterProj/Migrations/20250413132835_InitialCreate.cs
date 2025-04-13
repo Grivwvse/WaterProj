@@ -64,7 +64,6 @@ namespace WaterProj.Migrations
                 {
                     TransporterId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RouteId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
@@ -91,7 +90,7 @@ namespace WaterProj.Migrations
                     Timetable = table.Column<string>(type: "text", nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: false),
                     ImagePath = table.Column<string>(type: "text", nullable: false),
-                    TransporterId = table.Column<int>(type: "integer", nullable: true)
+                    TransporterId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -106,7 +105,8 @@ namespace WaterProj.Migrations
                         name: "FK_Routes_Transporters_TransporterId",
                         column: x => x.TransporterId,
                         principalTable: "Transporters",
-                        principalColumn: "TransporterId");
+                        principalColumn: "TransporterId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

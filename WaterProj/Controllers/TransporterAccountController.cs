@@ -10,34 +10,34 @@ using WaterProj.Models;
 namespace WaterProj.Controllers
 {
     [Authorize]
-    public class ConsumerAccountController : Controller
+    public class TransporterAccountController : Controller
     {
-        private readonly IConsumerService _consumerService;
+        private readonly ITransporterService _transporterService;
 
-        public ConsumerAccountController(IConsumerService consumerService)
+        public TransporterAccountController(ITransporterService transporterService)
         {
-            _consumerService = consumerService;
+            _transporterService = transporterService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Account()
         {
             // Получаем имя пользователя из аутентификационных данных  
             var currentConsumerId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var consumer = await _consumerService.GetByIdAsync(currentConsumerId);
+            var consumer = await _transporterService.GetByIdAsync(currentConsumerId);
 
             return View(consumer);
         }
 
         // Редактирование данных пользователя
         [HttpPost]
-        public async Task<IActionResult> Edit(Consumer model)
+        public async Task<IActionResult> Edit(Transporter model)
         {
             Console.WriteLine("ModelState.IsValid");
             if (true) // Валидация только нужных нам полей
             {
                 Console.WriteLine("ModelState.IsValid: " + ModelState.IsValid);
-                var serviceResult = await _consumerService.UpdateConsumerAsync(Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier)), model);
+                var serviceResult = await _transporterService.UpdateTransporterAsync(Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier)), model);
                 if (serviceResult.Success)
                 {
 
@@ -50,7 +50,7 @@ namespace WaterProj.Controllers
                 }
             }
 
-            return View("Index", model);
+            return View("Account", model);
         }
 
         [HttpPost]

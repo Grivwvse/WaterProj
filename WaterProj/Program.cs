@@ -26,6 +26,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IConsumerService, ConsumerService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<ITransporterService, TransporterService>();
 
 var app = builder.Build();
 

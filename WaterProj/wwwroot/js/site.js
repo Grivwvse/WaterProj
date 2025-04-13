@@ -3,7 +3,7 @@
 
 // Write your JavaScript code.
 
-if (window.location.pathname.includes("/ConsumerAccount"))
+if (window.location.pathname.includes("/ConsumerAccount") || window.location.pathname.includes("/TransporterAccount"))
 {
     const editButton = document.getElementById('editButton');
     const nameInput = document.getElementById('name');
