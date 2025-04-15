@@ -1,11 +1,19 @@
-﻿@model WaterProj.Models.Transporter
+﻿@model WaterProj.DTOs.TransporterAccountDto
 
 <h2>Редактирование профиля</h2>
+
+
 
 @if (ViewBag.Message != null)
 {
     <div class="alert alert-success">
         @ViewBag.Message
+    </div>
+}
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.ErrorMessage
     </div>
 }
 
@@ -22,13 +30,13 @@
                 <hr class="mx-5">
                 <form asp-action="Edit" method="post" id="editForm">
                     <div class="form-group">
-                        <label asp-for="Login"></label>
-                        <input asp-for="Login" class="form-control" id="login" readonly="readonly" />
+                        <label asp-for="@Model.Transporter.Login"></label>
+                        <input asp-for="@Model.Transporter.Login" class="form-control" id="login" readonly="readonly" />
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="Name"></label>
-                        <input asp-for="Name" class="form-control" id="name" readonly="readonly" />
+                        <label asp-for="@Model.Transporter.Name"></label>
+                        <input asp-for="@Model.Transporter.Name" class="form-control" id="name" readonly="readonly" />
                     </div>
                     <!-- Добавьте другие поля по необходимости -->
                     <br />
@@ -42,12 +50,45 @@
                 <div class="row mx-0 mx-md-5">
                 </div>
             </div>
+
+
+
             <div class="col-md-6 col-sm-12">
                 <h5 class="text-center">Маршруты</h5>
                 <hr class="mx-5">
+                <div class="list-group">
+                    @foreach (var route in Model.Routes)
+                    {
+
+                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = route.RouteId })" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">@route.Name</h5>
+                                <small>3 days ago</small>
+                            </div>
+                            <p class="mb-1">Описание</p>
+                            <small>@route.Description</small>
+                        </a>
+                        <!-- Добавьте другие поля по необходимости 
+                        <div class="list-group justify-content-center d-flex ">
+                            <div href="#" class="list-group-item unclickable" aria-current="true">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">@route.Name</h5>
+                                    <small>2022-2024</small>
+                                </div>
+                                <p class="mb-1">Описание</p>
+                                <small>@route.Description</small>
+                            </div>
+                        </div>
+                        -->
+                    }
+                </div>
                 <div class="row mx-0 mx-md-5">
+
+               
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<a asp-controller="Route" asp-action="CreateRoute">Регистрация</a>

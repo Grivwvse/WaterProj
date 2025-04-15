@@ -1,0 +1,225 @@
+﻿@{
+    ViewData["Title"] = "Поиск маршрутов";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Поиск водных маршрутов</h1>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form action="/Route/SearchRoutes" method="get" id="routeSearchForm">
+                        <div class="row g-3">
+                            <!-- Поиск по названию -->
+                            <div class="col-md-12 mb-3">
+                                <label for="routeNameSearch" class="form-label">Название или описание маршрута</label>
+                                <input type="text" class="form-control" id="routeNameSearch" name="name" placeholder="Введите название или часть описания">
+                            </div>
+
+                            <div class="col-md-12">
+                                <h5>Или выберите остановки на карте</h5>
+                            </div>
+
+                            <!-- Поиск по остановкам -->
+                            <div class="col-md-6">
+                                <label for="startStopSelect" class="form-label">Точка отправления</label>
+                                <select class="form-select" id="startStopSelect" name="startStopId">
+                                    <option value="">Выберите пункт отправления</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="endStopSelect" class="form-label">Точка прибытия</label>
+                                <select class="form-select" id="endStopSelect" name="endStopId">
+                                    <option value="">Выберите пункт назначения</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 text-center mt-3">
+                                <button type="submit" class="btn btn-primary px-5">Найти маршруты</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавляем контейнер для карты -->
+    <div class="row">
+        <div class="col-md-12">
+            <div id="searchMap" style="width: 100%; height: 500px; margin-bottom: 20px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Инициализация карты, когда API Яндекс.Карт загружен
+        ymaps.ready(function() {
+            const myMap = new ymaps.Map('searchMap', {
+                center: [59.938339, 30.313558], // Центр Санкт-Петербурга
+                zoom: 10,
+                controls: ['zoomControl', 'typeSelector']
+            });
+
+            // Создаем коллекцию для меток остановок
+            const stopsCollection = new ymaps.GeoObjectCollection();
+
+            // Загружаем все остановки
+            loadStops();
+
+            // Инициализируем обработчики выбора остановок
+            initStopSelectors();
+
+            // Функция загрузки всех остановок
+            async function loadStops() {
+                try {
+                    const response = await fetch('/Route/GetAllStops');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ошибка: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error("Ошибка при загрузке данных остановок");
+                    }
+
+                    const stops = data.stops || [];
+
+                    // Добавляем остановки на карту
+                    addStopsToMap(stops);
+
+                    // Заполняем выпадающие списки
+                    populateStopsDropdowns(stops);
+                } catch (error) {
+                    console.error("Ошибка при загрузке остановок:", error);
+                }
+            }
+
+            // Функция добавления остановок на карту
+            function addStopsToMap(stops) {
+                stops.forEach((stop) => {
+                    if (stop.latitude !== undefined && stop.longitude !== undefined) {
+                        const placemark = new ymaps.Placemark(
+                            [stop.latitude, stop.longitude],
+                            {
+                                iconContent: stop.name,
+                                hintContent: stop.name,
+                                balloonContentHeader: 'Остановка',
+                                balloonContent: `ID: ${stop.stopId}, Координаты: ${stop.latitude.toFixed(6)}, ${stop.longitude.toFixed(6)}`,
+                                stopId: stop.stopId
+                            },
+                            {
+                                preset: 'islands#blueStretchyIcon'
+                            }
+                        );
+
+                        // Обработчик клика по метке
+                        placemark.events.add('click', function() {
+                            const stopId = placemark.properties.get('stopId');
+                            const stopName = placemark.properties.get('iconContent');
+
+                            // Открываем балун с выбором действия
+                            placemark.properties.set('balloonContentFooter', `
+                                <div class="mt-2">
+                                    <button class="btn btn-primary btn-sm" id="selectAsStart">Выбрать как начало</button>
+                                    <button class="btn btn-success btn-sm" id="selectAsEnd">Выбрать как конец</button>
+                                </div>
+                            `);
+
+                            // После открытия балуна добавляем обработчики на кнопки
+                            placemark.events.add('balloonopen', function() {
+                                setTimeout(() => {
+                                    document.getElementById('selectAsStart')?.addEventListener('click', function() {
+                                        document.getElementById('startStopSelect').value = stopId;
+                                        highlightSelectedStops();
+                                        placemark.balloon.close();
+                                    });
+
+                                    document.getElementById('selectAsEnd')?.addEventListener('click', function() {
+                                        document.getElementById('endStopSelect').value = stopId;
+                                        highlightSelectedStops();
+                                        placemark.balloon.close();
+                                    });
+                                }, 100);
+                            });
+                        });
+
+                        stopsCollection.add(placemark);
+                    }
+                });
+
+                // Добавляем коллекцию на карту
+                myMap.geoObjects.add(stopsCollection);
+
+                // Масштабируем карту, чтобы были видны все метки
+                if (stopsCollection.getLength() > 0) {
+                    myMap.setBounds(stopsCollection.getBounds(), {
+                        checkZoomRange: true,
+                        zoomMargin: 30
+                    });
+                }
+            }
+
+            // Функция заполнения выпадающих списков с остановками
+            function populateStopsDropdowns(stops) {
+                const startSelect = document.getElementById('startStopSelect');
+                const endSelect = document.getElementById('endStopSelect');
+
+                // Очищаем текущие опции, оставляя первую (пустую)
+                startSelect.innerHTML = '<option value="">Выберите пункт отправления</option>';
+                endSelect.innerHTML = '<option value="">Выберите пункт прибытия</option>';
+
+                // Добавляем остановки в выпадающие списки
+                stops.forEach(stop => {
+                    const option = document.createElement('option');
+                    option.value = stop.stopId;
+                    option.textContent = stop.name;
+
+                    const optionCopy = option.cloneNode(true);
+
+                    startSelect.appendChild(option);
+                    endSelect.appendChild(optionCopy);
+                });
+            }
+
+            // Функция инициализации обработчиков выбора остановок
+            function initStopSelectors() {
+                const startSelect = document.getElementById('startStopSelect');
+                const endSelect = document.getElementById('endStopSelect');
+
+                startSelect.addEventListener('change', highlightSelectedStops);
+                endSelect.addEventListener('change', highlightSelectedStops);
+            }
+
+            // Функция выделения выбранных остановок на карте
+            function highlightSelectedStops() {
+                const startStopId = document.getElementById('startStopSelect').value;
+                const endStopId = document.getElementById('endStopSelect').value;
+
+                // Сбрасываем все метки к стандартному виду
+                stopsCollection.each(function(placemark) {
+                    placemark.options.set('preset', 'islands#blueStretchyIcon');
+                });
+
+                // Подсвечиваем выбранные остановки
+                if (startStopId) {
+                    stopsCollection.each(function(placemark) {
+                        if (placemark.properties.get('stopId') == startStopId) {
+                            placemark.options.set('preset', 'islands#greenStretchyIcon');
+                        }
+                    });
+                }
+
+                if (endStopId) {
+                    stopsCollection.each(function(placemark) {
+                        if (placemark.properties.get('stopId') == endStopId) {
+                            placemark.options.set('preset', 'islands#redStretchyIcon');
+                        }
+                    });
+                }
+            }
+        });
+    });
+</script>

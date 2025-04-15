@@ -6,6 +6,7 @@ using WaterProj.DB;
 using Microsoft.AspNetCore.Authorization;
 using WaterProj.Services;
 using WaterProj.Models;
+using WaterProj.DTOs;
 
 namespace WaterProj.Controllers
 {
@@ -22,11 +23,25 @@ namespace WaterProj.Controllers
         [HttpGet]
         public async Task<IActionResult> Account()
         {
-            // Получаем имя пользователя из аутентификационных данных  
-            var currentConsumerId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var consumer = await _transporterService.GetByIdAsync(currentConsumerId);
 
-            return View(consumer);
+            try
+            {
+                int currentTransporterId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                TransporterAccountDto accountDto = await _transporterService.GetAllAccountInfo(currentTransporterId);
+                return View(accountDto);
+            }
+            catch (NotFoundException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                return View(ViewBag);
+            }
+
+
+            //// Получаем имя пользователя из аутентификационных данных  
+            //var currentTransporterId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            //var transporter = await _transporterService.GetByIdAsync(currentTransporterId);
+
+            
         }
 
         // Редактирование данных пользователя

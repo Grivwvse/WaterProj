@@ -28,6 +28,8 @@ builder.Services.AddScoped<IConsumerService, ConsumerService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ITransporterService, TransporterService>();
+builder.Services.AddScoped<IRouteService, RouteService>();
+
 
 var app = builder.Build();
 
@@ -49,6 +51,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Route}/{action=FindRoutes}/{id?}");
 
 app.Run();

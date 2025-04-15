@@ -11,8 +11,8 @@ namespace WaterProj.Models
         public string Name { get; set; }
 
         // Дополнительные параметры, например, координаты
-        public float Latitude { get; set; }
-        public float Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         // Навигационное свойство для связи многие-к-многим
         public List<RouteStop> RouteStops { get; set; }

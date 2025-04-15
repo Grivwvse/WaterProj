@@ -29,6 +29,22 @@ namespace WaterProj.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Images",
+                columns: table => new
+                {
+                    ImageID = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EntityType = table.Column<string>(type: "text", nullable: false),
+                    EntityId = table.Column<int>(type: "integer", nullable: false),
+                    ImagePath = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => x.ImageID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Ships",
                 columns: table => new
                 {
@@ -44,18 +60,18 @@ namespace WaterProj.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Stop",
+                name: "Stops",
                 columns: table => new
                 {
                     StopId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Latitude = table.Column<float>(type: "real", nullable: false),
-                    Longitude = table.Column<float>(type: "real", nullable: false)
+                    Latitude = table.Column<double>(type: "double precision", nullable: false),
+                    Longitude = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Stop", x => x.StopId);
+                    table.PrimaryKey("PK_Stops", x => x.StopId);
                 });
 
             migrationBuilder.CreateTable(
@@ -87,9 +103,8 @@ namespace WaterProj.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Map = table.Column<string>(type: "text", nullable: false),
-                    Timetable = table.Column<string>(type: "text", nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: false),
-                    ImagePath = table.Column<string>(type: "text", nullable: false),
+                    Schedule = table.Column<string>(type: "text", nullable: false),
                     TransporterId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -184,11 +199,11 @@ namespace WaterProj.Migrations
                         principalColumn: "RouteId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RouteStop_Stop_StopId",
+                        name: "FK_RouteStop_Stops_StopId",
                         column: x => x.StopId,
-                        principalTable: "Stop",
+                        principalTable: "Stops",
                         principalColumn: "StopId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -239,6 +254,9 @@ namespace WaterProj.Migrations
                 name: "Feedbacks");
 
             migrationBuilder.DropTable(
+                name: "Images");
+
+            migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
@@ -251,7 +269,7 @@ namespace WaterProj.Migrations
                 name: "Routes");
 
             migrationBuilder.DropTable(
-                name: "Stop");
+                name: "Stops");
 
             migrationBuilder.DropTable(
                 name: "Ships");

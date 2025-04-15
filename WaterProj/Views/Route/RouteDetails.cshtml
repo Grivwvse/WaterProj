@@ -1,0 +1,64 @@
+﻿@model WaterProj.DTOs.RouteDetailsDto
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.Message
+    </div>
+}
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+
+@if (Model.Image != null && Model.Image.Any())
+{
+    <div id="routeCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            @for (int i = 0; i < Model.Image.Count; i++)
+            {
+                <button type="button"
+                        data-bs-target="#routeCarousel"
+                        data-bs-slide-to="@i"
+                        class="@(i == 0 ? "active" : "")"
+                        aria-current="@(i == 0 ? "true" : null)"
+                        aria-label="Слайд @(i + 1)"></button>
+            }
+        </div>
+
+        <div class="carousel-inner">
+            @for (int i = 0; i < Model.Image.Count; i++)
+            {
+                var image = Model.Image[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <img src="@image.ImagePath" class="d-block w-100" alt="@image.Title">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5>@image.Title</h5>
+                    </div>
+                </div>
+            }
+        </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#routeCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Предыдущий</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#routeCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Следующий</span>
+        </button>
+    </div>
+}
+else
+{
+    <p>Нет загруженных изображений для этого маршрута.</p>
+}
+
+<div id="routeMap" style="width: 100%; height: 400px; margin-bottom: 20px;"></div>
+
+<h1>@Model.Route.Name</h1>
+<p><strong>Описание:</strong> @Model.Route.Description</p>
+<p><strong>Корабль:</strong> @Model.Ship?.Name</p>

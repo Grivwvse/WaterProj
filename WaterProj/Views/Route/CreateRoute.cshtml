@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Построение маршрута";
+}
+
+<h2>Создание маршрута</h2>
+
+<div class="form-group">
+    <label for="routeName">Название маршрута:</label>
+    <input type="text" class="form-control" id="routeName" name="routeName" required />
+</div>
+
+<div class="form-group">
+    <label for="routeDescription">Описание маршрута:</label>
+    <textarea class="form-control" id="routeDescription" name="routeDescription"></textarea>
+</div>
+
+<form id="imageForm">
+    <div class="form-group">
+        <label for="images">Фотографии маршрута:</label>
+        <input type="file" class="form-control" id="images" name="Images" multiple />
+    </div>
+</form>
+
+
+<!-- Только на нужной странице! -->
+<div id="myMap" style="width: 100%; height: 500px;"></div>
+
+<div class="stop-form mt-3">
+    <label>Координаты:</label>
+    <input type="text" id="coords" class="form-control" readonly />
+
+    <label>Название (iconContent):</label>
+    <input type="text" id="iconContent" class="form-control" />
+
+    <label>Подсказка (hintContent):</label>
+    <input type="text" id="hint" class="form-control" />
+
+    <label>Балун (balloonContent):</label>
+    <input type="text" id="balloon" class="form-control" />
+
+    <label>Опишите ваше расписание:</label>
+    <textarea id="scheduleDescription" class="form-control" rows="3"></textarea>
+
+    <button id="saveStop" class="btn btn-primary mt-2">Сохранить остановку</button>
+</div>
+
+
+<button type="submit" id="saveRoute" class="btn btn-primary">Сохранить маршрут</button>
+
+<form method="post" asp-action="SaveRoute" id="routeForm">
+    <input type="hidden" name="RouteJson" id="routeJson" />
+    <button type="submit" class="btn btn-success mt-3">Сохранить маршрут</button>
+</form>

@@ -84,6 +84,34 @@ namespace WaterProj.Migrations
                     b.ToTable("Feedbacks");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.Image", b =>
+                {
+                    b.Property<int>("ImageID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ImageID"));
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ImageID");
+
+                    b.ToTable("Images");
+                });
+
             modelBuilder.Entity("WaterProj.Models.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -123,10 +151,6 @@ namespace WaterProj.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ImagePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Map")
                         .IsRequired()
                         .HasColumnType("text");
@@ -138,12 +162,12 @@ namespace WaterProj.Migrations
                     b.Property<float>("Rating")
                         .HasColumnType("real");
 
-                    b.Property<int>("ShipId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Timetable")
+                    b.Property<string>("Schedule")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("ShipId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TransporterId")
                         .HasColumnType("integer");
@@ -216,11 +240,11 @@ namespace WaterProj.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StopId"));
 
-                    b.Property<float>("Latitude")
-                        .HasColumnType("real");
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision");
 
-                    b.Property<float>("Longitude")
-                        .HasColumnType("real");
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -228,7 +252,7 @@ namespace WaterProj.Migrations
 
                     b.HasKey("StopId");
 
-                    b.ToTable("Stop");
+                    b.ToTable("Stops");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Transporter", b =>
@@ -339,7 +363,7 @@ namespace WaterProj.Migrations
                     b.HasOne("WaterProj.Models.Stop", "Stop")
                         .WithMany("RouteStops")
                         .HasForeignKey("StopId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Route");

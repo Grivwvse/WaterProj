@@ -1,0 +1,212 @@
+﻿@model List<WaterProj.DTOs.RouteSearchResultDto>
+
+@{
+    ViewData["Title"] = "Результаты поиска маршрутов";
+}
+
+<div class="container mt-4">
+    <h1>Результаты поиска маршрутов</h1>
+
+    <!-- Контейнер для карты -->
+    <div id="searchMap" style="width: 100%; height: 500px; margin-bottom: 20px;"></div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <p>Маршруты не найдены</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var route in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>@route.Name</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>@(string.IsNullOrEmpty(route.Description) ? "Нет описания" : route.Description)</p>
+                            <p><strong>Транспортёр:</strong> @(string.IsNullOrEmpty(route.TransporterName) ? "Не указан" : route.TransporterName)</p>
+                            <p><strong>Рейтинг:</strong> @(route.Rating > 0 ? route.Rating.ToString() : "Нет данных")</p>
+                            <button class="btn btn-outline-primary me-2 show-on-map" data-route-id="@route.RouteId">
+                                Показать на карте
+                            </button>
+                            <a href="/Route/RouteDetails?routeID=@route.RouteId" class="btn btn-primary">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Инициализируем карту, когда API Яндекс.Карт загружен
+        ymaps.ready(function() {
+            const myMap = new ymaps.Map('searchMap', {
+                center: [59.938339, 30.313558], // Центр Санкт-Петербурга
+                zoom: 10,
+                controls: ['zoomControl', 'typeSelector']
+            });
+
+            // Загружаем все остановки при загрузке страницы
+            loadAllStops();
+
+            async function loadAllStops() {
+                try {
+                    const response = await fetch('/Route/GetAllStops');
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error("Ошибка при загрузке остановок");
+                    }
+
+                    const stops = data.stops || [];
+
+                    // Добавляем остановки на карту
+                    stops.forEach(stop => {
+                        if (stop.latitude !== undefined && stop.longitude !== undefined) {
+                            const placemark = new ymaps.Placemark(
+                                [stop.latitude, stop.longitude],
+                                {
+                                    iconContent: stop.name,
+                                    hintContent: stop.name,
+                                    balloonContent: `ID: ${stop.stopId}, ${stop.name}`
+                                },
+                                {
+                                    preset: 'islands#grayStretchyIcon' // Серый цвет для обычных остановок
+                                }
+                            );
+                            myMap.geoObjects.add(placemark);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Ошибка при загрузке остановок:", error);
+                }
+            }
+
+            // Обработчики для кнопок "Показать на карте"
+            document.querySelectorAll('.show-on-map').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const routeId = this.getAttribute('data-route-id');
+                    await showRouteOnMap(routeId);
+                });
+            });
+
+            // Функция отображения маршрута на карте
+            async function showRouteOnMap(routeId) {
+                try {
+                    // Очищаем предыдущие маршруты с карты
+                    myMap.geoObjects.each(function(obj) {
+                        if (obj instanceof ymaps.Polyline) {
+                            myMap.geoObjects.remove(obj);
+                        }
+                    });
+
+                    // Загружаем данные маршрута
+                    const response = await fetch(`/Route/GetRouteMapData?id=${routeId}`);
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(data.error || "Ошибка при загрузке данных маршрута");
+                    }
+
+                    // Парсим данные маршрута из JSON
+                    let mapData;
+                    try {
+                        mapData = JSON.parse(data.map);
+                        console.log("Данные маршрута:", mapData);
+                    } catch (e) {
+                        console.error("Ошибка при парсинге данных карты:", e);
+                        throw new Error("Не удалось разобрать данные маршрута");
+                    }
+
+                    // Добавляем остановки на карту
+                    if (mapData.stops && mapData.stops.length > 0) {
+                        // Создаем коллекцию для остановок маршрута
+                        const stopsCollection = new ymaps.GeoObjectCollection();
+
+                        mapData.stops.forEach((stop, index) => {
+                            const placemark = new ymaps.Placemark(
+                                [stop.Latitude, stop.Longitude],
+                                {
+                                    iconContent: stop.Name,
+                                    hintContent: stop.Name || `Остановка ${index + 1}`,
+                                    balloonContentHeader: 'Остановка маршрута',
+                                    balloonContent: `Координаты: ${stop.Latitude.toFixed(6)}, ${stop.Longitude.toFixed(6)}`
+                                },
+                                {
+                                    preset: index === 0 ? 'islands#greenStretchyIcon' :
+                                           index === mapData.stops.length - 1 ? 'islands#redStretchyIcon' :
+                                           'islands#blueStretchyIcon'
+                                }
+                            );
+
+                            stopsCollection.add(placemark);
+                        });
+
+                        myMap.geoObjects.add(stopsCollection);
+                    }
+
+                    // Добавляем линию маршрута
+                    if (mapData.lines && mapData.lines.length > 0) {
+                        const polyline = new ymaps.Polyline(
+                            mapData.lines,
+                            {
+                                hintContent: "Маршрут"
+                            },
+                            {
+                                strokeColor: '#FF0000',
+                                strokeWidth: 4,
+                                strokeOpacity: 0.6
+                            }
+                        );
+
+                        myMap.geoObjects.add(polyline);
+
+                        // Масштабируем карту под маршрут
+                        myMap.setBounds(polyline.geometry.getBounds(), {
+                            checkZoomRange: true,
+                            zoomMargin: 30
+                        });
+                    }
+                    // Если линий нет, но есть остановки, масштабируем по остановкам
+                    else if (mapData.stops && mapData.stops.length > 0) {
+                        const bounds = [];
+                        mapData.stops.forEach(stop => {
+                            bounds.push([stop.Latitude, stop.Longitude]);
+                        });
+
+                        if (bounds.length > 0) {
+                            myMap.setBounds([
+                                [
+                                    Math.min(...bounds.map(point => point[0])),
+                                    Math.min(...bounds.map(point => point[1]))
+                                ],
+                                [
+                                    Math.max(...bounds.map(point => point[0])),
+                                    Math.max(...bounds.map(point => point[1]))
+                                ]
+                            ], {
+                                checkZoomRange: true,
+                                zoomMargin: 30
+                            });
+                        }
+                    }
+
+                } catch (error) {
+                    console.error("Ошибка при отображении маршрута:", error);
+                    alert("Не удалось отобразить маршрут на карте: " + error.message);
+                }
+            }
+        });
+    });
+</script>
