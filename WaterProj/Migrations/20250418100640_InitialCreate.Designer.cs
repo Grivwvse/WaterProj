@@ -11,7 +11,7 @@ using WaterProj.DB;
 namespace WaterProj.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250414120528_Initial-Create")]
+    [Migration("20250418100640_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -129,9 +129,8 @@ namespace WaterProj.Migrations
                     b.Property<int>("RouteId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("OrderId");
 

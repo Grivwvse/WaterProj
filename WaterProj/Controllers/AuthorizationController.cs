@@ -29,12 +29,15 @@ namespace WaterProj.Controllers
             var serviceResult = await _authorizationService.CommonAuth(login, password, userType, HttpContext);
             if (serviceResult.Success)
             {
-                ViewBag.AuthData = "Успешная авторизация!";
+                TempData["SuccessMessage"] = "Успешная Авторизация!";
+
+                return RedirectToAction("FindRoutes", "");
             }
             else
             {
-                ViewBag.AuthData = serviceResult.ErrorMessage;
+                TempData["ErrorMessage"] = serviceResult.ErrorMessage ?? "Произошла ошибка при авторизации.";
             }
+
             return View();
 
         }

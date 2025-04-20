@@ -3,20 +3,6 @@
 <h2>Редактирование профиля</h2>
 
 
-
-@if (ViewBag.Message != null)
-{
-    <div class="alert alert-success">
-        @ViewBag.Message
-    </div>
-}
-@if (ViewBag.ErrorMessage != null)
-{
-    <div class="alert alert-danger">
-        @ViewBag.ErrorMessage
-    </div>
-}
-
 <section class="bg2">
     <div class="container">
         <div class="row">
@@ -30,13 +16,13 @@
                 <hr class="mx-5">
                 <form asp-action="Edit" method="post" id="editForm">
                     <div class="form-group">
-                        <label asp-for="@Model.Transporter.Login"></label>
-                        <input asp-for="@Model.Transporter.Login" class="form-control" id="login" readonly="readonly" />
+                        <label asp-for="Transporter.Login"></label>
+                        <input name="Login" value="@Model.Transporter.Login" class="form-control" id="login" readonly="readonly" />
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="@Model.Transporter.Name"></label>
-                        <input asp-for="@Model.Transporter.Name" class="form-control" id="name" readonly="readonly" />
+                        <label asp-for="Transporter.Name"></label>
+                        <<input name="Name" value="@Model.Transporter.Name" class="form-control" id="name" readonly="readonly" />
                     </div>
                     <!-- Добавьте другие поля по необходимости -->
                     <br />

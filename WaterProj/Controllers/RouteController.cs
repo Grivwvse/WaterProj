@@ -17,12 +17,14 @@ namespace WaterProj.Controllers
 
 
         private readonly IRouteService _routeService;
+        private readonly IOrderService _orderService;
 
         private readonly ApplicationDbContext _context;
-        public RouteController(IRouteService routeService, ApplicationDbContext context)
+        public RouteController(IRouteService routeService, ApplicationDbContext context, IOrderService orderService)
         {
             _routeService = routeService;
             _context = context;
+            _orderService = orderService;
         }
 
         //Получение карты для RouteDetails 
@@ -62,6 +64,13 @@ namespace WaterProj.Controllers
                 {
                     ViewBag.ErrorMessage = "Маршрут не найден";
                     return View();
+                }
+
+                // Получаем статус заказа, если пользователь - Consumer
+                if (User.Identity.IsAuthenticated && User.IsInRole("consumer"))
+                {
+                    var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                    ViewBag.IsInActiveOrders = await _orderService.IsRouteInActiveOrdersAsync(routeID, userId);
                 }
 
                 return View(route);

@@ -15,6 +15,6 @@ namespace WaterProj.Models
 
         [ForeignKey("ConsumerId")]
         public Consumer Consumer { get; set; }
-        public string Status { get; set; }
+        public OrderStatus Status { get; set; }
     }
 }

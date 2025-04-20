@@ -18,6 +18,13 @@ namespace WaterProj.Services
             return await _context.Routes.FindAsync(id);
         }
 
+        public async Task<List<Models.Route>> GetRoutesByIdsAsync(List<int> routeIds)
+        {
+            return await _context.Routes
+                .Where(r => routeIds.Contains(r.RouteId))
+                .ToListAsync();
+        }
+
         /// <summary>
         /// Получение всех остановок из базы данных
         /// </summary>

@@ -55,17 +55,15 @@ namespace WaterProj.Controllers
                 var serviceResult = await _transporterService.UpdateTransporterAsync(Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier)), model);
                 if (serviceResult.Success)
                 {
-
-                    // Если все успешно, просто отобразить тот же представление
-                    ViewBag.Message = "Данные успешно обновлены!";
+                    TempData["SuccessMessage"] = "Данные успешно обновлены!";
                 }
                 else
                 {
-                    ViewBag.Message = "Произошла ошибка при обновлении данных.";
+                    TempData["ErrorMessage"] = serviceResult.ErrorMessage ?? "Произошла ошибка при обновлении данных.";
                 }
             }
 
-            return View("Account", model);
+            return RedirectToAction("Account");
         }
 
         [HttpPost]

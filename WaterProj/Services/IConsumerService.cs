@@ -1,4 +1,5 @@
-﻿using WaterProj.Models;
+﻿using WaterProj.DTOs;
+using WaterProj.Models;
 using WaterProj.Models.Services;
 namespace WaterProj.Services
 {
@@ -6,5 +7,7 @@ namespace WaterProj.Services
     {
         Task<Consumer> GetByIdAsync(int id);
         Task<ServiceResult> UpdateConsumerAsync(int userId, Consumer model);
+
+        Task<ConsumerAccontDto> GetAllAccountInfo(int id);  
     }
 }

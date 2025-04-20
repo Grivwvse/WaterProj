@@ -1,0 +1,23 @@
+﻿@{
+    //Если маршрут уже добавлен в активные заказы "Посмотреть мои заказы"
+    bool isInActiveOrders = ViewBag.IsInActiveOrders;
+}
+
+@if (isInActiveOrders)
+{
+    <div class="alert alert-info mt-3">
+        Этот маршрут уже добавлен в ваши заказы
+    </div>
+    <a asp-controller="ConsumerAccount" asp-action="Index" class="btn btn-primary">
+        Посмотреть мои заказы
+    </a>
+}
+else
+{
+    <a asp-controller="Order"
+       asp-action="QuickOrderAsync"
+       asp-route-routeId="@ViewBag.RouteId"
+       class="btn btn-success mt-3">
+        Добавить в мои заказы
+    </a>
+}

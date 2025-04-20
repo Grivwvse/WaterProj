@@ -1,32 +1,73 @@
-﻿@model WaterProj.Models.Consumer
+﻿@model WaterProj.DTOs.ConsumerAccontDto
 @{
     ViewData["Title"] = "Редактирование профиля";
 }
 
 <h2>Редактирование профиля</h2>
 
-@if (ViewBag.Message != null)
-{
-    <div class="alert alert-success">
-        @ViewBag.Message
-    </div>
-}
+<section class="bg2">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center text-uppercase text-secondary">Личный кабинет</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <h5 class="text-center">Персональные данные</h5>
+                <hr class="mx-5">
+                <form asp-action="Edit" method="post" id="editForm">
+                    <div class="form-group">
+                        <label asp-for="Consumer.Login"></label>
+                        <input name="Login" value="@Model.Consumer.Login" class="form-control" id="login" readonly="readonly" />
+                    </div>
 
-<form asp-action="Edit" method="post" id="editForm">
-    <div class="form-group">
-        <label asp-for="Login"></label>
-        <input asp-for="Login" class="form-control" id="login" readonly="readonly" />
-    </div>
+                    <div class="form-group">
+                        <label asp-for="Consumer.Name"></label>
+                        <input name="Name" value="@Model.Consumer.Name" class="form-control" id="name" readonly="readonly" />
+                    </div>
+                    <!--  Добавить другие поля по необходимости -->
+                    <br />
+                </form>
 
-    <div class="form-group">
-        <label asp-for="Name"></label>
-        <input asp-for="Name" class="form-control" id="name" readonly="readonly" />
-    </div>
-    <!-- Добавьте другие поля по необходимости -->
-    <br />
-</form>
+                <button id="editButton" class="btn btn-primary">Редактировать</button>
+                <div class="row mx-0 mx-md-5">
+                </div>
+            </div>
 
-<button id="editButton" class="btn btn-primary">Редактировать</button>
+
+
+            <div class="col-md-6 col-sm-12">
+                <h5 class="text-center">Маршруты</h5>
+                <hr class="mx-5">
+                <div class="list-group">
+                    @foreach (var dto in Model.OrdersRoutesDto)
+                    {
+
+                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">@dto.Order.OrderId</h5>
+                                <small>3 days ago</small>
+                            </div>
+                            <p class="mb-1">Описание</p>
+                            <small>@dto.Route.Description</small>
+                        </a>
+
+                    }
+                </div>
+                <div class="row mx-0 mx-md-5">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+
+
 
 <form asp-action="Logout" method="post">
     <button type="submit" class="btn btn-primary">Выйти</button>

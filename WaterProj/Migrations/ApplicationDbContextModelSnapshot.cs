@@ -126,9 +126,8 @@ namespace WaterProj.Migrations
                     b.Property<int>("RouteId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("OrderId");
 

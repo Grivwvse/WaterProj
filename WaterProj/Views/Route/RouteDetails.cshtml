@@ -62,3 +62,17 @@ else
 <h1>@Model.Route.Name</h1>
 <p><strong>Описание:</strong> @Model.Route.Description</p>
 <p><strong>Корабль:</strong> @Model.Ship?.Name</p>
+
+
+@if (User.Identity.IsAuthenticated && User.IsInRole("consumer"))
+{
+    ViewBag.RouteId = Model.Route.RouteId;
+    @await Html.PartialAsync("~/Views/Order/_CreateOrderPartial.cshtml")
+}
+
+else if (!User.Identity.IsAuthenticated)
+{
+    <div class="alert alert-info mt-3">
+        <a asp-controller="Authorization" asp-action="Index">Войдите</a>, чтобы добавить маршрут в заказы.
+    </div>
+}

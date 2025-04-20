@@ -37,18 +37,22 @@ namespace WaterProj.Controllers
            if (ModelState.IsValid)
             {
 
+
+
                 // Можно добавить логику хеширования пароля, например:
                 // model.PasswordHash = PasswordHasher.Hash(model.PasswordHash);
                 var serviceResult = await _registrationService.RegisterCounsumerAsync(model);
-                if (!serviceResult.Success)
+                if (serviceResult.Success)
                 {
-                    // Если произошла ошибка, можно добавить сообщение в ModelState
-                    ModelState.AddModelError(string.Empty, serviceResult.ErrorMessage);
-                    return View(model);
+                    TempData["SuccessMessage"] = "Успешная регистрация!";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = serviceResult.ErrorMessage ?? "Произошла ошибка при регистрации.";
                 }
 
                 // После успешной регистрации перенаправляем пользователя на страницу основную.
-                return RedirectToAction("Index", "");
+                return RedirectToAction("Index", "Authorization");
            }
             // Если валидация не проходит, добавляем общее сообщение об ошибке
             ModelState.AddModelError(string.Empty, "Пожалуйста, проверьте введенные данные.");
@@ -60,23 +64,25 @@ namespace WaterProj.Controllers
         public async Task<IActionResult> RegisterTransporter(Transporter model)
         {
             if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Пожалуйста, проверьте введенные данные.";
                 return View(model);
+            }
+                
 
             var serviceResult = await _registrationService.RegisterTransporterAsync(model);
 
-            if (!serviceResult.Success)
+            if (serviceResult.Success)
             {
-                // Если произошла ошибка, можно добавить сообщение в ModelState
-                ModelState.AddModelError(string.Empty, serviceResult.ErrorMessage);
-                ViewBag.Message = "Пожалуйста, проверьте введенные данные.";
-                return View(model);
-                
+                TempData["SuccessMessage"] = "Успешная регистрация!";
             }
-            // TODO: Добавить регистрацию Transporter
-            // Пример: await _userService.CreateTransporterAsync(model);
+            else
+            {
+                TempData["ErrorMessage"] = serviceResult.ErrorMessage ?? "Произошла ошибка при регистрации.";
+            }
 
-            ViewBag.Message = "Перевозчик успешно зарегистрирован!";
-            return View();
+            return RedirectToAction("Index", "Authorization");
+
         }
     }
 }

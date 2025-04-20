@@ -6,6 +6,7 @@ using WaterProj.DB;
 using Microsoft.AspNetCore.Authorization;
 using WaterProj.Services;
 using WaterProj.Models;
+using WaterProj.DTOs;
 
 namespace WaterProj.Controllers
 {
@@ -24,9 +25,11 @@ namespace WaterProj.Controllers
         {
             // Получаем имя пользователя из аутентификационных данных  
             var currentConsumerId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var consumer = await _consumerService.GetByIdAsync(currentConsumerId);
+           ConsumerAccontDto consumerAccontDto = await _consumerService.GetAllAccountInfo(currentConsumerId);
 
-            return View(consumer);
+
+
+            return View(consumerAccontDto);
         }
 
         // Редактирование данных пользователя
@@ -40,17 +43,15 @@ namespace WaterProj.Controllers
                 var serviceResult = await _consumerService.UpdateConsumerAsync(Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier)), model);
                 if (serviceResult.Success)
                 {
-
-                    // Если все успешно, просто отобразить тот же представление
-                    ViewBag.Message = "Данные успешно обновлены!";
+                    TempData["SuccessMessage"] = "Данные успешно обновлены!";
                 }
                 else
                 {
-                    ViewBag.Message = "Произошла ошибка при обновлении данных.";
+                    TempData["ErrorMessage"] = serviceResult.ErrorMessage ?? "Произошла ошибка при обновлении данных.";
                 }
             }
 
-            return View("Index", model);
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
