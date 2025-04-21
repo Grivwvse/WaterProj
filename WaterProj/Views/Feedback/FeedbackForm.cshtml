@@ -1,0 +1,125 @@
+﻿@model WaterProj.DTOs.FeedbackDto
+
+<div class="container mt-4">
+    <h2 class="mb-4">Оставить отзыв о маршруте</h2>
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>Заказ №@Model.OrderId</span>
+                <span class="badge bg-primary">@Model.TransporterName</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <h5>Маршрут: @Model.RouteName</h5>
+            </div>
+
+            <form asp-action="Create" asp-controller="Feedback" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="OrderId" />
+                <input type="hidden" asp-for="RouteId" />
+                <input type="hidden" asp-for="TransporterId" />
+                <input type="hidden" asp-for="RouteName" />
+                <input type="hidden" asp-for="TransporterName" />
+
+                <!-- Общая оценка маршрута -->
+                <div class="form-group mb-4">
+                    <label class="form-label fw-bold">Оценка маршрута</label>
+                    <div class="star-rating mb-2">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            <input type="radio" id="star@(i)" name="Stars" value="@i" required />
+                            <label for="star@(i)" title="@i @(i == 1 ? "звезда" : i > 1 && i < 5 ? "звезды" : "звезд")">★</label>
+                        }
+                    </div>
+                    <div class="small text-muted">Пожалуйста, выберите оценку от 1 до 5 звезд</div>
+                </div>
+
+                <!-- Текстовые комментарии -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="PositiveComments" class="form-label fw-bold">Положительные моменты</label>
+                            <textarea asp-for="@Model.PositiveComments" class="form-control" rows="4"
+                                      placeholder="Что вам понравилось в маршруте?"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="NegativeComments" class="form-label fw-bold">Отрицательные моменты</label>
+                            <textarea asp-for="@Model.NegativeComments" class="form-control" rows="4"
+                                      placeholder="Что можно было бы улучшить?"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label asp-for="Comment" class="form-label fw-bold">Основной комментарий</label>
+                    <textarea asp-for="@Model.Comment" class="form-control" rows="4"
+                              placeholder="Поделитесь своими впечатлениями о маршруте"></textarea>
+                </div>
+
+                <!-- Преимущества маршрута -->
+                @if (Model.AvailableAdvantages != null && (Model.AvailableAdvantages as List<WaterProj.Models.Advantage>).Any())
+                {
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-bold">Отметьте преимущества маршрута:</label>
+                        <div class="row mt-2">
+                            @foreach (var advantage in Model.AvailableAdvantages as List<WaterProj.Models.Advantage>)
+                            {
+                                <div class="col-md-4 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="SelectedAdvantages" value="@advantage.AdvantageId"
+                                               id="advantage_@advantage.AdvantageId" />
+                                        <label class="form-check-label" for="advantage_@advantage.AdvantageId">
+                                            @advantage.Name
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-4">Нет доступных преимуществ для выбора</p>
+                }
+
+                <!-- Загрузка фото -->
+                <div class="form-group mb-4">
+                    <label class="form-label fw-bold">Добавить фотографии (до 5 шт)</label>
+                    <input type="file" class="form-control" name="photos" multiple accept="image/*" />
+                    <div class="small text-muted mt-1">Максимальный размер файла: 5 МБ. Поддерживаемые форматы: JPG, PNG, GIF</div>
+                </div>
+
+                <div class="text-end">
+                    <a asp-controller="ConsumerAccount" asp-action="Index" class="btn btn-outline-secondary me-2">Отмена</a>
+                    <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Проверка размера загружаемых файлов
+    document.querySelector('input[type="file"]').addEventListener('change', function() {
+        const maxFileSize = 5 * 1024 * 1024; // 5 МБ в байтах
+        const maxFiles = 5;
+
+        if (this.files.length > maxFiles) {
+            alert(`Вы можете загрузить максимум ${maxFiles} файлов`);
+            this.value = '';
+            return;
+        }
+
+        for (let i = 0; i < this.files.length; i++) {
+            if (this.files[i].size > maxFileSize) {
+                alert(`Файл "${this.files[i].name}" превышает максимальный размер (5 МБ)`);
+                this.value = '';
+                return;
+            }
+        }
+    });
+</script>

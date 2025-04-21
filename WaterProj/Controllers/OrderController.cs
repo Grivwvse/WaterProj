@@ -19,7 +19,8 @@ namespace WaterProj.Controllers
         }
 
         [Authorize(Roles = "consumer")]
-        public async Task<IActionResult> QuickOrderAsync(int routeId)
+
+        public async Task<IActionResult> QuickOrder(int routeId)
         {
             // 1. Получаем ID текущего пользователя из аутентификационного контекста
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -29,6 +30,41 @@ namespace WaterProj.Controllers
 
 
             return RedirectToAction("Index", "ConsumerAccount");
+        }
+
+        /// <summary>
+        /// Функция завершения заказа и перенаправление на форму обратной связи.
+        /// </summary>
+        /// <param name="routeId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> CompleteOrder(int routeId)
+        {
+            var consumerStrId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(consumerStrId))
+            {
+                TempData["ErrorMessage"] = "Пользователь не найден!";
+                return RedirectToAction("RouteDetails", "Route", new { id = routeId });
+            }
+
+            var order = await _orderService.GetOrderByConsumerAndRouteAsync(Convert.ToInt32(consumerStrId), routeId);
+
+            if (order == null || order.Status!= OrderStatus.Active)
+            {
+                TempData["ErrorMessage"] = "Заказ не найден или уже был завершен!";
+                return RedirectToAction("RouteDetails", "Route", new { id = routeId });
+            }
+
+
+            var result = await _orderService.CompleteOrderAsync(order.OrderId);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("RouteDetails", "Route", new { id = routeId });
+            }
+
+            TempData["SuccessMessage"] = "Заказ успешно завершен! Пожалуйста оставьте отзыв :)";
+            return RedirectToAction("FeedbackForm", "Feedback", new { order.OrderId });
         }
 
     }

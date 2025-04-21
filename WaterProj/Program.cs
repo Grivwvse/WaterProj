@@ -30,6 +30,9 @@ builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<ITransporterService, TransporterService>();
 builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+
 
 
 var app = builder.Build();

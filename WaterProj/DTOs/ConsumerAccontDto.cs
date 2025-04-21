@@ -9,6 +9,7 @@ namespace WaterProj.DTOs
     {
         public required Consumer Consumer { get; set; }
         public required List<OrdersRoutesDto> OrdersRoutesDto { get; set; }
+        public string ProfileImagePath { get; set; } = string.Empty; // Путь к изображению профиля
 
     }
 

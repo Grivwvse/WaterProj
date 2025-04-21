@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using WaterProj.Models;
 
 namespace WaterProj.DB
@@ -17,7 +18,9 @@ namespace WaterProj.DB
         public DbSet<RouteStop> RouteStop { get; set; }
         public DbSet<Stop> Stops { get; set; }
         public DbSet<Image> Images { get; set; }
-
+        public DbSet<Advantage> Advantages { get;  set; }
+        public DbSet<RouteRating> RouteRatings { get;  set; }
+        public DbSet<RouteRatingAdvantage> RouteRatingAdvantages { get;  set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

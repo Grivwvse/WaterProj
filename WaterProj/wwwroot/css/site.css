@@ -20,3 +20,31 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Стили для звездного рейтинга */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    font-size: 2em;
+    justify-content: flex-start;
+    text-align: center;
+}
+
+    .star-rating input {
+        display: none;
+    }
+
+    .star-rating label {
+        color: #ddd;
+        cursor: pointer;
+        padding: 0 0.1em;
+    }
+
+    .star-rating input:checked ~ label {
+        color: #FFD700;
+    }
+
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #FFED85;
+    }

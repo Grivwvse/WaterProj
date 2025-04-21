@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WaterProj.DB;
@@ -13,9 +14,13 @@ namespace WaterProj.Services
     public class AuthorizationService : IAuthorizationService
     {
         private readonly ApplicationDbContext _context;
+        private readonly PasswordHasher<Consumer> _passwordHasher;
+        private readonly PasswordHasher<Transporter> _passwordHasherT;
         public AuthorizationService(ApplicationDbContext context)
         {
             _context = context;
+            _passwordHasher = new PasswordHasher<Consumer>();
+            _passwordHasherT = new PasswordHasher<Transporter>();
         }
 
         public async Task<ServiceResult> CommonAuth(string login, string password, string userType, HttpContext httpContext)
@@ -50,14 +55,36 @@ namespace WaterProj.Services
 
         public async Task<Consumer> AuthConsumer(string login, string password)
         {
-            return await _context.Consumers
-                .FirstOrDefaultAsync(c => c.Login == login && c.PasswordHash == password);
+            var consumer = _context.Consumers.FirstOrDefault(c => c.Login == login);
+
+            if (consumer == null)
+            {
+                return null;
+            }
+            var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(consumer, consumer.PasswordHash, password);
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+
+            return consumer;
         }
 
         public async Task<Transporter> AuthTransporter(string login, string password)
         {
-            return await _context.Transporters
-                .FirstOrDefaultAsync(t => t.Login == login && t.PasswordHash == password);
+            var transporter = _context.Transporters.FirstOrDefault(c => c.Login == login);
+
+            if (transporter == null)
+            {
+                return null;
+            }
+            var passwordVerificationResult = _passwordHasherT.VerifyHashedPassword(transporter, transporter.PasswordHash, password);
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+
+            return transporter;
         }
 
 

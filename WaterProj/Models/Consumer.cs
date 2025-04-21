@@ -17,6 +17,9 @@ namespace WaterProj.Models
         [Required(ErrorMessage = "Пожалуйста, заполните номер телефона.")]
         public string Phone { get; set; }
 
+        public string ProfileImagePath { get; set; }
+
+
         [Required(ErrorMessage = "Пожалуйста, заполните логин.")]
         public string Login { get; set; }
 
@@ -30,6 +33,7 @@ namespace WaterProj.Models
         {
             Feedbacks = new List<Feedback>();
             Orders = new List<Order>();
+            ProfileImagePath = string.Empty;
         }
     }
 }

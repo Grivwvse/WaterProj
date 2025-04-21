@@ -28,6 +28,25 @@ if (window.location.pathname.includes("/ConsumerAccount") || window.location.pat
             form.submit();
         }
     })
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const profileImageInput = document.querySelector('input[name="profileImage"]');
+        if (profileImageInput) {
+            profileImageInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.querySelector('.rounded-circle');
+                        if (img) {
+                            img.src = e.target.result;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
 }
 
 

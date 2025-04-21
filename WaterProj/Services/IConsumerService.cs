@@ -8,6 +8,8 @@ namespace WaterProj.Services
         Task<Consumer> GetByIdAsync(int id);
         Task<ServiceResult> UpdateConsumerAsync(int userId, Consumer model);
 
-        Task<ConsumerAccontDto> GetAllAccountInfo(int id);  
+        Task<ConsumerAccontDto> GetAllAccountInfo(int id);
+
+        Task<ServiceResult> UpdateProfileImage(int consumerId, IFormFile imageFile);
     }
 }

@@ -16,6 +16,28 @@
             <div class="col-md-6 col-sm-12">
                 <h5 class="text-center">Персональные данные</h5>
                 <hr class="mx-5">
+
+                <!-- Фото пользователя -->
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(Model.Consumer.ProfileImagePath))
+                    {
+                        <img src="@Model.Consumer.ProfileImagePath" alt="Аватар" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <img src="/images/avatars/default-avatar.jpg" alt="Аватар по умолчанию" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;" />
+                    }
+                </div>
+
+                <!-- Форма загрузки фото -->
+                <form asp-action="UpdateProfileImage" method="post" enctype="multipart/form-data" class="mb-3">
+                    <div class="input-group mb-2">
+                        <input type="file" name="profileImage" class="form-control" accept="image/jpeg,image/png,image/gif" required>
+                        <button type="submit" class="btn btn-primary">Обновить</button>
+                    </div>
+                    <div class="form-text text-muted">Макс. размер: 5MB. Форматы: JPEG, PNG, GIF</div>
+                </form>
+
                 <form asp-action="Edit" method="post" id="editForm">
                     <div class="form-group">
                         <label asp-for="Consumer.Login"></label>

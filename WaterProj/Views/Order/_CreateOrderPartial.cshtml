@@ -6,16 +6,22 @@
 @if (isInActiveOrders)
 {
     <div class="alert alert-info mt-3">
-        Этот маршрут уже добавлен в ваши заказы
+        Этот маршрут уже добавлен в ваши заказы,
+        <br />
+        Вы можете завершить заказ и отсавить отзыв
     </div>
     <a asp-controller="ConsumerAccount" asp-action="Index" class="btn btn-primary">
-        Посмотреть мои заказы
+        Посмотреть мои заказы 
+    </a>
+
+    <a asp-controller="Order" asp-action="CompleteOrder" asp-route-routeId="@ViewBag.RouteId" class=" btn btn-primary">
+        Завершить
     </a>
 }
 else
 {
     <a asp-controller="Order"
-       asp-action="QuickOrderAsync"
+       asp-action="QuickOrder"
        asp-route-routeId="@ViewBag.RouteId"
        class="btn btn-success mt-3">
         Добавить в мои заказы

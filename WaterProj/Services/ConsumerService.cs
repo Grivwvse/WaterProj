@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using WaterProj.DB;
 using WaterProj.DTOs;
 using WaterProj.Models;
@@ -73,6 +75,95 @@ namespace WaterProj.Services
             _context.Consumers.Update(consumer);
             await _context.SaveChangesAsync();
             return new ServiceResult { Success = true };
+        }
+
+        public async Task<ServiceResult> UpdateProfileImage(int consumerId, IFormFile imageFile)
+        {
+            try
+            {
+                var consumer = await _context.Consumers.FindAsync(consumerId);
+                if (consumer == null)
+                {
+                    return new ServiceResult { Success = false, ErrorMessage = "Пользователь не найден" };
+                }
+
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    // Создаем директорию для аватаров, если она не существует
+                    var avatarsFolder = Path.Combine("wwwroot", "images", "avatars");
+                    if (!Directory.Exists(avatarsFolder))
+                    {
+                        Directory.CreateDirectory(avatarsFolder);
+                    }
+
+                    // Удаляем старый файл, если он существует
+                    if (!string.IsNullOrEmpty(consumer.ProfileImagePath))
+                    {
+                        var oldImagePath = Path.Combine("wwwroot", consumer.ProfileImagePath.TrimStart('/'));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    // Генерируем уникальное имя файла
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
+                    var tempFilePath = Path.Combine(avatarsFolder, "temp_" + fileName);
+                    var finalFilePath = Path.Combine(avatarsFolder, fileName);
+
+                    // Сначала сохраняем оригинальный файл во временное хранилище
+                    using (var stream = new FileStream(tempFilePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    // Обрабатываем изображение - делаем квадратное кадрирование
+                    await CropImageToSquare(tempFilePath, finalFilePath);
+
+                    // Удаляем временный файл
+                    if (System.IO.File.Exists(tempFilePath))
+                    {
+                        System.IO.File.Delete(tempFilePath);
+                    }
+
+                    // Обновляем путь к изображению в модели
+                    consumer.ProfileImagePath = $"/images/avatars/{fileName}";
+
+                    // Сохраняем изменения в БД
+                    _context.Consumers.Update(consumer);
+                    await _context.SaveChangesAsync();
+
+                    return new ServiceResult { Success = true };
+                }
+
+                return new ServiceResult { Success = false, ErrorMessage = "Файл изображения не выбран или пуст" };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResult { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+
+        // Метод для создания квадратного изображения с центрированным кадрированием
+        private async Task CropImageToSquare(string inputPath, string outputPath, int size = 300)
+        {
+            using (var image = await SixLabors.ImageSharp.Image.LoadAsync(inputPath))
+            {
+                // Определяем размеры для кадрирования (берем минимальную сторону)
+                int minDimension = Math.Min(image.Width, image.Height);
+
+                // Вычисляем отступы для центрирования
+                int xOffset = (image.Width - minDimension) / 2;
+                int yOffset = (image.Height - minDimension) / 2;
+
+                // Кадрируем до квадрата
+                image.Mutate(i => i
+                    .Crop(new Rectangle(xOffset, yOffset, minDimension, minDimension))
+                    .Resize(size, size)); // Изменяем размер до нужного
+
+                // Сохраняем результат
+                await image.SaveAsync(outputPath);
+            }
         }
 
     }
