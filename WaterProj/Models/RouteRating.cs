@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using WaterProj.Models.WaterProj.Models;
 
 namespace WaterProj.Models
 {
@@ -37,7 +38,7 @@ namespace WaterProj.Models
         // Связь для преимуществ маршрута
         public ICollection<RouteRatingAdvantage> RouteRatingAdvantages { get; set; }
 
-        // Связь для изображений
-        public ICollection<Image> Images { get; set; }
+        public ICollection<ReviewImage> ReviewImages { get; set; }
+
     }
 }

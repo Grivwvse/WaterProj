@@ -2,41 +2,60 @@
     ViewData["Title"] = "Поиск маршрутов";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h1 class="mb-4">Поиск водных маршрутов</h1>
-            <div class="card mb-4">
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3><i class="bi bi-search"></i>Поиск водных маршрутов</h3>
+                </div>
                 <div class="card-body">
                     <form action="/Route/SearchRoutes" method="get" id="routeSearchForm">
-                        <div class="row g-3">
+                        <div class="row g-4">
                             <!-- Поиск по названию -->
-                            <div class="col-md-12 mb-3">
-                                <label for="routeNameSearch" class="form-label">Название или описание маршрута</label>
+                            <div class="col-md-12">
+                                <label for="routeNameSearch" class="form-label">
+                                    <i class="bi bi-pencil"></i> Название или описание маршрута
+                                </label>
                                 <input type="text" class="form-control" id="routeNameSearch" name="name" placeholder="Введите название или часть описания">
                             </div>
 
-                            <div class="col-md-12">
-                                <h5>Или выберите остановки на карте</h5>
+                            <!-- Разделитель -->
+                            <div class="col-md-12 text-center">
+                                <h5 class="text-muted">Или выберите остановки</h5>
                             </div>
 
-                            <!-- Поиск по остановкам -->
+                            <!-- Точка отправления -->
                             <div class="col-md-6">
-                                <label for="startStopSelect" class="form-label">Точка отправления</label>
+                                <label for="startStopSelect" class="form-label">
+                                    <i class="bi bi-geo-alt"></i> Точка отправления
+                                </label>
                                 <select class="form-select" id="startStopSelect" name="startStopId">
                                     <option value="">Выберите пункт отправления</option>
+                                    <!-- Добавьте пункты отправления -->
                                 </select>
                             </div>
 
+                            <!-- Точка прибытия -->
                             <div class="col-md-6">
-                                <label for="endStopSelect" class="form-label">Точка прибытия</label>
+                                <label for="endStopSelect" class="form-label">
+                                    <i class="bi bi-geo-alt-fill"></i> Точка прибытия
+                                </label>
                                 <select class="form-select" id="endStopSelect" name="endStopId">
                                     <option value="">Выберите пункт назначения</option>
+                                    <!-- Добавьте пункты назначения -->
                                 </select>
                             </div>
 
-                            <div class="col-12 text-center mt-3">
-                                <button type="submit" class="btn btn-primary px-5">Найти маршруты</button>
+                            <input type="hidden" id="startStopName" name="startStopName" />
+                            <input type="hidden" id="endStopName" name="endStopName" />
+
+                            <!-- Кнопка поиска -->
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-search"></i> Найти маршруты
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -45,13 +64,14 @@
         </div>
     </div>
 
-    <!-- Добавляем контейнер для карты -->
-    <div class="row">
+    <!-- Карта -->
+    <div class="row mt-4">
         <div class="col-md-12">
-            <div id="searchMap" style="width: 100%; height: 500px; margin-bottom: 20px;"></div>
+            <div id="searchMap" class="border rounded shadow-sm" style="width: 100%; height: 500px;"></div>
         </div>
     </div>
 </div>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -133,12 +153,15 @@
                                 setTimeout(() => {
                                     document.getElementById('selectAsStart')?.addEventListener('click', function() {
                                         document.getElementById('startStopSelect').value = stopId;
+                                        document.getElementById('startStopName').value = stopName; // Добавляем имя остановки
                                         highlightSelectedStops();
                                         placemark.balloon.close();
                                     });
 
                                     document.getElementById('selectAsEnd')?.addEventListener('click', function() {
                                         document.getElementById('endStopSelect').value = stopId;
+                                        document.getElementById('endStopName').value = stopName; // Добавляем имя остановки
+
                                         highlightSelectedStops();
                                         placemark.balloon.close();
                                     });
@@ -184,10 +207,27 @@
                 });
             }
 
+                function updateStopNames() {
+                    const startSelect = document.getElementById('startStopSelect');
+                    const endSelect = document.getElementById('endStopSelect');
+                    const startStopNameInput = document.getElementById('startStopName');
+                    const endStopNameInput = document.getElementById('endStopName');
+
+                    // Обновляем имя начальной остановки, если выбрана
+                    if (startSelect.selectedIndex > 0) {
+                        startStopNameInput.value = startSelect.options[startSelect.selectedIndex].text;
+                    }
+
+                    // Обновляем имя конечной остановки, если выбрана
+                    if (endSelect.selectedIndex > 0) {
+                        endStopNameInput.value = endSelect.options[endSelect.selectedIndex].text;
+                    }
+                }
             // Функция инициализации обработчиков выбора остановок
             function initStopSelectors() {
                 const startSelect = document.getElementById('startStopSelect');
                 const endSelect = document.getElementById('endStopSelect');
+
 
                 startSelect.addEventListener('change', highlightSelectedStops);
                 endSelect.addEventListener('change', highlightSelectedStops);

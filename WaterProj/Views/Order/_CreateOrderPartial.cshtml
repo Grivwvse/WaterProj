@@ -5,25 +5,28 @@
 
 @if (isInActiveOrders)
 {
-    <div class="alert alert-info mt-3">
-        Этот маршрут уже добавлен в ваши заказы,
-        <br />
-        Вы можете завершить заказ и отсавить отзыв
+    <div class="alert alert-info mt-3 shadow-sm rounded">
+        <h5 class="mb-3"><i class="bi bi-info-circle"></i> Этот маршрут уже добавлен в ваши заказы</h5>
+        <p class="mb-3">Вы можете завершить заказ и оставить отзыв.</p>
+        <div class="d-flex gap-2">
+            <a asp-controller="ConsumerAccount" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-list-check"></i> Посмотреть мои заказы
+            </a>
+            <a asp-controller="Order" asp-action="CompleteOrder" asp-route-routeId="@ViewBag.RouteId" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Завершить
+            </a>
+        </div>
     </div>
-    <a asp-controller="ConsumerAccount" asp-action="Index" class="btn btn-primary">
-        Посмотреть мои заказы 
-    </a>
-
-    <a asp-controller="Order" asp-action="CompleteOrder" asp-route-routeId="@ViewBag.RouteId" class=" btn btn-primary">
-        Завершить
-    </a>
 }
 else
 {
-    <a asp-controller="Order"
-       asp-action="QuickOrder"
-       asp-route-routeId="@ViewBag.RouteId"
-       class="btn btn-success mt-3">
-        Добавить в мои заказы
-    </a>
+    <div class="text-center mb-5">
+        <a asp-controller="Order"
+           asp-action="QuickOrder"
+           asp-route-routeId="@ViewBag.RouteId"
+           class="btn btn-success btn-lg">
+            <i class="bi bi-cart-plus"></i> Добавить маршрут в заказы
+        </a>
+    </div>
+
 }

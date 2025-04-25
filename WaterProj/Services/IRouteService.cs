@@ -27,7 +27,9 @@ namespace WaterProj.Services
 
         // Метод для поиска по остановкам
         Task<List<RouteSearchResultDto>> FindRoutesByStopsAsync(List<int> startStopIds, List<int> endStopIds);
-        
+        Task<(Stop? StartStop, Stop? EndStop)> GetRouteEndpointsAsync(int routeId);
+
+
 
     }
 }

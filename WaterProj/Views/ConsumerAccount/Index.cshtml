@@ -2,9 +2,6 @@
 @{
     ViewData["Title"] = "Редактирование профиля";
 }
-
-<h2>Редактирование профиля</h2>
-
 <section class="bg2">
     <div class="container">
         <div class="row">
@@ -14,83 +11,130 @@
         </div>
         <div class="row">
             <div class="col-md-6 col-sm-12">
-                <h5 class="text-center">Персональные данные</h5>
-                <hr class="mx-5">
+                <div class="card shadow-lg mb-5">
+                    <div class="card-body">
+                        <!-- Фото пользователя -->
+                        <h3 class="card-title text-primary">Персональные данные</h3>
+                        <div class="mb-3 text-center">
 
-                <!-- Фото пользователя -->
-                <div class="mb-3">
-                    @if (!string.IsNullOrEmpty(Model.Consumer.ProfileImagePath))
-                    {
-                        <img src="@Model.Consumer.ProfileImagePath" alt="Аватар" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;" />
-                    }
-                    else
-                    {
-                        <img src="/images/avatars/default-avatar.jpg" alt="Аватар по умолчанию" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;" />
-                    }
-                </div>
+                            @if (!string.IsNullOrEmpty(Model.Consumer.ProfileImagePath))
+                            {
+                                <img src="@Model.Consumer.ProfileImagePath" alt="Аватар" class="rounded-circle img-fluid shadow" style="width: 150px; height: 150px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <img src="/images/avatars/default-avatar.jpg" alt="Аватар по умолчанию" class="rounded-circle img-fluid shadow" style="width: 150px; height: 150px; object-fit: cover;" />
+                            }
+                        </div>
 
-                <!-- Форма загрузки фото -->
-                <form asp-action="UpdateProfileImage" method="post" enctype="multipart/form-data" class="mb-3">
-                    <div class="input-group mb-2">
-                        <input type="file" name="profileImage" class="form-control" accept="image/jpeg,image/png,image/gif" required>
-                        <button type="submit" class="btn btn-primary">Обновить</button>
+                        <!-- Форма загрузки фото -->
+                        <form asp-action="UpdateProfileImage" method="post" enctype="multipart/form-data" class="mb-3">
+                            <div class="input-group mb-2">
+                                <input type="file" name="profileImage" class="form-control" accept="image/jpeg,image/png,image/gif" required>
+                                <button type="submit" class="btn btn-primary">Обновить</button>
+                            </div>
+                            <div class="form-text text-muted">Макс. размер: 5MB. Форматы: JPEG, PNG, GIF</div>
+                        </form>
+
+                        <!-- Форма редактирования -->
+                        <form asp-action="Edit" method="post" id="editForm">
+                            <div class="form-group">
+                                <label asp-for="Consumer.Login" class="form-label">Логин</label>
+                                <input name="Login" value="@Model.Consumer.Login" class="form-control" id="login" readonly="readonly" />
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <label asp-for="Consumer.Name" class="form-label">Имя</label>
+                                <input name="Name" value="@Model.Consumer.Name" class="form-control" id="name" readonly="readonly" />
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <button id="editButton" class="btn btn-primary">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </button>
+                        </div>
+
                     </div>
-                    <div class="form-text text-muted">Макс. размер: 5MB. Форматы: JPEG, PNG, GIF</div>
-                </form>
 
-                <form asp-action="Edit" method="post" id="editForm">
-                    <div class="form-group">
-                        <label asp-for="Consumer.Login"></label>
-                        <input name="Login" value="@Model.Consumer.Login" class="form-control" id="login" readonly="readonly" />
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="Consumer.Name"></label>
-                        <input name="Name" value="@Model.Consumer.Name" class="form-control" id="name" readonly="readonly" />
-                    </div>
-                    <!--  Добавить другие поля по необходимости -->
-                    <br />
-                </form>
-
-                <button id="editButton" class="btn btn-primary">Редактировать</button>
-                <div class="row mx-0 mx-md-5">
                 </div>
             </div>
 
 
-
+            <!-- Маршруты -->
             <div class="col-md-6 col-sm-12">
-                <h5 class="text-center">Маршруты</h5>
-                <hr class="mx-5">
-                <div class="list-group">
-                    @foreach (var dto in Model.OrdersRoutesDto)
+
+                <div class="card shadow-lg mb-5">
+                    <div class="card-body">
+                        <h3 class="card-title text-primary">Заказы</h3>
+
+                         @foreach (var dto in Model.OrdersRoutesDto)
                     {
 
-                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <!-- Статус заказа -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        
+                                        
+                                        
+                                        <span class="badge bg-success">@dto.Order.Status</span>
+                                        
+                                        
+                                        <small class="text-muted">Дата заказа: @dto.Order.CreatedAt.ToShortDateString()</small>
+                                    </div>
+
+                                    <!-- Номер заказа -->
+                                <h5 class="card-title text-primary">№@dto.Order.OrderId</h5>
+
+                                    <!-- Название маршрута -->
+                                    <p class="card-text text-secondary">
+                                        <i class="bi bi-geo-alt"></i> Маршрут: @dto.Route.Name
+                                    </p>
+
+                                    <!-- Действия -->
+                                    <div class="d-flex justify-content-end">
+                                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="btn btn-outline-primary btn-sm me-2">
+                                            <i class="bi bi-eye"></i> Подробнее
+                                        </a>
+                                        <a href="/Order/Cancel/12345" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-x-circle"></i> Отменить
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                            
+
+                <h5 class="text-center">Маршруты</h5>
+                <hr class="mx-5">
+                <div class="list-group shadow-sm">
+                    @foreach (var dto in Model.OrdersRoutesDto)
+                    {
+                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h5 class="mb-1">@dto.Order.OrderId</h5>
-                                <small>3 days ago</small>
+                                <small class="text-muted">3 дня назад</small>
                             </div>
-                            <p class="mb-1">Описание</p>
-                            <small>@dto.Route.Description</small>
+                            <p class="mb-1">Описание маршрута</p>
+                            <small class="text-muted">@dto.Route.Description</small>
                         </a>
-
                     }
-                </div>
-                <div class="row mx-0 mx-md-5">
+
+                   
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-
-
-
-
-
-
-
-<form asp-action="Logout" method="post">
-    <button type="submit" class="btn btn-primary">Выйти</button>
-</form>
+<!-- Кнопка выхода -->
+<div class="text-center mt-5">
+    <form asp-action="Logout" method="post">
+        <button type="submit" class="btn btn-danger btn-lg shadow">
+            <i class="bi bi-box-arrow-right"></i> Выйти
+        </button>
+    </form>
+</div>

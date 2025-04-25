@@ -23,7 +23,7 @@ namespace WaterProj.Services
             try
             {
                 // Проверка, существует ли пользователь с таким логиноm
-                if (IsLoginAvailable(model.Login) != null)
+                if (!await (IsLoginAvailable(model.Login)))
                 {
                     return new ServiceResult { Success = false, ErrorMessage = "Пользователь с таким логином уже существует." };
                 }
@@ -74,7 +74,9 @@ namespace WaterProj.Services
         public async Task<bool> IsLoginAvailable(string login)
         {
             // Проверяем наличие логина у потребителей
-            bool existsInConsumers = await _context.Consumers.AnyAsync(c => c.Login == login);
+            bool existsInConsumers = await _context.Consumers
+                .Where(c => c.Login == login)
+                .FirstOrDefaultAsync() != null;
 
             // Если логин уже существует у потребителей, он недоступен
             if (existsInConsumers)
@@ -83,7 +85,9 @@ namespace WaterProj.Services
             }
 
             // Проверяем наличие логина у перевозчиков
-            bool existsInTransporters = await _context.Transporters.AnyAsync(t => t.Login == login);
+            bool existsInTransporters = await _context.Transporters
+                .Where(t => t.Login == login)
+                .FirstOrDefaultAsync() != null;
 
             // Логин доступен только если он не существует ни у потребителей, ни у перевозчиков
             return !existsInTransporters;

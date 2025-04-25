@@ -3,6 +3,7 @@ using WaterProj.DB;
 using WaterProj.DTOs;
 using WaterProj.Models;
 using WaterProj.Models.Services;
+using WaterProj.Models.WaterProj.Models;
 
 namespace WaterProj.Services
 {
@@ -108,15 +109,14 @@ namespace WaterProj.Services
                                 await file.CopyToAsync(stream);
                             }
 
-                            var image = new Image
+                            var ReviewImage = new ReviewImage
                             {
-                                EntityType = "RouteRating",
-                                EntityId = routeRating.RouteRatingId,
-                                ImagePath = $"/images/ratings/{routeRating.RouteRatingId}/{fileName}",
-                                Title = file.FileName
+                                RouteRatingId = routeRating.RouteRatingId,
+                                ImagePath = $"/images/ratings/{routeRating.RouteRatingId}/{fileName}"
+
                             };
 
-                            _context.Images.Add(image);
+                            _context.ReviewImages.Add(ReviewImage);
                         }
                     }
                     await _context.SaveChangesAsync();
@@ -170,7 +170,7 @@ namespace WaterProj.Services
                 var route = await _context.Routes.FindAsync(routeId);
                 if (route != null)
                 {
-                    route.Rating = (float)averageRating;
+                    route.Rating = (float)Math.Round(averageRating, 1);
                     await _context.SaveChangesAsync();
                 }
             }

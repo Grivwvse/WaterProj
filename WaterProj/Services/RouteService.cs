@@ -2,6 +2,9 @@
 using WaterProj.DB;
 using WaterProj.DTOs;
 using WaterProj.Models;
+using SixLabors.ImageSharp.Processing;
+
+using SixLabors.ImageSharp;
 
 namespace WaterProj.Services
 {
@@ -55,23 +58,39 @@ namespace WaterProj.Services
         public async Task<RouteDetailsDto> GetRouteDetails(int id)
         {
             var route = await GetRouteTransporterAsync(id);
-            if (route == null) 
+            if (route == null)
             {
-                throw new NotFoundException("Транспортёр не найден");
+                throw new NotFoundException("Транспортёр или маршрут не найден");
             }
             var ship = await _context.Ships.FindAsync(route.ShipId);
+            var routeRating = await _context.RouteRatings
+                .Where(r => r.RouteId == id)
+                .Include(rr => rr.RouteRatingAdvantages)
+                .Include(r => r.Consumer)
+                .Include(r => r.ReviewImages)
+                .ToListAsync();
+
+
+            var advantages = routeRating
+                .Where(rr => rr.RouteRatingAdvantages != null) 
+                .SelectMany(rr => rr.RouteRatingAdvantages) 
+                .Where(rra => rra.Advantage != null) 
+                .Select(rra => rra.Advantage) 
+                .ToList(); 
 
             var images = await _context.Images
-            .Where(img => img.EntityType == "Route" && img.EntityId == id)
-            .ToListAsync();
+                .Where(img => img.EntityType == "Route" && img.EntityId == id)
+                .ToListAsync();
 
 
             var dto = new RouteDetailsDto
-            { 
+            {
                 Route = route,
                 Ship = ship,
                 Image = images,
-                Transporter = route.Transporter
+                Transporter = route.Transporter,
+                RouteAdvantages = advantages,
+                RouteRatings = routeRating
             };
 
             return dto;
@@ -108,8 +127,7 @@ namespace WaterProj.Services
             IQueryable<Models.Route> query = _context.Routes
                 .Include(r => r.Transporter)
                 .Include(r => r.RouteStops)
-                .ThenInclude(rs => rs.Stop)
-                .Include(r => r.Images);
+                .ThenInclude(rs => rs.Stop);
 
             // Добавляем фильтры по условиям поиска
             if (!string.IsNullOrEmpty(searchParams.RouteName))
@@ -154,11 +172,30 @@ namespace WaterProj.Services
                 Schedule = r.Schedule ?? "",
                 TransporterId = r.TransporterId,
                 TransporterName = r.Transporter.Name,
-                Rating = r.Rating,
-                ImageUrl = r.Images?.FirstOrDefault()?.ImagePath
+                Rating = r.Rating
             }).ToList();
         }
 
+        /// <summary>
+        /// Поиск маршрутов, проходящих через указанные начальные и конечные остановки
+        /// </summary>
+        /// <param name="startStopIds">Список ID начальных остановок. Маршрут должен проходить через хотя бы одну из них.</param>
+        /// <param name="endStopIds">Список ID конечных остановок. Маршрут должен проходить через хотя бы одну из них.</param>
+        /// <returns>Список DTO результатов поиска маршрутов с основной информацией и первым изображением для каждого маршрута</returns>
+        /// <remarks>
+        /// Метод выполняет следующие действия:
+        /// 1. Находит все маршруты, которые проходят через любую из указанных начальных остановок
+        /// 2. Находит все маршруты, которые проходят через любую из указанных конечных остановок
+        /// 3. Определяет порядок остановок в каждом маршруте (для проверки направления)
+        /// 4. Отбирает только те маршруты, где начальная остановка идёт раньше конечной (по порядковому номеру)
+        /// 5. Загружает детали отфильтрованных маршрутов и их первые изображения
+        /// 6. Формирует и возвращает список DTO объектов с информацией о подходящих маршрутах
+        /// 
+        /// Особенности:
+        /// - Для каждого маршрута выбирается только первое изображение с типом "Route"
+        /// - Если у маршрута несколько начальных или конечных остановок, выбирается остановка с наименьшим порядковым номером
+        /// - Для оптимизации запросов используется группировка и кэширование промежуточных результатов
+        /// </remarks>
         public async Task<List<RouteSearchResultDto>> FindRoutesByStopsAsync(List<int> startStopIds, List<int> endStopIds)
         {
             try
@@ -195,9 +232,11 @@ namespace WaterProj.Services
                     .Where(r => validRouteIds.Contains(r.RouteId))
                     .ToListAsync();
 
-                // Загружаем изображения отдельно
+                // Загружаем первые изображения для каждого маршрута
                 var routeImages = await _context.Images
                     .Where(img => img.EntityType == "Route" && validRouteIds.Contains(img.EntityId))
+                    .GroupBy(img => img.EntityId)
+                    .Select(group => group.FirstOrDefault())
                     .ToListAsync();
 
                 // Сопоставляем изображения с маршрутами
@@ -209,8 +248,9 @@ namespace WaterProj.Services
                     Schedule = r.Schedule,
                     TransporterId = r.TransporterId,
                     TransporterName = r.Transporter.Name,
+                    TransporterRating = r.Transporter.Rating,
                     Rating = r.Rating,
-                    ImageUrl = routeImages.FirstOrDefault(img => img.EntityId == r.RouteId)?.ImagePath
+                    Image = routeImages.FirstOrDefault(img => img.EntityId == r.RouteId)?.ImagePath
                 }).ToList();
 
                 Console.WriteLine($"Маршрутов найдено: {routeDtos.Count}");
@@ -221,6 +261,28 @@ namespace WaterProj.Services
                 Console.WriteLine($"Ошибка в FindRoutesByStopsAsync: {ex.Message}");
                 throw;
             }
+        }
+
+        public async Task<(Stop? StartStop, Stop? EndStop)> GetRouteEndpointsAsync(int routeId)
+        {
+            // Загружаем RouteStops для указанного маршрута, включая связанные Stop
+            var routeStops = await _context.RouteStop
+                .Where(rs => rs.RouteId == routeId)
+                .Include(rs => rs.Stop) 
+                .OrderBy(rs => rs.StopOrder)
+                .ToListAsync();
+
+            
+            if (!routeStops.Any())
+            {
+                return (null, null);
+            }
+
+            // Определяем начальную и конечную остановки
+            var startStop = routeStops.First().Stop;
+            var endStop = routeStops.Last().Stop;
+
+            return (startStop, endStop);
         }
 
     }

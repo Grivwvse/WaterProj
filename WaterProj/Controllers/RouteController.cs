@@ -266,8 +266,9 @@ namespace WaterProj.Controllers
 
         // Получение всех остановок
         [HttpGet]
-        public async Task<IActionResult> SearchRoutes(string name = null, int? startStopId = null, int? endStopId = null)
+        public async Task<IActionResult> SearchRoutes(string name = null, int? startStopId = null, int? endStopId = null, string startStopName = null, string endStopName = null)
         {
+
             try
             {
                 Console.WriteLine($"Начало поиска маршрутов. Параметры: name={name}, startStopId={startStopId}, endStopId={endStopId}");
@@ -277,6 +278,7 @@ namespace WaterProj.Controllers
                     RouteName = name,
                     StartStopId = startStopId,
                     EndStopId = endStopId
+                    
                 };
 
                 // Если указаны обе остановки, используем специальный метод поиска
@@ -287,11 +289,26 @@ namespace WaterProj.Controllers
                         new List<int> { startStopId.Value },
                         new List<int> { endStopId.Value }
                     );
+
+                    ViewBag.SearchType = "ByStops";
                 }
                 else
                 {
                     routes = await _routeService.SearchRoutesAsync(searchParams);
+                    //Получаем для первого маршрута начальные и конечные точки
+                    if (routes.Count > 0)
+                    {
+                        var Stops = await _routeService.GetRouteEndpointsAsync(routes.FirstOrDefault().RouteId);
+                        startStopName = Stops.StartStop?.Name;
+                        endStopName = Stops.EndStop?.Name;
+                    }
+                
+                    ViewBag.SearchType = "ByName";
                 }
+
+                ViewBag.StartStopName = startStopName;
+                ViewBag.EndStopName = endStopName;
+                ViewBag.RouteAmount = routes.Count;
 
                 // Вместо возврата JSON передаем модель в представление SearchResults
                 return View("SearchResults", routes);
@@ -325,30 +342,30 @@ namespace WaterProj.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> FindRoutesByStops([FromBody] StopSearchDto searchDto)
+        [HttpGet]
+        public async Task<IActionResult> GetRouteEndpoints(int routeId)
         {
             try
             {
-                if (searchDto == null || searchDto.StartStopIds == null || searchDto.EndStopIds == null ||
-                    !searchDto.StartStopIds.Any() || !searchDto.EndStopIds.Any())
+                var (startStop, endStop) = await _routeService.GetRouteEndpointsAsync(routeId);
+
+                if (startStop == null || endStop == null)
                 {
-                    return BadRequest(new { success = false, error = "Некорректные данные запроса" });
+                    return Json(new { success = false, error = "Остановки не найдены для данного маршрута" });
                 }
 
-                var routes = await _routeService.FindRoutesByStopsAsync(
-                    searchDto.StartStopIds,
-                    searchDto.EndStopIds
-                );
-
-                // Вместо JSON возвращаем представление с результатами
-                return View("SearchResults", routes);
+                return Json(new
+                {
+                    success = true,
+                    startStopName = startStop.Name,
+                    endStopName = endStop.Name
+                });
             }
             catch (Exception ex)
             {
-                ViewBag.ErrorMessage = $"Произошла ошибка: {ex.Message}";
-                return View("SearchResults", new List<RouteSearchResultDto>());
+                return Json(new { success = false, error = ex.Message });
             }
         }
+
     }
 }

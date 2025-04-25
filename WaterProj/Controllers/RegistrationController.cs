@@ -36,11 +36,6 @@ namespace WaterProj.Controllers
 
            if (ModelState.IsValid)
             {
-
-
-
-                // Можно добавить логику хеширования пароля, например:
-                // model.PasswordHash = PasswordHasher.Hash(model.PasswordHash);
                 var serviceResult = await _registrationService.RegisterCounsumerAsync(model);
                 if (serviceResult.Success)
                 {

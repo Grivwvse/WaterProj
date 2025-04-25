@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using WaterProj.Models;
+using WaterProj.Models.WaterProj.Models;
 
 namespace WaterProj.DB
 {
@@ -21,9 +22,17 @@ namespace WaterProj.DB
         public DbSet<Advantage> Advantages { get;  set; }
         public DbSet<RouteRating> RouteRatings { get;  set; }
         public DbSet<RouteRatingAdvantage> RouteRatingAdvantages { get;  set; }
+        public DbSet<ReviewImage> ReviewImages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<RouteRating>()
+                .HasMany(rr => rr.ReviewImages)
+                .WithOne(ri => ri.RouteRating)
+                .HasForeignKey(ri => ri.RouteRatingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<RouteStop>()
                 .HasKey(rs => rs.RouteStopId);
 

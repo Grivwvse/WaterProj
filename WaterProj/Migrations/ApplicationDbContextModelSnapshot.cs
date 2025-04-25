@@ -126,16 +126,11 @@ namespace WaterProj.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("RouteRatingId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ImageID");
-
-                    b.HasIndex("RouteRatingId");
 
                     b.ToTable("Images");
                 });
@@ -150,6 +145,9 @@ namespace WaterProj.Migrations
 
                     b.Property<int>("ConsumerId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsFeedback")
                         .HasColumnType("boolean");
@@ -392,6 +390,28 @@ namespace WaterProj.Migrations
                     b.ToTable("Transporters");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.WaterProj.Models.ReviewImage", b =>
+                {
+                    b.Property<int>("ReviewImageID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewImageID"));
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RouteRatingId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ReviewImageID");
+
+                    b.HasIndex("RouteRatingId");
+
+                    b.ToTable("ReviewImages");
+                });
+
             modelBuilder.Entity("WaterProj.Models.Feedback", b =>
                 {
                     b.HasOne("WaterProj.Models.Consumer", "Consumer")
@@ -409,13 +429,6 @@ namespace WaterProj.Migrations
                     b.Navigation("Consumer");
 
                     b.Navigation("Route");
-                });
-
-            modelBuilder.Entity("WaterProj.Models.Image", b =>
-                {
-                    b.HasOne("WaterProj.Models.RouteRating", null)
-                        .WithMany("Images")
-                        .HasForeignKey("RouteRatingId");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Order", b =>
@@ -513,6 +526,17 @@ namespace WaterProj.Migrations
                     b.Navigation("Stop");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.WaterProj.Models.ReviewImage", b =>
+                {
+                    b.HasOne("WaterProj.Models.RouteRating", "RouteRating")
+                        .WithMany("ReviewImages")
+                        .HasForeignKey("RouteRatingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RouteRating");
+                });
+
             modelBuilder.Entity("WaterProj.Models.Advantage", b =>
                 {
                     b.Navigation("RouteRatingAdvantages");
@@ -536,7 +560,7 @@ namespace WaterProj.Migrations
 
             modelBuilder.Entity("WaterProj.Models.RouteRating", b =>
                 {
-                    b.Navigation("Images");
+                    b.Navigation("ReviewImages");
 
                     b.Navigation("RouteRatingAdvantages");
                 });

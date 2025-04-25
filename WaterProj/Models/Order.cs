@@ -17,5 +17,6 @@ namespace WaterProj.Models
         public Consumer Consumer { get; set; }
         public OrderStatus Status { get; set; }
         public bool IsFeedback { get; set; } = false;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

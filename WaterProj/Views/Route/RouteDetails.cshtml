@@ -14,65 +14,247 @@
 }
 
 
-@if (Model.Image != null && Model.Image.Any())
-{
-    <div id="routeCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            @for (int i = 0; i < Model.Image.Count; i++)
-            {
-                <button type="button"
+
+<div class="container mt-5">
+
+    <div class="container mt-5">
+        <!-- Заголовок маршрута -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary">Детали маршрута: @Model.Route.Name</h1>
+            <p class="text-muted"><strong>Корабль:</strong> "Название корабля"</p>
+        </div>
+
+        <!-- Карусель изображений -->
+        @if (Model.Image != null && Model.Image.Any())
+        {
+            <div id="routeCarousel" class="carousel slide shadow-lg mb-5" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    @for (int i = 0; i < Model.Image.Count; i++)
+                    {
+                        <button type="button"
                         data-bs-target="#routeCarousel"
                         data-bs-slide-to="@i"
                         class="@(i == 0 ? "active" : "")"
                         aria-current="@(i == 0 ? "true" : null)"
                         aria-label="Слайд @(i + 1)"></button>
-            }
+                    }
+                </div>
+
+                <div class="carousel-inner">
+                    @for (int i = 0; i < Model.Image.Count; i++)
+                    {
+                        var image = Model.Image[i];
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@image.ImagePath" class="d-block w-100 rounded" alt="Фоточки">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+                                <h5 class="text-white">@image.Title</h5>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#routeCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Предыдущий</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#routeCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Следующий</span>
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning text-center">
+                Нет загруженных изображений для этого маршрута.
+            </div>
+        }
+
+
+        <!-- Описание маршрута -->
+        <div class="card shadow-lg mb-5">
+            <div class="card-body">
+                <h3 class="card-title text-primary">Описание маршрута</h3>
+                <p class="card-text">@Model.Route.Description</p>
+            </div>
         </div>
 
-        <div class="carousel-inner">
-            @for (int i = 0; i < Model.Image.Count; i++)
-            {
-                var image = Model.Image[i];
-                <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <img src="@image.ImagePath" class="d-block w-100" alt="@image.Title">
-                    <div class="carousel-caption d-none d-md-block">
-                        <h5>@image.Title</h5>
+        <!-- Расписание маршрута -->
+        <div class="card shadow-lg mb-5">
+            <div class="card-body">
+                <h3 class="card-title text-primary">Расписание маршрута</h3>
+                <p class="card-text">@Model.Route.Schedule</p>
+            </div>
+        </div>
+
+        <!-- Фото корабля маршрута (Карусель) -->
+        <div class="mb-5">
+            <h3 class="text-primary">Фото корабля</h3>
+            <div id="shipCarousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="ship1.jpg" class="d-block w-100 rounded" alt="Фото корабля 1">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="ship2.jpg" class="d-block w-100 rounded" alt="Фото корабля 2">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="ship3.jpg" class="d-block w-100 rounded" alt="Фото корабля 3">
                     </div>
                 </div>
-            }
+                <button class="carousel-control-prev" type="button" data-bs-target="#shipCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Предыдущий</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#shipCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Следующий</span>
+                </button>
+            </div>
         </div>
 
-            <button class="carousel-control-prev" type="button" data-bs-target="#routeCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Предыдущий</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#routeCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Следующий</span>
-        </button>
-    </div>
-}
-else
-{
-    <p>Нет загруженных изображений для этого маршрута.</p>
-}
+        <!-- Удобства маршрута -->
+        <div class="card shadow-lg mb-5">
+            <div class="card-body">
+                <h3 class="card-title text-primary">Удобства на борту</h3>
+                <ul class="list-group">
+                    <li class="list-group-item"><i class="bi bi-wifi"></i> Бесплатный Wi-Fi</li>
+                    <li class="list-group-item"><i class="bi bi-cup-hot"></i> Кафе на борту</li>
+                    <li class="list-group-item"><i class="bi bi-tv"></i> Развлекательная система</li>
+                    <li class="list-group-item"><i class="bi bi-snow"></i> Кондиционер</li>
+                </ul>
+            </div>
+        </div>
 
-<div id="routeMap" style="width: 100%; height: 400px; margin-bottom: 20px;"></div>
-
-<h1>@Model.Route.Name</h1>
-<p><strong>Описание:</strong> @Model.Route.Description</p>
-<p><strong>Корабль:</strong> @Model.Ship?.Name</p>
+        <!-- Яндекс.Карта -->
+        <div class="mb-5">
+            <h3 class="text-primary">Карта маршрута</h3>
+            <div id="routeMap" style="width: 100%; height: 400px;" class="rounded shadow-sm"></div>
+        </div>
 
 
-@if (User.Identity.IsAuthenticated && User.IsInRole("consumer"))
-{
-    ViewBag.RouteId = Model.Route.RouteId;
-    @await Html.PartialAsync("~/Views/Order/_CreateOrderPartial.cshtml")
-}
+        <!-- Блок действий -->
+        @if (User.Identity.IsAuthenticated && User.IsInRole("consumer"))
+        {
+            ViewBag.RouteId = Model.Route.RouteId;
+            @await Html.PartialAsync("~/Views/Order/_CreateOrderPartial.cshtml")
+        }
+        else if (!User.Identity.IsAuthenticated)
+        {
+            <div class="alert alert-info text-center mb-5">
+                <a asp-controller="Authorization" asp-action="Index" class="text-decoration-none">Войдите</a>, чтобы добавить маршрут в заказы.
+            </div>
+        }
 
-else if (!User.Identity.IsAuthenticated)
-{
-    <div class="alert alert-info mt-3">
-        <a asp-controller="Authorization" asp-action="Index">Войдите</a>, чтобы добавить маршрут в заказы.
-    </div>
-}
+        <!-- Рейтинг и отзывы -->
+        <div class="card shadow-lg mb-5">
+            <div class="card-body">
+                <h3 class="card-title text-primary">Рейтинг и отзывы</h3>
+                <div class="mb-3">
+                    <h4 class="text-warning">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Floor(Model.Route.Rating)) // Полные звезды
+                            {
+                                <i class="bi bi-star-fill"></i>
+                            }
+                            else if (i == Math.Ceiling(Model.Route.Rating) && Model.Route.Rating % 1 != 0) // Половина звезды
+                            {
+                                <i class="bi bi-star-half"></i>
+                            }
+                            else // Пустые звезды
+                            {
+                                <i class="bi bi-star"></i>
+                            }
+                        }
+                        <span class="text-muted">(@Model.Route.Rating из 5)</span>
+                    </h4>
+                </div>
+                @foreach (var routeRating in Model.RouteRatings)
+                {
+                    <div class="review mb-3">
+                        <div class="d-flex align-items-center">
+                            <img src="@routeRating.Consumer.ProfileImagePath" class="rounded-circle me-3" alt="Фото пользователя" style="width: 50px; height: 50px;">
+                            <h5 class="mb-0">@routeRating.Consumer.Name</h5>
+                        </div>
+                        <!-- Рейтинг -->
+                        <div class="d-flex align-items-center mb-3 comment-stars">
+                            <h5 class="text-warning mb-0 me-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= @routeRating.Stars) // Полные звезды
+                                    {
+                                        <i class="bi bi-star-fill"></i>
+                                    }
+                                    else // Пустые звезды
+                                    {
+                                        <i class="bi bi-star"></i>
+                                    }
+                                }
+                            </h5>
+                            <span class="text-muted">(@routeRating.Stars из 5)</span>
+                        </div>
+
+
+                        <p class="mt-2">
+                            <span class="short-comment" id="short-comment-@routeRating.RouteRatingId">
+                                @if (routeRating.Comment.Length > 100)
+                                {
+                                    @routeRating.Comment.Substring(0, 100)
+                                    <a href = "javascript:void(0);" class="text-primary fw-bold" onclick="showFullComment(@routeRating.RouteRatingId)">Посмотреть полностью</a>
+                                }
+                                else
+                                {
+                                    @routeRating.Comment
+                                    <a href="javascript:void(0);" class="view-more-link text-primary fw-bold" onclick="showFullComment(@routeRating.RouteRatingId)">
+                                        Посмотреть полностью
+                                    </a>
+                                }
+                            </span>
+                            <span class="full-comment d-none" id="full-comment-@routeRating.RouteRatingId">
+                                @routeRating.Comment
+                                <a href="javascript:void(0);" class="view-more-link text-primary fw-bold" onclick="hideFullComment(@routeRating.RouteRatingId)">
+                                    Скрыть
+                                </a>
+                            </span>
+                        </p>
+
+                        <!-- Дополнительные данные -->
+                        <div class="additional-info d-none border rounded p-3 mt-3 shadow-sm" id="additional-info-@routeRating.RouteRatingId">
+                            <h6 class="mt-3 text-primary"><i class="bi bi-hand-thumbs-up"></i> Преимущества:</h6>
+                            <p class="mt-2 text-muted">@routeRating.PositiveComments</p>
+
+                            <h6 class="mt-3 text-primary"><i class="bi bi-hand-thumbs-down"></i> Недостатки:</h6>
+                            <p class="mt-2 text-muted">@routeRating.NegativeComments</p>
+
+                            <h6 class="mt-3 text-primary"><i class="bi bi-images"></i> Фотографии:</h6>
+                            <div class="row">
+                                @foreach (var photo in routeRating.ReviewImages)
+    {
+                                <div class="col-md-3">
+                                    <img src="@photo.ImagePath" class="img-fluid rounded shadow-sm mb-2" alt="Фото">
+                                </div>
+    }
+                            </div>
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        </div>
+</div>
+
+    <script>
+        function showFullComment(id) {
+            document.getElementById(`short-comment-${id}`).classList.add('d-none');
+            document.getElementById(`full-comment-${id}`).classList.remove('d-none');
+            document.getElementById(`additional-info-${id}`).classList.remove('d-none');
+        }
+
+        function hideFullComment(id) {
+            document.getElementById(`short-comment-${id}`).classList.remove('d-none');
+            document.getElementById(`full-comment-${id}`).classList.add('d-none');
+            document.getElementById(`additional-info-${id}`).classList.add('d-none');
+        }
+    </script>

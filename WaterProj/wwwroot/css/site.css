@@ -1,5 +1,11 @@
-html {
+﻿html {
   font-size: 14px;
+
+}
+
+.container {
+    padding-left: 10px; /* Уменьшить отступ слева */
+    padding-right: 10px; /* Уменьшить отступ справа */
 }
 
 @media (min-width: 768px) {
@@ -18,10 +24,12 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    height: 100%;
+    padding: 0;
 }
 
-/* ����� ��� ��������� �������� */
+/* Стили для звездного рейтинга */
 .star-rating {
     display: flex;
     flex-direction: row-reverse;
@@ -47,4 +55,207 @@ body {
     .star-rating label:hover,
     .star-rating label:hover ~ label {
         color: #FFED85;
+    }
+
+
+.page-wrapper {
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.main-container {
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 25px;
+}
+
+.route-info {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 25px;
+}
+
+.station {
+    padding: 12px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.station-from {
+    border-left: 4px solid #28a745;
+}
+
+.station-to {
+    border-left: 4px solid #dc3545;
+}
+
+.route-direction {
+    position: relative;
+    padding-left: 30px;
+    margin: 15px 0;
+}
+
+    .route-direction::before {
+        content: "↓";
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        color: #6c757d;
+    }
+
+.routes-container {
+    margin-top: 20px;
+}
+
+.route-card {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    border-left: 4px solid #007bff;
+}
+
+    .route-card:hover {
+        box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+.routes-header {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.route-number {
+    font-weight: 700;
+    color: #007bff;
+    margin-right: 10px;
+}
+
+.route-time {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.route-details {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.route-points {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.route-point {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.2rem;
+}
+
+.route-separator {
+    font-size: 1.5rem;
+    color: #6c757d;
+}
+
+.card {
+    border-radius: 15px;
+}
+
+.card-header {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.form-label i {
+    margin-right: 5px;
+}
+
+#searchMap {
+    margin-top: 20px;
+    background-color: #f8f9fa;
+}
+
+.route-card.selected {
+    background-color: #f0f0f0; /* Светло-серый фон */
+    border: 2px solid #007bff; /* Синяя рамка */
+    transition: background-color 0.3s, border 0.3s; /* Плавный переход */
+}
+
+.carousel-inner img {
+    max-height: 500px;
+    object-fit: cover;
+}
+
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#routeMap {
+    background-color: #f8f9fa;
+}
+
+
+
+.short-comment {
+    font-size: 1rem;
+    color: #495057;
+}
+
+.full-comment {
+    font-size: 1rem;
+    color: #495057;
+}
+
+.comment-stars {
+    font-size: 1.2rem;
+}
+
+.additional-info {
+    background-color: #f8f9fa;
+}
+
+    .additional-info h6 {
+        font-weight: bold;
+    }
+
+    .additional-info p {
+        font-size: 0.95rem;
+        color: #6c757d;
+    }
+
+.view-more-link {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #f8f9fa; /* Светлый фон */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-decoration: none; /* Убираем подчеркивание */
+}
+
+    .view-more-link:hover {
+        background-color: #e2e6ea; /* Более темный фон при наведении */
+        color: #0056b3; /* Темно-синий цвет текста при наведении */
+        text-decoration: none; /* Убираем подчеркивание при наведении */
     }
