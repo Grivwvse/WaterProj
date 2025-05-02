@@ -1,140 +1,271 @@
 ﻿@model WaterProj.DTOs.ConsumerAccontDto
 @{
-    ViewData["Title"] = "Редактирование профиля";
+    ViewData["Title"] = "Личный кабинет";
 }
-<section class="bg2">
+
+<section class="bg2 py-4">
     <div class="container">
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-12">
                 <h2 class="text-center text-uppercase text-secondary">Личный кабинет</h2>
+                <hr class="my-3 mx-auto w-50">
             </div>
         </div>
+        
         <div class="row">
-            <div class="col-md-6 col-sm-12">
-                <div class="card shadow-lg mb-5">
+            <!-- Информация о пользователе -->
+            <div class="col-md-5 col-lg-4 mb-4">
+                <div class="card shadow-lg h-100 rounded-3 border-0">
                     <div class="card-body">
+                        <h3 class="card-title text-primary mb-4">Мой профиль</h3>
                         <!-- Фото пользователя -->
-                        <h3 class="card-title text-primary">Персональные данные</h3>
-                        <div class="mb-3 text-center">
-
+                        <div class="text-center mb-4">
                             @if (!string.IsNullOrEmpty(Model.Consumer.ProfileImagePath))
                             {
-                                <img src="@Model.Consumer.ProfileImagePath" alt="Аватар" class="rounded-circle img-fluid shadow" style="width: 150px; height: 150px; object-fit: cover;" />
+                                <img src="@Model.Consumer.ProfileImagePath" alt="Аватар" class="rounded-circle img-thumbnail shadow" style="width: 150px; height: 150px; object-fit: cover;" />
                             }
                             else
                             {
-                                <img src="/images/avatars/default-avatar.jpg" alt="Аватар по умолчанию" class="rounded-circle img-fluid shadow" style="width: 150px; height: 150px; object-fit: cover;" />
+                                <img src="/images/avatars/default-avatar.jpg" alt="Аватар по умолчанию" class="rounded-circle img-thumbnail shadow" style="width: 150px; height: 150px; object-fit: cover;" />
                             }
+                            
+                            <h5 class="mt-3 mb-1">@Model.Consumer.Name @Model.Consumer.Surname</h5>
+                            <p class="text-muted mb-0">@Model.Consumer.Login</p>
                         </div>
 
                         <!-- Форма загрузки фото -->
-                        <form asp-action="UpdateProfileImage" method="post" enctype="multipart/form-data" class="mb-3">
-                            <div class="input-group mb-2">
-                                <input type="file" name="profileImage" class="form-control" accept="image/jpeg,image/png,image/gif" required>
-                                <button type="submit" class="btn btn-primary">Обновить</button>
+                        <form asp-action="UpdateProfileImage" method="post" enctype="multipart/form-data" class="mb-4">
+                            <div class="input-group">
+                                <input type="file" name="profileImage" class="form-control form-control-sm" accept="image/jpeg,image/png,image/gif" required>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-upload"></i>
+                                </button>
                             </div>
-                            <div class="form-text text-muted">Макс. размер: 5MB. Форматы: JPEG, PNG, GIF</div>
+                            <div class="form-text text-muted small">Макс. размер: 5MB. Форматы: JPEG, PNG, GIF</div>
                         </form>
-
-                        <!-- Форма редактирования -->
-                        <form asp-action="Edit" method="post" id="editForm">
-                            <div class="form-group">
-                                <label asp-for="Consumer.Login" class="form-label">Логин</label>
-                                <input name="Login" value="@Model.Consumer.Login" class="form-control" id="login" readonly="readonly" />
-                            </div>
-
-                            <div class="form-group mt-3">
-                                <label asp-for="Consumer.Name" class="form-label">Имя</label>
-                                <input name="Name" value="@Model.Consumer.Name" class="form-control" id="name" readonly="readonly" />
-                            </div>
-                        </form>
-
-                        <div class="text-center mt-4">
-                            <button id="editButton" class="btn btn-primary">
-                                <i class="bi bi-pencil"></i> Редактировать
+                        
+                        <!-- Кнопки действий -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button id="editButton" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Редактировать профиль
                             </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                <i class="bi bi-key"></i> Изменить пароль
+                            </button>
+                            <form asp-action="Logout" method="post">
+                                <button type="submit" class="btn btn-outline-danger w-100 mt-2">
+                                    <i class="bi bi-box-arrow-right"></i> Выйти
+                                </button>
+                            </form>
                         </div>
-
                     </div>
-
                 </div>
             </div>
-
-
-            <!-- Маршруты -->
-            <div class="col-md-6 col-sm-12">
-
-                <div class="card shadow-lg mb-5">
+            
+            <!-- Данные пользователя и заказы -->
+            <div class="col-md-7 col-lg-8">
+                <!-- Форма редактирования данных -->
+                <div class="card shadow-lg mb-4 rounded-3 border-0">
                     <div class="card-body">
-                        <h3 class="card-title text-primary">Заказы</h3>
-
-                         @foreach (var dto in Model.OrdersRoutesDto)
-                    {
-
-                            <div class="card shadow-sm mb-4">
-                                <div class="card-body">
-                                    <!-- Статус заказа -->
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        
-                                        
-                                        
-                                        <span class="badge bg-success">@dto.Order.Status</span>
-                                        
-                                        
-                                        <small class="text-muted">Дата заказа: @dto.Order.CreatedAt.ToShortDateString()</small>
+                        <h3 class="card-title text-primary mb-4">Персональные данные</h3>
+                        
+                        <form asp-action="Edit" method="post" id="editForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        <input name="Name" value="@Model.Consumer.Name" class="form-control" id="name" placeholder="Имя" readonly="readonly" />
+                                        <label for="name">Имя</label>
                                     </div>
-
-                                    <!-- Номер заказа -->
-                                <h5 class="card-title text-primary">№@dto.Order.OrderId</h5>
-
-                                    <!-- Название маршрута -->
-                                    <p class="card-text text-secondary">
-                                        <i class="bi bi-geo-alt"></i> Маршрут: @dto.Route.Name
-                                    </p>
-
-                                    <!-- Действия -->
-                                    <div class="d-flex justify-content-end">
-                                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="btn btn-outline-primary btn-sm me-2">
-                                            <i class="bi bi-eye"></i> Подробнее
-                                        </a>
-                                        <a href="/Order/Cancel/12345" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-x-circle"></i> Отменить
-                                        </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        <input name="Surname" value="@Model.Consumer.Surname" class="form-control" id="surname" placeholder="Фамилия" readonly="readonly" />
+                                        <label for="surname">Фамилия</label>
                                     </div>
                                 </div>
                             </div>
-                        }
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        <input name="Phone" value="@Model.Consumer.Phone" class="form-control" id="phone" placeholder="Телефон" readonly="readonly" />
+                                        <label for="phone">Телефон</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        <input name="Login" value="@Model.Consumer.Login" class="form-control" id="login" placeholder="Логин" readonly="readonly" />
+                                        <label for="login">Логин</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                            
-
-                <h5 class="text-center">Маршруты</h5>
-                <hr class="mx-5">
-                <div class="list-group shadow-sm">
-                    @foreach (var dto in Model.OrdersRoutesDto)
-                    {
-                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">@dto.Order.OrderId</h5>
-                                <small class="text-muted">3 дня назад</small>
+                
+                <!-- Заказы пользователя -->
+                <div class="card shadow-lg rounded-3 border-0">
+                    <div class="card-body">
+                        <h3 class="card-title text-primary mb-4">Мои заказы</h3>
+                        
+                        @if (Model.OrdersRoutesDto.Any())
+                        {
+                            <div class="accordion" id="ordersAccordion">
+                                @foreach (var dto in Model.OrdersRoutesDto)
+                                {
+                                    <div class="accordion-item border mb-3 rounded shadow-sm">
+                                        <h2 class="accordion-header" id="heading-@dto.Order.OrderId">
+                                            <button class="accordion-button collapsed" 
+                                                    type="button" 
+                                                    data-bs-toggle="collapse" 
+                                                    data-bs-target="#collapse-@dto.Order.OrderId" 
+                                                    aria-expanded="false" 
+                                                    aria-controls="collapse-@dto.Order.OrderId">
+                                                <div class="d-flex justify-content-between align-items-center w-100 pe-3">
+                                                    <span>
+                                                        <strong>№@dto.Order.OrderId</strong>: @dto.Route.Name
+                                                    </span>
+                                                    <span class="badge bg-success ms-2">@dto.Order.Status</span>
+                                                </div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-@dto.Order.OrderId" 
+                                             class="accordion-collapse collapse" 
+                                             aria-labelledby="heading-@dto.Order.OrderId" 
+                                             data-bs-parent="#ordersAccordion">
+                                            <div class="accordion-body">
+                                                <div class="mb-3">
+                                                    <p class="mb-2"><strong>Дата заказа:</strong> @dto.Order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                                    <p class="mb-2"><strong>Маршрут:</strong> @dto.Route.Name</p>
+                                                    @if (!string.IsNullOrEmpty(dto.Route.Description))
+                                                    {
+                                                        <p class="mb-2"><strong>Описание:</strong> @dto.Route.Description</p>
+                                                    }
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-end">
+                                                    <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="btn btn-outline-primary btn-sm me-2">
+                                                        <i class="bi bi-eye"></i> Подробнее
+                                                    </a>
+                                                    <a href="@Url.Action("Cancel", "Order", new { id = dto.Order.OrderId })" class="btn btn-outline-danger btn-sm">
+                                                        <i class="bi bi-x-circle"></i> Отменить
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
-                            <p class="mb-1">Описание маршрута</p>
-                            <small class="text-muted">@dto.Route.Description</small>
-                        </a>
-                    }
-
-                   
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i> У вас пока нет заказов. Найдите интересный маршрут!
+                            </div>
+                            <div class="text-center">
+                                <a href="@Url.Action("FindRoutes", "Route")" class="btn btn-primary">
+                                    <i class="bi bi-search"></i> Найти маршруты
+                                </a>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Кнопка выхода -->
-<div class="text-center mt-5">
-    <form asp-action="Logout" method="post">
-        <button type="submit" class="btn btn-danger btn-lg shadow">
-            <i class="bi bi-box-arrow-right"></i> Выйти
-        </button>
-    </form>
+<!-- Модальное окно для изменения пароля -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Изменение пароля</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="ChangePassword" method="post" id="changePasswordForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Текущий пароль</label>
+                        <input type="password" class="form-control" id="currentPassword" name="CurrentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Новый пароль</label>
+                        <input type="password" class="form-control" id="newPassword" name="NewPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Подтвердите новый пароль</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" required>
+                        <div id="passwordMatchError" class="text-danger mt-1 d-none">Пароли не совпадают</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary" id="savePasswordButton">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Обработчик для кнопки редактирования
+        const editButton = document.getElementById('editButton');
+        const nameInput = document.getElementById('name');
+        const surnameInput = document.getElementById('surname');
+        const phoneInput = document.getElementById('phone');
+        const loginInput = document.getElementById('login');
+        const form = document.getElementById('editForm');
+
+        let editing = false;
+
+        editButton.addEventListener('click', () => {
+            editing = !editing;
+            
+            // Обновляем состояние полей ввода
+            nameInput.readOnly = !editing;
+            surnameInput.readOnly = !editing;
+            phoneInput.readOnly = !editing;
+            loginInput.readOnly = !editing;
+
+            if (editing) {
+                editButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
+                editButton.classList.remove('btn-outline-primary');
+                editButton.classList.add('btn-success');
+            } else {
+                // Отправляем форму
+                form.submit();
+            }
+        });
+
+        // Проверка совпадения паролей
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordMatchError = document.getElementById('passwordMatchError');
+        const savePasswordButton = document.getElementById('savePasswordButton');
+
+        function checkPasswordMatch() {
+            if (newPasswordInput.value && confirmPasswordInput.value) {
+                if (newPasswordInput.value !== confirmPasswordInput.value) {
+                    passwordMatchError.classList.remove('d-none');
+                    savePasswordButton.disabled = true;
+                } else {
+                    passwordMatchError.classList.add('d-none');
+                    savePasswordButton.disabled = false;
+                }
+            }
+        }
+
+        newPasswordInput.addEventListener('input', checkPasswordMatch);
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+        // Обработка отправки формы изменения пароля
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            if (newPasswordInput.value !== confirmPasswordInput.value) {
+                e.preventDefault();
+                passwordMatchError.classList.remove('d-none');
+            }
+        });
+    </script>
+}

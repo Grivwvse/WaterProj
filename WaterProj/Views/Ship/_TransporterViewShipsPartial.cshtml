@@ -1,0 +1,159 @@
+﻿
+<!-- Список кораблей -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-ul"></i> Список судов
+                            </h5>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-light" id="viewGrid">
+                                    <i class="bi bi-grid"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-light active" id="viewList">
+                                    <i class="bi bi-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Сетка кораблей -->
+                        <div id="vesselsGrid" style="display: none;">
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        @foreach (var ship in Model.Ships)
+                        {
+                                        <!-- Корабль 1 -->
+                                        <div class="col">
+                                            <div class="card h-100 vessel-card" data-vessel-id="1">
+                                                <div class="vessel-status status-active">@ship.Status</div>
+                                                <img src="@ship.ShipImages.FirstOrDefault()" class="vessel-image" alt="Фото Корабля">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">@ship.Name</h5>
+                                                    <p class="card-text text-muted">Пассажирское судно</p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="badge bg-primary">СПб-Москва</span>
+                                                        <button class="btn btn-sm btn-outline-primary vessel-details-btn">Подробнее</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                        }
+
+
+                        <!-- Табличный вид кораблей -->
+                        <div id="vesselsList">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Название</th>
+                                        <th scope="col">Тип</th>
+                                        <th scope="col">Статус</th>
+                                        <th scope="col">Маршрут</th>
+                                        <th scope="col">Порт приписки</th>
+                                        <th scope="col">Последнее обновление</th>
+                                        <th scope="col">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Нева</td>
+                                        <td>Пассажирское судно</td>
+                                        <td><span class="badge bg-success">Активен</span></td>
+                                        <td>СПб-Москва</td>
+                                        <td>Санкт-Петербург</td>
+                                        <td>24.04.2025 08:32</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary vessel-details-btn" data-vessel-id="1">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-geo-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Волга</td>
+                                        <td>Грузовое судно</td>
+                                        <td><span class="badge bg-success">Активен</span></td>
+                                        <td>Мурманск-СПб</td>
+                                        <td>Мурманск</td>
+                                        <td>24.04.2025 07:15</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary vessel-details-btn" data-vessel-id="2">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-geo-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ладога</td>
+                                        <td>Паром</td>
+                                        <td><span class="badge bg-warning text-dark">На обслуживании</span></td>
+                                        <td>-</td>
+                                        <td>Владивосток</td>
+                                        <td>23.04.2025 18:47</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary vessel-details-btn" data-vessel-id="3">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" disabled>
+                                                <i class="bi bi-geo-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Байкал</td>
+                                        <td>Танкер</td>
+                                        <td><span class="badge bg-success">Активен</span></td>
+                                        <td>Новороссийск-Стамбул</td>
+                                        <td>Новороссийск</td>
+                                        <td>24.04.2025 09:23</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary vessel-details-btn" data-vessel-id="4">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-geo-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Амур</td>
+                                        <td>Буксир</td>
+                                        <td><span class="badge bg-success">Активен</span></td>
+                                        <td>Калининград (порт)</td>
+                                        <td>Калининград</td>
+                                        <td>24.04.2025 06:55</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary vessel-details-btn" data-vessel-id="5">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-geo-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <nav>
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Предыдущая</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Следующая</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>

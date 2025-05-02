@@ -19,15 +19,22 @@ namespace WaterProj.Models
         public string Login { get; set; }
         [Required]
         public string PasswordHash { get; set; }
+        public bool IsBlocked { get; set; } = false;
+        public string? BlockReason { get; set; }
+        public DateTime? BlockedAt { get; set; }
         public float Rating { get; set; }
 
         // Навигационное свойство для Route
+
+        // Навигационное свойство для Ship
+        public List<Ship> Ships { get; set; }
         public List<Route>Routes { get; set; }
 
         public Transporter()
         {
             Routes = new List<Route>();
             Rating = 0;
+            Ships = new List<Ship>();
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿using WaterProj.DTOs;
 using WaterProj.Models;
+using WaterProj.Models.Services;
 
 namespace WaterProj.Services
 {
@@ -14,6 +15,8 @@ namespace WaterProj.Services
         /// <returns>Список всех остановок</returns>
         Task<List<Stop>> GetAllStopsAsync();
 
+        Task<ServiceResult> UpdateRoute(Models.Route route);
+
         /// <summary>
         /// Метод для получения списка маршрутов по их ID
         /// </summary>
@@ -21,6 +24,10 @@ namespace WaterProj.Services
         /// <returns></returns>
         Task<List<Models.Route>> GetRoutesByIdsAsync(List<int> routeIds);
 
+        Task<IEnumerable<Stop>> GetAvailableStops(int startStopId);
+
+
+        Task<List<Models.Route>> GetRoutesByShip(int shipId);
 
         // Добавляем метод для поиска маршрутов
         Task<List<RouteSearchResultDto>> SearchRoutesAsync(RouteSearchDto searchParams);

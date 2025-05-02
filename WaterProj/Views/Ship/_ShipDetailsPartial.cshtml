@@ -1,0 +1,76 @@
+﻿@model WaterProj.DTOs.RouteDetailsDto
+
+<div class="card shadow-lg mb-5">
+    <div class="card-body">
+        <div class="card-body">
+            <h3 class="card-title text-primary">Информация о корабле</h3>
+
+            <h4 class="card-title mb-2">@Model.Ship.Name</h4>
+
+            <!-- Тип корабля -->
+            <div class="d-flex align-items-center mb-3">
+                <span class="badge bg-primary me-2">
+                    <i class="bi bi-water me-1"></i>@Model.Ship.ShipType.Name
+                </span>
+            </div>
+
+            <!-- Описание корабля -->
+            <p class="card-text text-muted mb-3">
+                @Model.Ship.Description
+            </p>
+
+            <!-- Удобства на борту -->
+            <h6 class="text-primary mb-2">
+                <i class="bi bi-star me-2"></i>Удобства на борту:
+            </h6>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                @foreach (var convenience in Model.ShipConveniences)
+                {
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-cup-hot me-1"></i>@convenience.Name
+                    </span>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<!-- Фото корабля маршрута (Карусель) -->
+<div class="mb-5">
+    <h3 class="text-primary">Фото корабля</h3>
+    <div id="shipCarousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
+        <div class="carousel-inner">
+
+
+
+            @for (int i = 0; i < Model.Ship.ShipImages.Count; i++)
+            {
+                @if (i == 0)
+                {
+                    <div class="carousel-item active">
+                        <img src="@Model.Ship.ShipImages[i].ImagePath" class="d-block w-100 rounded" alt="Фото корабля 1">
+                    </div>
+                }
+                else
+                {
+                    <div class="carousel-item">
+                        <img src="@Model.Ship.ShipImages[i].ImagePath" class="d-block w-100 rounded" alt="Фото корабля">
+                    </div>
+                }
+
+            }
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#shipCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Предыдущий</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#shipCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Следующий</span>
+        </button>
+    </div>
+</div>

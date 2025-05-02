@@ -1,17 +1,6 @@
 ﻿@model WaterProj.DTOs.RouteDetailsDto
 
-@if (ViewBag.Message != null)
-{
-    <div class="alert alert-success">
-        @ViewBag.Message
-    </div>
-}
-@if (ViewBag.ErrorMessage != null)
-{
-    <div class="alert alert-danger">
-        @ViewBag.ErrorMessage
-    </div>
-}
+
 
 
 
@@ -21,7 +10,6 @@
         <!-- Заголовок маршрута -->
         <div class="text-center mb-4">
             <h1 class="display-4 text-primary">Детали маршрута: @Model.Route.Name</h1>
-            <p class="text-muted"><strong>Корабль:</strong> "Название корабля"</p>
         </div>
 
         <!-- Карусель изображений -->
@@ -87,44 +75,12 @@
             </div>
         </div>
 
-        <!-- Фото корабля маршрута (Карусель) -->
-        <div class="mb-5">
-            <h3 class="text-primary">Фото корабля</h3>
-            <div id="shipCarousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="ship1.jpg" class="d-block w-100 rounded" alt="Фото корабля 1">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="ship2.jpg" class="d-block w-100 rounded" alt="Фото корабля 2">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="ship3.jpg" class="d-block w-100 rounded" alt="Фото корабля 3">
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#shipCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Предыдущий</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#shipCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Следующий</span>
-                </button>
-            </div>
-        </div>
 
-        <!-- Удобства маршрута -->
-        <div class="card shadow-lg mb-5">
-            <div class="card-body">
-                <h3 class="card-title text-primary">Удобства на борту</h3>
-                <ul class="list-group">
-                    <li class="list-group-item"><i class="bi bi-wifi"></i> Бесплатный Wi-Fi</li>
-                    <li class="list-group-item"><i class="bi bi-cup-hot"></i> Кафе на борту</li>
-                    <li class="list-group-item"><i class="bi bi-tv"></i> Развлекательная система</li>
-                    <li class="list-group-item"><i class="bi bi-snow"></i> Кондиционер</li>
-                </ul>
-            </div>
-        </div>
+    @await Html.PartialAsync("~/Views/Ship/_ShipDetailsPartial.cshtml", Model)
+
+        <!-- Информация о перевозчике  -->
+        @await Html.PartialAsync("~/Views/TransporterAccount/_TransporterInfoPartial.cshtml", Model)
+
 
         <!-- Яндекс.Карта -->
         <div class="mb-5">

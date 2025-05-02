@@ -1,0 +1,272 @@
+﻿@model WaterProj.DTOs.ShipCreateDto
+
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-ship"></i> Создание нового судна
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Ship" asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="TransporterId" value="@ViewBag.TransporterId" />
+
+                        <!-- Основная информация -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-info-circle"></i> Основная информация
+                            </h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Name" class="form-label">Название судна</label>
+                                    <input asp-for="Name" class="form-control" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label asp-for="SelectedShipTypeId" class="form-label">Тип судна</label>
+                                    <select asp-for="SelectedShipTypeId" class="form-select" required>
+                                        <option value="" selected disabled>Выберите тип судна</option>
+                                        @foreach (var shipType in Model.ShipTypes ?? new List<WaterProj.Models.ShipType>())
+                                        {
+                                            <option value="@shipType.ShipTypesId">@shipType.Name</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="SelectedShipTypeId" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-12">
+                                    <label asp-for="Description" class="form-label">Описание</label>
+                                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="IMO" class="form-label">IMO номер</label>
+                                    <input id="IMO" name="IMO" class="form-control" required />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label asp-for="Status" class="form-label">Статус судна</label>
+                                    <select asp-for="Status" class="form-select" required>
+                                        <option value="" selected disabled>Выберите статус</option>
+                                        <option value="@((int)ShipStatus.Active)">Активен</option>
+                                        <option value="@((int)ShipStatus.Maintenance)">На обслуживании</option>
+                                        <option value="@((int)ShipStatus.Inactive)">Не активен</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Удобства судна -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-star"></i> Удобства судна</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAmenityModal">
+                                    <i class="bi bi-plus-circle"></i> Добавить новое удобство
+                                </button>
+                            </h5>
+
+                            <div class="row g-2 mb-3" id="amenitiesContainer">
+                                <input type="hidden" name="SelectedConvenienceIds" value="">
+                                @foreach (var convenience in Model.ShipСonveniences)
+                                {
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="convenience-@convenience.ShipСonvenienceId"
+                                                   name="SelectedConvenienceIds" value="@convenience.ShipСonvenienceId">
+                                            <label class="form-check-label" for="convenience-@convenience.ShipСonvenienceId">@convenience.Name</label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Изображения -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-image"></i> Изображения
+                            </h5>
+
+                            <div class="mb-3">
+                                <label for="MainImage" class="form-label">Основное изображение</label>
+                                <input type="file" class="form-control" id="MainImage" name="MainImage" accept="image/*" required />
+                                <div class="form-text">Рекомендуемый размер: 1200x800px</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div id="mainImagePreview" class="mb-3 mt-2 text-center">
+                                    <!-- Здесь будет предпросмотр основного изображения -->
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="AdditionalImages" class="form-label">Дополнительные изображения</label>
+                                <input type="file" class="form-control" id="AdditionalImages" name="AdditionalImages" accept="image/*" multiple />
+                                <div class="form-text">Можно выбрать несколько файлов</div>
+                            </div>
+
+                            <div id="additionalImagesPreview" class="d-flex flex-wrap gap-2 mb-3">
+                                <!-- Здесь будет предпросмотр дополнительных изображений -->
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-controller="TransporterAccount" asp-action="Account" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Сохранить судно
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления нового удобства -->
+<div class="modal fade" id="addAmenityModal" tabindex="-1" aria-labelledby="addAmenityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addAmenityModalLabel">Добавление нового удобства</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="newAmenityName" class="form-label">Название удобства</label>
+                    <input type="text" class="form-control" id="newAmenityName" placeholder="Например: Сауна, Массажный кабинет и т.д.">
+                </div>
+                <div class="mb-3">
+                    <label for="newAmenityDescription" class="form-label">Описание (опционально)</label>
+                    <textarea class="form-control" id="newAmenityDescription" rows="3" placeholder="Краткое описание удобства"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveNewAmenity">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Предпросмотр основного изображения
+        document.getElementById('MainImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('mainImagePreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview" class="img-fluid rounded shadow-sm" style="max-height: 300px">
+                    `;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+
+        // Предпросмотр дополнительных изображений
+        document.getElementById('AdditionalImages').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const preview = document.getElementById('additionalImagesPreview');
+            preview.innerHTML = '';
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.width = '120px';
+                    imgContainer.style.height = '80px';
+                    imgContainer.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview" class="img-fluid rounded shadow-sm" style="width: 100%; height: 100%; object-fit: cover;">
+                    `;
+                    preview.appendChild(imgContainer);
+                }
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Обработчик добавления нового удобства
+        document.getElementById('saveNewAmenity').addEventListener('click', function() {
+            const amenityName = document.getElementById('newAmenityName').value.trim();
+            const amenityDescription = document.getElementById('newAmenityDescription').value.trim();
+
+            if (!amenityName) {
+                alert('Пожалуйста, введите название удобства');
+                return;
+            }
+
+            // Отправляем запрос на сервер для создания нового удобства
+            fetch('/Ship/CreateAdvantage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    name: amenityName,
+                    description: amenityDescription
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка при создании удобства');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Добавляем новое удобство в список на форме
+                    const container = document.getElementById('amenitiesContainer');
+                    const newAmenityHtml = `
+                        <div class="col-md-4 col-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="convenience-${data.advantageId}"
+                                       name="SelectedConvenienceIds" value="${data.advantageId}" checked>
+                                <label class="form-check-label" for="convenience-${data.advantageId}">${amenityName}</label>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('afterbegin', newAmenityHtml);
+
+                    // Очищаем поля и закрываем модальное окно
+                    document.getElementById('newAmenityName').value = '';
+                    document.getElementById('newAmenityDescription').value = '';
+
+                    // Закрываем модальное окно
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addAmenityModal'));
+                    modal.hide();
+
+                    // Показываем уведомление
+                    alert('Удобство успешно добавлено!');
+                } else {
+                    alert(data.message || 'Ошибка при создании удобства');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при добавлении удобства');
+            });
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

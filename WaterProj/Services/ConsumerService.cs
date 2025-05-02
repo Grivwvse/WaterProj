@@ -23,6 +23,41 @@ namespace WaterProj.Services
             _routeService = routeService;
         }
 
+        public async Task<ServiceResult> ChangePasswordAsync(int consumerId, string currentPassword, string newPassword)
+        {
+            try
+            {
+                var consumer = await _context.Consumers.FindAsync(consumerId);
+                if (consumer == null)
+                    return new ServiceResult { Success = false, ErrorMessage = "Пользователь не найден." };
+
+                // Создаем экземпляр PasswordHasher для проверки текущего пароля
+                var passwordHasher = new Microsoft.AspNetCore.Identity.PasswordHasher<Consumer>();
+
+                // Проверяем текущий пароль
+                var verificationResult = passwordHasher.VerifyHashedPassword(
+                    consumer,
+                    consumer.PasswordHash,
+                    currentPassword);
+
+                if (verificationResult == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                    return new ServiceResult { Success = false, ErrorMessage = "Текущий пароль указан неверно." };
+
+                // Генерируем хеш для нового пароля
+                consumer.PasswordHash = passwordHasher.HashPassword(consumer, newPassword);
+
+                // Обновляем запись в базе данных
+                _context.Consumers.Update(consumer);
+                await _context.SaveChangesAsync();
+
+                return new ServiceResult { Success = true };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResult { Success = false, ErrorMessage = $"Ошибка при смене пароля: {ex.Message}" };
+            }
+        }
+
         public async Task<Consumer> GetByIdAsync(int id)
         {
             return await _context.Consumers.FindAsync(id);

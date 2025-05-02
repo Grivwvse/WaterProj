@@ -10,6 +10,8 @@ namespace WaterProj.DTOs
 
         public required Transporter Transporter { get; set; }
 
+        public required List<Сonvenience> ShipConveniences { get; set; }
+
         // Для комментариев к маршруту
         public required List<Advantage> RouteAdvantages { get; set; }
         public required List<RouteRating> RouteRatings { get; set; }

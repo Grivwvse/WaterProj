@@ -1,0 +1,209 @@
+﻿@model List<WaterProj.Models.Route>
+@{
+    ViewData["Title"] = "Управление маршрутами";
+}
+
+<section class="bg2 py-4">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="text-secondary">Управление маршрутами</h2>
+                    <a asp-action="AdminPannel" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Назад к панели
+                    </a>
+                </div>
+                <hr class="my-3">
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Список маршрутов</h5>
+                    <div class="form-group mb-0">
+                        <input type="text" id="routeSearch" class="form-control" placeholder="Поиск маршрутов...">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0" id="routesTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Перевозчик</th>
+                                <th>Корабль</th>
+                                <th>Рейтинг</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var route in Model)
+                                {
+                                    <tr>
+                                        <td>@route.RouteId</td>
+                                        <td>@route.Name</td>
+                                        <td>@(route.Transporter?.Name ?? "Не указан")</td>
+                                        <td>@(route.Ship?.Name ?? "Не назначен")</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">@route.Rating.ToString("F1")</span>
+                                                <div class="text-warning">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        @if (i <= Math.Floor(route.Rating))
+                                                        {
+                                                            <i class="bi bi-star-fill small"></i>
+                                                        }
+                                                        else if (i == Math.Ceiling(route.Rating) && route.Rating % 1 != 0)
+                                                        {
+                                                            <i class="bi bi-star-half small"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="bi bi-star small"></i>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (route.IsBlocked)
+                                            {
+                                                <span class="badge bg-danger" data-bs-toggle="tooltip" title="@route.BlockReason">
+                                                    Заблокирован
+                                                </span>
+                                            }
+                                            else if (!route.IsActive)
+                                            {
+                                                <span class="badge bg-warning">Не активен</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Активен</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/Route/RouteDetails?routeID=@route.RouteId"
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="Просмотр деталей"
+                                                   target="_blank">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+
+                                                @if (!route.IsBlocked)
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger block-route-btn"
+                                                            data-route-id="@route.RouteId"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#blockModal"
+                                                            title="Заблокировать маршрут">
+                                                        <i class="bi bi-slash-circle"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@Url.Action("UnblockRoute", "Administrator", new { routeId = route.RouteId })"
+                                                       class="btn btn-sm btn-outline-success"
+                                                       title="Разблокировать маршрут"
+                                                       onclick="return confirm('Вы уверены, что хотите разблокировать этот маршрут?');">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="alert alert-info mb-0">
+                                            <i class="bi bi-info-circle me-2"></i> Маршруты не найдены
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно для блокировки маршрута -->
+<div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="blockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="blockModalLabel">Блокировка маршрута</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="blockRouteForm" method="post" asp-action="BlockRoute">
+                <div class="modal-body">
+                    <input type="hidden" id="routeIdInput" name="routeId" />
+                    <div class="mb-3">
+                        <label for="blockReason" class="form-label">Причина блокировки</label>
+                        <textarea class="form-control" id="blockReason" name="blockReason" rows="3"
+                                  placeholder="Укажите причину блокировки маршрута" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger">Заблокировать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Инициализация тултипов
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Обработка кнопки блокировки
+            $('.block-route-btn').click(function () {
+                var routeId = $(this).data('route-id');
+                $('#routeIdInput').val(routeId);
+            });
+
+            // Фильтрация маршрутов
+            $("#routeSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#routesTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

@@ -27,8 +27,14 @@ namespace WaterProj.Controllers
 
             var serviceResult = await _orderService.CreateOrder(routeId, userId);
 
+            if (!serviceResult.Success)
+            {
+                TempData["ErrorMessage"] = serviceResult.ErrorMessage;
+                return RedirectToAction("Index", "ConsumerAccount");
+            }
 
 
+            TempData["SuccessMessage"] = "Заказ успешно завершен!";
             return RedirectToAction("Index", "ConsumerAccount");
         }
 

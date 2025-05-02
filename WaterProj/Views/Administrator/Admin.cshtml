@@ -1,0 +1,144 @@
+﻿@{
+    ViewData["Title"] = "Вход для администратора";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-danger">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3><i class="bi bi-shield-lock"></i> Вход в панель администратора</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Внимание! Эта страница предназначена только для администраторов системы.
+                    </div>
+
+                    @if (ViewBag.ErrorMessage != null)
+                    {
+                            <div class="alert alert-danger">
+                            @ViewBag.ErrorMessage
+                            </div>
+                    }
+
+                    <form method="post">
+                        <!-- Логин -->
+                        <div class="mb-3">
+                            <label for="login" class="form-label">
+                                <i class="bi bi-person-fill"></i> Логин администратора
+                            </label>
+                            <input type="text" id="login" name="login" class="form-control" required />
+                        </div>
+
+                        <!-- Пароль -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-key-fill"></i> Пароль администратора
+                            </label>
+                            <input type="password" id="password" name="password" class="form-control" required />
+                        </div>
+
+                        <!-- Кнопка входа -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-shield-lock-fill"></i> Войти в панель администратора
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center text-muted">
+                    <small>Доступ только для авторизованных администраторов системы</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для регистрации первого администратора -->
+<div class="modal fade @(ViewBag.HasAdmins != true ? "show" : "")" id="firstAdminModal" tabindex="-1" 
+     aria-labelledby="firstAdminModalLabel" 
+     aria-hidden="@(ViewBag.HasAdmins != true ? "false" : "true")"
+@(ViewBag.HasAdmins != true ? "data-bs-backdrop=\"static\" data-bs-keyboard=\"false\"" : "")
+     style="@(ViewBag.HasAdmins != true ? "display: block;" : "")">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="firstAdminModalLabel">Регистрация первого администратора</h5>
+                @if (ViewBag.HasAdmins == true)
+                {
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                }
+            </div>
+            <form action="/Admin/Register" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> В системе не зарегистрировано ни одного администратора.
+                        Пожалуйста, создайте первого администратора для начала работы.
+                    </div>
+
+                    @if (ViewBag.RegErrorMessage != null)
+                    {
+                            <div class="alert alert-danger">
+                            @ViewBag.RegErrorMessage
+                            </div>
+                    }
+
+                    <div class="mb-3">
+                        <label for="regName" class="form-label">Имя администратора</label>
+                        <input type="text" id="regName" name="name" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regLogin" class="form-label">Логин</label>
+                        <input type="text" id="regLogin" name="login" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regPassword" class="form-label">Пароль</label>
+                        <input type="password" id="regPassword" name="password" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regConfirmPassword" class="form-label">Подтверждение пароля</label>
+                        <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Зарегистрировать администратора</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.HasAdmins != true)
+{
+        <div class="modal-backdrop fade show"></div>
+}
+
+@section Scripts {
+        <script>
+            // Проверка паролей на совпадение
+            const passwordInput = document.getElementById('regPassword');
+            const confirmPasswordInput = document.getElementById('regConfirmPassword');
+            const form = document.querySelector('form[action="/Admin/Register"]');
+
+            form.addEventListener('submit', function(e) {
+                if (passwordInput.value !== confirmPasswordInput.value) {
+                    e.preventDefault();
+                    alert('Пароли не совпадают!');
+                }
+            });
+
+            // Если нет админов, модальное окно уже открыто с помощью атрибутов и стилей
+            // В противном случае инициализируем его для возможности показа
+        @if (ViewBag.HasAdmins == true)
+        {
+            <text>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const firstAdminModal = new bootstrap.Modal(document.getElementById('firstAdminModal'));
+                    });
+            </text>
+        }
+        </script>
+}

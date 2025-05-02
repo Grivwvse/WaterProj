@@ -22,6 +22,31 @@ namespace WaterProj.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("WaterProj.Models.Administrator", b =>
+                {
+                    b.Property<int>("AdminId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AdminId"));
+
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("AdminId");
+
+                    b.ToTable("Administrators");
+                });
+
             modelBuilder.Entity("WaterProj.Models.Advantage", b =>
                 {
                     b.Property<int>("AdvantageId")
@@ -175,9 +200,18 @@ namespace WaterProj.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RouteId"));
 
+                    b.Property<string>("BlockReason")
+                        .HasColumnType("text");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Map")
                         .IsRequired()
@@ -314,7 +348,7 @@ namespace WaterProj.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ImagePath")
+                    b.Property<string>("IMO")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -322,9 +356,87 @@ namespace WaterProj.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("ShipTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TransporterId")
+                        .HasColumnType("integer");
+
                     b.HasKey("ShipId");
 
+                    b.HasIndex("ShipTypeId");
+
+                    b.HasIndex("TransporterId");
+
                     b.ToTable("Ships");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.ShipImage", b =>
+                {
+                    b.Property<int>("ShipImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ShipImageId"));
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ShipId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.HasKey("ShipImageId");
+
+                    b.HasIndex("ShipId");
+
+                    b.ToTable("ShipImages");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.ShipType", b =>
+                {
+                    b.Property<int>("ShipTypesId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ShipTypesId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ShipTypesId");
+
+                    b.ToTable("ShipTypes");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.ShipСonvenience", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ShipId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("СonvenienceId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipId");
+
+                    b.HasIndex("СonvenienceId");
+
+                    b.ToTable("ShipСonveniences");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Stop", b =>
@@ -358,6 +470,12 @@ namespace WaterProj.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TransporterId"));
 
+                    b.Property<string>("BlockReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("BlockedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -365,6 +483,9 @@ namespace WaterProj.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Login")
                         .IsRequired()
@@ -410,6 +531,27 @@ namespace WaterProj.Migrations
                     b.HasIndex("RouteRatingId");
 
                     b.ToTable("ReviewImages");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.Сonvenience", b =>
+                {
+                    b.Property<int>("ShipСonvenienceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ShipСonvenienceId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ShipСonvenienceId");
+
+                    b.ToTable("Сonveniences");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Feedback", b =>
@@ -526,6 +668,55 @@ namespace WaterProj.Migrations
                     b.Navigation("Stop");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.Ship", b =>
+                {
+                    b.HasOne("WaterProj.Models.ShipType", "ShipType")
+                        .WithMany("Ships")
+                        .HasForeignKey("ShipTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WaterProj.Models.Transporter", "Transporter")
+                        .WithMany("Ships")
+                        .HasForeignKey("TransporterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShipType");
+
+                    b.Navigation("Transporter");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.ShipImage", b =>
+                {
+                    b.HasOne("WaterProj.Models.Ship", "Ship")
+                        .WithMany("ShipImages")
+                        .HasForeignKey("ShipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ship");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.ShipСonvenience", b =>
+                {
+                    b.HasOne("WaterProj.Models.Ship", "Ship")
+                        .WithMany("ShipСonveniences")
+                        .HasForeignKey("ShipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WaterProj.Models.Сonvenience", "Сonvenience")
+                        .WithMany("ShipСonveniences")
+                        .HasForeignKey("СonvenienceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ship");
+
+                    b.Navigation("Сonvenience");
+                });
+
             modelBuilder.Entity("WaterProj.Models.WaterProj.Models.ReviewImage", b =>
                 {
                     b.HasOne("WaterProj.Models.RouteRating", "RouteRating")
@@ -568,6 +759,15 @@ namespace WaterProj.Migrations
             modelBuilder.Entity("WaterProj.Models.Ship", b =>
                 {
                     b.Navigation("Routes");
+
+                    b.Navigation("ShipImages");
+
+                    b.Navigation("ShipСonveniences");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.ShipType", b =>
+                {
+                    b.Navigation("Ships");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Stop", b =>
@@ -578,6 +778,13 @@ namespace WaterProj.Migrations
             modelBuilder.Entity("WaterProj.Models.Transporter", b =>
                 {
                     b.Navigation("Routes");
+
+                    b.Navigation("Ships");
+                });
+
+            modelBuilder.Entity("WaterProj.Models.Сonvenience", b =>
+                {
+                    b.Navigation("ShipСonveniences");
                 });
 #pragma warning restore 612, 618
         }

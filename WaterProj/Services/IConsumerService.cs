@@ -11,5 +11,6 @@ namespace WaterProj.Services
         Task<ConsumerAccontDto> GetAllAccountInfo(int id);
 
         Task<ServiceResult> UpdateProfileImage(int consumerId, IFormFile imageFile);
+        Task<ServiceResult> ChangePasswordAsync(int consumerId, string currentPassword, string newPassword);
     }
 }

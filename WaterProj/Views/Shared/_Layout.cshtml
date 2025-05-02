@@ -3,29 +3,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WaterProj</title>
+    <title>@ViewData["Title"] - NaviWave </title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WaterProj.styles.css" asp-append-version="true" />
     <link href="~/lib/bootstrap-icons-1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/images/NaviWaveLogo.png" />
+
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Route" asp-action="FindRoutes">WaterProj</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Route" asp-action="FindRoutes">NaviWave</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
                         @if (User.Identity.IsAuthenticated)
                         {
                             @if (User.IsInRole("transporter"))
@@ -34,10 +31,16 @@
                                     <a class="nav-link text-dark" asp-area="" asp-controller="TransporterAccount" asp-action="Account">Account</a>
                                 </li>
                             }
-                            else
+                            else if (User.IsInRole("consumer"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="ConsumerAccount" asp-action="Index">Account</a>
+                                </li>
+                            }
+                            else if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Administrator" asp-action="AdminPannel">Панель администратора</a>
                                 </li>
                             }
 
@@ -51,6 +54,10 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Authorization" asp-action="Index">Sign in</a>
                             </li>
                         }
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -65,7 +72,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - WaterProj - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - NaviWave - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

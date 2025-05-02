@@ -1,53 +1,139 @@
-﻿@{
-    ViewData["Title"] = "Построение маршрута";
-}
+﻿@model WaterProj.DTOs.CreateRouteDto
 
-<h2>Создание маршрута</h2>
-
-<div class="form-group">
-    <label for="routeName">Название маршрута:</label>
-    <input type="text" class="form-control" id="routeName" name="routeName" required />
-</div>
-
-<div class="form-group">
-    <label for="routeDescription">Описание маршрута:</label>
-    <textarea class="form-control" id="routeDescription" name="routeDescription"></textarea>
-</div>
-
-<form id="imageForm">
-    <div class="form-group">
-        <label for="images">Фотографии маршрута:</label>
-        <input type="file" class="form-control" id="images" name="Images" multiple />
+ <div class="container mt-5">
+    <!-- Заголовок -->
+    <div class="text-center mb-4">
+        <h2 class="text-primary">Создание маршрута</h2>
     </div>
-</form>
 
+    <!-- Название маршрута -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="routeName" class="form-label">Название маршрута:</label>
+                <input type="text" class="form-control" id="routeName" name="routeName" required />
+            </div>
 
-<!-- Только на нужной странице! -->
-<div id="myMap" style="width: 100%; height: 500px;"></div>
+            <div class="form-group mb-3">
+                <label for="routeDescription" class="form-label">Описание маршрута:</label>
+                <textarea class="form-control" id="routeDescription" name="routeDescription" rows="3"></textarea>
+            </div>
+        </div>
+    </div>
 
-<div class="stop-form mt-3">
-    <label>Координаты:</label>
-    <input type="text" id="coords" class="form-control" readonly />
+    <!-- Фотографии маршрута -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <form id="imageForm">
+                <div class="form-group mb-3">
+                    <label for="images" class="form-label">Фотографии маршрута:</label>
+                    <input type="file" class="form-control" id="images" name="Images" multiple />
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <label>Название (iconContent):</label>
-    <input type="text" id="iconContent" class="form-control" />
+    <!-- Карта -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <h5 class="text-primary">Карта маршрута</h5>
+            <div id="myMap" class="border rounded" style="width: 100%; height: 400px;"></div>
+        </div>
+    </div>
 
-    <label>Подсказка (hintContent):</label>
-    <input type="text" id="hint" class="form-control" />
+    <!-- Остановки -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <h5 class="text-primary">Добавление остановок</h5>
+            <div class="form-group mb-3">
+                <label for="coords" class="form-label">Координаты:</label>
+                <input type="text" id="coords" class="form-control" readonly />
+            </div>
+            <div class="form-group mb-3">
+                <label for="iconContent" class="form-label">Название (iconContent):</label>
+                <input type="text" id="iconContent" class="form-control" />
+            </div>
+            <div class="form-group mb-3">
+                <label for="scheduleDescription" class="form-label">Опишите ваше расписание:</label>
+                <textarea id="scheduleDescription" class="form-control" rows="3"></textarea>
+            </div>
+            <button id="saveStop" class="btn btn-primary">Сохранить остановку</button>
+        </div>
+    </div>
 
-    <label>Балун (balloonContent):</label>
-    <input type="text" id="balloon" class="form-control" />
+    <!-- Выбор корабля -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <h5 class="text-primary">Выбор корабля</h5>
+            <div class="form-group mb-3">
+                <label for="shipSelect" class="form-label">Выберите корабль для маршрута:</label>
+                <select class="form-select" id="shipSelect" required>
+                    <option value="" selected disabled>Выберите судно</option>
+                    @if (@Model.Ships == null || !@Model.Ships.Any())
+                    {
+                        <div class="alert alert-warning mt-2">
+                            У вас нет активных судов. <a href="/Ship/CreateShip">Создайте</a> или активируйте судно.
+                        </div>
+                    }
+                    else
+                    {
+                    @foreach (var ship in @Model.Ships)
+                    {
+                        <option value="@ship.ShipId">@ship.Name (@ship.ShipType.Name)</option>
+                    }
+                    }
 
-    <label>Опишите ваше расписание:</label>
-    <textarea id="scheduleDescription" class="form-control" rows="3"></textarea>
+                </select>
 
-    <button id="saveStop" class="btn btn-primary mt-2">Сохранить остановку</button>
+                <div class="form-text">Только активные суда доступны для выбора</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body text-center">
+        <input type="hidden" name="RouteJson" id="routeJson" />
+        <button type="submit" id="saveRoute" class="btn btn-success btn-lg">
+            <i class="bi bi-save"></i> Сохранить маршрут
+        </button>
+    </div>
+
+    <!-- Модальное окно для создания новой остановки -->
+    <div class="modal fade" id="createStopModal" tabindex="-1" aria-labelledby="createStopModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createStopModalLabel">Новая остановка</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="stopModalForm">
+                        <div class="mb-3">
+                            <label for="modal-stopName" class="form-label">Название остановки</label>
+                            <input type="text" class="form-control" id="modal-stopName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Координаты</label>
+                            <p id="modal-stopCoords" class="form-control-plaintext"></p>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="saveStopFromModal">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сохранение маршрута -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body text-center">
+            <form method="post" asp-action="SaveRoute" id="routeForm">
+                <input type="hidden" name="RouteJson" id="routeJson" />
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-save"></i> Сохранить маршрут
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
-
-
-<button type="submit" id="saveRoute" class="btn btn-primary">Сохранить маршрут</button>
-
-<form method="post" asp-action="SaveRoute" id="routeForm">
-    <input type="hidden" name="RouteJson" id="routeJson" />
-    <button type="submit" class="btn btn-success mt-3">Сохранить маршрут</button>
-</form>

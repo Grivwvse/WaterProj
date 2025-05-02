@@ -7,6 +7,7 @@ namespace WaterProj.Services
     {
         Task<Consumer> AuthConsumer(string login, string password);
         Task<Transporter> AuthTransporter(string login, string password);
+        Task<Administrator> AuthAdmin(string login, string password);
         Task<ServiceResult> CommonAuth(string login, string password, string userType, HttpContext httpContext);
     }
 }

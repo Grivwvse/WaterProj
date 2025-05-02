@@ -1,0 +1,225 @@
+﻿@model List<WaterProj.Models.Transporter>
+@{
+    ViewData["Title"] = "Управление пользователями";
+    var consumers = ViewBag.Consumers as List<WaterProj.Models.Consumer>;
+    var transporters = ViewBag.Transporters as List<WaterProj.Models.Transporter>;
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Управление пользователями</h2>
+
+    <ul class="nav nav-tabs mb-4" id="userTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="transporters-tab" data-bs-toggle="tab" data-bs-target="#transporters"
+                    type="button" role="tab" aria-controls="transporters" aria-selected="true">
+                Перевозчики
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="consumers-tab" data-bs-toggle="tab" data-bs-target="#consumers"
+                    type="button" role="tab" aria-controls="consumers" aria-selected="false">
+                Пользователи
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="userTabsContent">
+        <!-- Вкладка с перевозчиками -->
+        <div class="tab-pane fade show active" id="transporters" role="tabpanel" aria-labelledby="transporters-tab">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Список перевозчиков</h5>
+                </div>
+                <div class="card-body">
+                    @if (transporters != null && transporters.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>Логин</th>
+                                        <th>Рейтинг</th>
+                                        <th>Email</th>
+                                        <th>Статус</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transporter in transporters)
+                                    {
+                                        <tr class="@(transporter.IsBlocked ? "table-danger" : "")">
+                                            <td>@transporter.Name</td>
+                                            <td>@transporter.Login</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="text-warning me-1">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            @if (i <= Math.Floor(transporter.Rating))
+                                                            {
+                                                                <i class="bi bi-star-fill"></i>
+                                                            }
+                                                            else if (i == Math.Ceiling(transporter.Rating) && transporter.Rating % 1 != 0)
+                                                            {
+                                                                <i class="bi bi-star-half"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="bi bi-star"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <span>@transporter.Rating.ToString("F1")</span>
+                                                </div>
+                                            </td>
+                                            <td>@transporter.Email</td>
+                                            <td>
+                                                @if (transporter.IsBlocked)
+                                                {
+                                                    <span class="badge bg-danger">Заблокирован</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Активен</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="@Url.Action("TransporterDetails", new { transporterId = transporter.TransporterId })"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-info-circle"></i> Детали
+                                                    </a>
+
+                                                    @if (!transporter.IsBlocked)
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#blockTransporterModal"
+                                                                data-id="@transporter.TransporterId"
+                                                                data-name="@transporter.Name">
+                                                            <i class="bi bi-lock-fill"></i> Заблокировать
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="@Url.Action("UnblockTransporter", new { transporterId = transporter.TransporterId })"
+                                                           class="btn btn-sm btn-outline-success">
+                                                            <i class="bi bi-unlock"></i> Разблокировать
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">В системе нет зарегистрированных перевозчиков</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка с потребителями -->
+        <div class="tab-pane fade" id="consumers" role="tabpanel" aria-labelledby="consumers-tab">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Список пользователей</h5>
+                </div>
+                <div class="card-body">
+                    @if (consumers != null && consumers.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Имя</th>
+                                        <th>Логин</th>
+                                        <th>Email</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var consumer in consumers)
+                                    {
+                                        <tr>
+                                            <td>@consumer.Name</td>
+                                            <td>@consumer.Login</td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-info-circle"></i> Детали
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">В системе нет зарегистрированных пользователей</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для блокировки перевозчика -->
+<div class="modal fade" id="blockTransporterModal" tabindex="-1" aria-labelledby="blockTransporterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="BlockTransporter" method="post">
+                <input type="hidden" name="transporterId" id="transporterId" />
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="blockTransporterModalLabel">Блокировка перевозчика</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Вы собираетесь заблокировать перевозчика: <strong id="transporterName"></strong></p>
+                    <p class="text-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Внимание! После блокировки все маршруты перевозчика станут недоступны для пользователей.
+                    </p>
+
+                    <div class="form-group mb-3">
+                        <label for="blockReason" class="form-label">Причина блокировки:</label>
+                        <textarea name="blockReason" id="blockReason" class="form-control" rows="3" required></textarea>
+                        <div class="form-text">Причина будет видна перевозчику при попытке входа в систему</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger">Заблокировать перевозчика</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Передача данных в модальное окно блокировки
+        document.addEventListener('DOMContentLoaded', function() {
+            const blockModal = document.getElementById('blockTransporterModal');
+            if (blockModal) {
+                blockModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const transporterId = button.getAttribute('data-id');
+                    const transporterName = button.getAttribute('data-name');
+
+                    document.getElementById('transporterId').value = transporterId;
+                    document.getElementById('transporterName').textContent = transporterName;
+                });
+            }
+        });
+    </script>
+}

@@ -15,12 +15,14 @@ namespace WaterProj.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly PasswordHasher<Consumer> _passwordHasher;
+        private readonly PasswordHasher<Administrator> _passwordHasherA;
         private readonly PasswordHasher<Transporter> _passwordHasherT;
         public AuthorizationService(ApplicationDbContext context)
         {
             _context = context;
             _passwordHasher = new PasswordHasher<Consumer>();
             _passwordHasherT = new PasswordHasher<Transporter>();
+            _passwordHasherA = new PasswordHasher<Administrator>();
         }
 
         public async Task<ServiceResult> CommonAuth(string login, string password, string userType, HttpContext httpContext)
@@ -42,14 +44,54 @@ namespace WaterProj.Services
             else if (userType == "Transporter")
             {
                 var transporter = await AuthTransporter(login, password);
+                if (transporter == null)
+                {
+                    return new ServiceResult { Success = false, ErrorMessage = "Invalid login or password." };
+                }
+                if (transporter.IsBlocked)
+                {
+                    string blockReason = string.IsNullOrEmpty(transporter.BlockReason)
+                        ? "Учетная запись заблокирована администратором."
+                        : $"Учетная запись заблокирована администратором. Причина: {transporter.BlockReason}";
+
+                    return new ServiceResult { Success = false, ErrorMessage = blockReason };
+                }
                 bool isCached = await CasheUser(transporter, httpContext); // Await the Task<bool> result
                 if (transporter != null || isCached)
                 {
                     return new ServiceResult { Success = true };
                 }
             }
+            else if (userType == "Admin")
+            {
+                var admin = await AuthAdmin(login, password);
+                bool isCached = await CasheUser(admin, httpContext);
+                if (admin != null || isCached)
+                {
+                    return new ServiceResult { Success = true };
+                }
+            }
+
 
             return new ServiceResult { Success = false, ErrorMessage = "Invalid login or password." };
+        }
+
+        public async Task<Administrator> AuthAdmin(string login, string password)
+        {
+            var admin = _context.Administrators.FirstOrDefault(a => a.Login == login);
+
+            if (admin == null)
+            {
+                return null;
+            }
+
+            var passwordVerificationResult = _passwordHasherA.VerifyHashedPassword(admin, admin.PasswordHash, password);
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+
+            return admin;
         }
 
 
@@ -103,6 +145,12 @@ namespace WaterProj.Services
                 claims.Add(new Claim(ClaimTypes.Name, transporter.Login));
                 claims.Add(new Claim(ClaimTypes.NameIdentifier, transporter.TransporterId.ToString()));
                 claims.Add(new Claim(ClaimTypes.Role, "transporter"));
+            }
+            else if (user is Administrator admin)
+            {
+                claims.Add(new Claim(ClaimTypes.Name, admin.Login));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, admin.AdminId.ToString()));
+                claims.Add(new Claim(ClaimTypes.Role, "admin"));
             }
             else
             {

@@ -31,6 +31,9 @@ builder.Services.AddScoped<ITransporterService, TransporterService>();
 builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IShipService, ShipService>();
+builder.Services.AddScoped<IAdministratorService, AdministratorService>();
+
 
 
 

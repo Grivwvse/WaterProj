@@ -30,6 +30,30 @@ namespace WaterProj.Controllers
            return View(consumerAccontDto);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
+        {
+            if (model.NewPassword != model.ConfirmPassword)
+            {
+                TempData["ErrorMessage"] = "Новый пароль и подтверждение пароля не совпадают.";
+                return RedirectToAction("Index");
+            }
+
+            int currentConsumerId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _consumerService.ChangePasswordAsync(currentConsumerId, model.CurrentPassword, model.NewPassword);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = "Пароль успешно изменен!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.ErrorMessage ?? "Произошла ошибка при смене пароля.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
         // Редактирование данных пользователя
         [HttpPost]
         public async Task<IActionResult> Edit(Consumer model)

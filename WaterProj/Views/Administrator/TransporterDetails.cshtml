@@ -1,0 +1,245 @@
+﻿@model WaterProj.Models.Transporter
+
+@{
+    ViewData["Title"] = "Детали перевозчика";
+}
+
+<div class="container mt-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="AdminPannel">Панель администратора</a></li>
+            <li class="breadcrumb-item"><a asp-action="ManageUsers">Управление пользователями</a></li>
+            <li class="breadcrumb-item active">Детали перевозчика</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Информация о перевозчике</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                             style="width: 120px; height: 120px;">
+                            <i class="bi bi-building text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="mt-3">@Model.Name</h4>
+                        <p class="text-muted mb-1">@Model.Login</p>
+                        <p class="text-muted">@Model.Email</p>
+
+                        @if (Model.IsBlocked)
+                        {
+                            <div class="mt-3">
+                                <span class="badge bg-danger p-2">Заблокирован</span>
+                                <p class="small text-muted mt-2">
+                                    <i class="bi bi-clock"></i>
+                                    Заблокирован @Model.BlockedAt?.ToString("dd.MM.yyyy HH:mm")
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-3">
+                                <span class="badge bg-success p-2">Активен</span>
+                            </div>
+                        }
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Рейтинг:</span>
+                            <span class="text-primary fw-bold">@Model.Rating.ToString("F1")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Телефон:</span>
+                            <span>@Model.Phone</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Кораблей:</span>
+                            <span class="text-primary fw-bold">@(Model.Ships?.Count ?? 0)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Маршрутов:</span>
+                            <span class="text-primary fw-bold">@(Model.Routes?.Count ?? 0)</span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-4">
+                        @if (Model.IsBlocked)
+                        {
+                            <div class="alert alert-danger">
+                                <h6>Причина блокировки:</h6>
+                                <p class="mb-0">@(string.IsNullOrEmpty(Model.BlockReason) ? "Не указана" : Model.BlockReason)</p>
+                            </div>
+
+                            <a asp-action="UnblockTransporter" asp-route-transporterId="@Model.TransporterId"
+                               class="btn btn-success w-100">
+                                <i class="bi bi-unlock"></i> Разблокировать перевозчика
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-danger w-100"
+                                    data-bs-toggle="modal" data-bs-target="#blockTransporterModal"
+                                    data-id="@Model.TransporterId" data-name="@Model.Name">
+                                <i class="bi bi-lock-fill"></i> Заблокировать перевозчика
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">О компании</h5>
+                </div>
+                <div class="card-body">
+                    <p>@Model.Description</p>
+                </div>
+            </div>
+
+            <!-- Корабли перевозчика -->
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Корабли перевозчика</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Ships != null && Model.Ships.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>Тип</th>
+                                        <th>IMO</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ship in Model.Ships)
+                                    {
+                                        <tr>
+                                            <td>@ship.Name</td>
+                                            <td>@(ship.ShipType?.Name ?? "Не указан")</td>
+                                            <td>@(string.IsNullOrEmpty(ship.IMO) ? "Не указан" : ship.IMO)</td>
+                                            <td>
+                                                <span class="badge @(ship.Status == ShipStatus.Active ? "bg-success" :
+                                                        ship.Status == ShipStatus.Maintenance ? "bg-warning" : "bg-danger")">
+                                                    @(ship.Status == ShipStatus.Active ? "Активен" :
+                                                        ship.Status == ShipStatus.Maintenance ? "На обслуживании" : "Неактивен")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">У перевозчика нет кораблей</div>
+                    }
+                </div>
+            </div>
+
+            <!-- Маршруты перевозчика -->
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Маршруты перевозчика</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Routes != null && Model.Routes.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>Корабль</th>
+                                        <th>Рейтинг</th>
+                                        <th>Статус</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var route in Model.Routes)
+                                    {
+                                        <tr>
+                                            <td>@route.Name</td>
+                                            <td>@(route.Ship?.Name ?? "Не назначен")</td>
+                                            <td>@route.Rating.ToString("F1")</td>
+                                            <td>
+                                                @if (route.IsBlocked)
+                                                {
+                                                    <span class="badge bg-danger">Заблокирован</span>
+                                                }
+                                                else if (route.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Активен</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Не активен</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-action="ManageRoutes" asp-route-routeId="@route.RouteId"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-search"></i> Просмотр
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">У перевозчика нет маршрутов</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для блокировки перевозчика -->
+<div class="modal fade" id="blockTransporterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="BlockTransporter" method="post">
+                <input type="hidden" name="transporterId" id="transporterId" value="@Model.TransporterId" />
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Блокировка перевозчика</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Вы собираетесь заблокировать перевозчика: <strong>@Model.Name</strong></p>
+                    <p class="text-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Внимание! После блокировки все маршруты перевозчика станут недоступны для пользователей.
+                    </p>
+
+                    <div class="form-group mb-3">
+                        <label for="blockReason" class="form-label">Причина блокировки:</label>
+                        <textarea name="blockReason" id="blockReason" class="form-control" rows="3" required></textarea>
+                        <div class="form-text">Причина будет видна перевозчику при попытке входа в систему</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger">Заблокировать перевозчика</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

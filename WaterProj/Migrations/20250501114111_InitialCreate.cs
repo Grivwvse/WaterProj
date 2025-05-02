@@ -13,6 +13,35 @@ namespace WaterProj.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Сonveniences",
+                columns: table => new
+                {
+                    ShipСonvenienceId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Сonveniences", x => x.ShipСonvenienceId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Administrators",
+                columns: table => new
+                {
+                    AdminId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Login = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Administrators", x => x.AdminId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Advantages",
                 columns: table => new
                 {
@@ -60,18 +89,16 @@ namespace WaterProj.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Ships",
+                name: "ShipTypes",
                 columns: table => new
                 {
-                    ShipId = table.Column<int>(type: "integer", nullable: false)
+                    ShipTypesId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    ImagePath = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ships", x => x.ShipId);
+                    table.PrimaryKey("PK_ShipTypes", x => x.ShipTypesId);
                 });
 
             migrationBuilder.CreateTable(
@@ -101,11 +128,44 @@ namespace WaterProj.Migrations
                     Phone = table.Column<string>(type: "text", nullable: false),
                     Login = table.Column<string>(type: "text", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    IsBlocked = table.Column<bool>(type: "boolean", nullable: false),
+                    BlockReason = table.Column<string>(type: "text", nullable: true),
+                    BlockedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Rating = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transporters", x => x.TransporterId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ships",
+                columns: table => new
+                {
+                    ShipId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    IMO = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ShipTypeId = table.Column<int>(type: "integer", nullable: false),
+                    TransporterId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ships", x => x.ShipId);
+                    table.ForeignKey(
+                        name: "FK_Ships_ShipTypes_ShipTypeId",
+                        column: x => x.ShipTypeId,
+                        principalTable: "ShipTypes",
+                        principalColumn: "ShipTypesId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Ships_Transporters_TransporterId",
+                        column: x => x.TransporterId,
+                        principalTable: "Transporters",
+                        principalColumn: "TransporterId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -120,6 +180,9 @@ namespace WaterProj.Migrations
                     Map = table.Column<string>(type: "text", nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: false),
                     Schedule = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsBlocked = table.Column<bool>(type: "boolean", nullable: false),
+                    BlockReason = table.Column<string>(type: "text", nullable: true),
                     TransporterId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -136,6 +199,53 @@ namespace WaterProj.Migrations
                         column: x => x.TransporterId,
                         principalTable: "Transporters",
                         principalColumn: "TransporterId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShipСonveniences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ShipId = table.Column<int>(type: "integer", nullable: false),
+                    СonvenienceId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShipСonveniences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ShipСonveniences_Ships_ShipId",
+                        column: x => x.ShipId,
+                        principalTable: "Ships",
+                        principalColumn: "ShipId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ShipСonveniences_Сonveniences_СonvenienceId",
+                        column: x => x.СonvenienceId,
+                        principalTable: "Сonveniences",
+                        principalColumn: "ShipСonvenienceId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShipImages",
+                columns: table => new
+                {
+                    ShipImageId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ImagePath = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: true),
+                    ShipId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShipImages", x => x.ShipImageId);
+                    table.ForeignKey(
+                        name: "FK_ShipImages_Ships_ShipId",
+                        column: x => x.ShipId,
+                        principalTable: "Ships",
+                        principalColumn: "ShipId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -176,7 +286,8 @@ namespace WaterProj.Migrations
                     RouteId = table.Column<int>(type: "integer", nullable: false),
                     ConsumerId = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    IsFeedback = table.Column<bool>(type: "boolean", nullable: false)
+                    IsFeedback = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -363,11 +474,39 @@ namespace WaterProj.Migrations
                 name: "IX_RouteStop_StopId",
                 table: "RouteStop",
                 column: "StopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShipСonveniences_СonvenienceId",
+                table: "ShipСonveniences",
+                column: "СonvenienceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShipСonveniences_ShipId",
+                table: "ShipСonveniences",
+                column: "ShipId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShipImages_ShipId",
+                table: "ShipImages",
+                column: "ShipId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ships_ShipTypeId",
+                table: "Ships",
+                column: "ShipTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ships_TransporterId",
+                table: "Ships",
+                column: "TransporterId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Administrators");
+
             migrationBuilder.DropTable(
                 name: "Feedbacks");
 
@@ -387,6 +526,12 @@ namespace WaterProj.Migrations
                 name: "RouteStop");
 
             migrationBuilder.DropTable(
+                name: "ShipСonveniences");
+
+            migrationBuilder.DropTable(
+                name: "ShipImages");
+
+            migrationBuilder.DropTable(
                 name: "Advantages");
 
             migrationBuilder.DropTable(
@@ -396,6 +541,9 @@ namespace WaterProj.Migrations
                 name: "Stops");
 
             migrationBuilder.DropTable(
+                name: "Сonveniences");
+
+            migrationBuilder.DropTable(
                 name: "Consumers");
 
             migrationBuilder.DropTable(
@@ -403,6 +551,9 @@ namespace WaterProj.Migrations
 
             migrationBuilder.DropTable(
                 name: "Ships");
+
+            migrationBuilder.DropTable(
+                name: "ShipTypes");
 
             migrationBuilder.DropTable(
                 name: "Transporters");

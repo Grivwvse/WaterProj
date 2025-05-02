@@ -1,0 +1,59 @@
+﻿@model WaterProj.DTOs.RouteDetailsDto
+
+<div class="card shadow-lg mb-5">
+    <div class="card-body">
+        <h3 class="card-title text-primary">
+            <i class="bi bi-person-badge me-2"></i>Информация о перевозчике
+        </h3>
+
+        <div class="row align-items-center">
+
+
+            <div class="col-md-10">
+                <h4 class="card-title mb-2">@Model.Transporter.Name</h4>
+
+                <!-- Рейтинг перевозчика -->
+                <div class="mb-2">
+                    <span class="text-warning">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Floor(Model.Transporter.Rating)) // Полные звезды
+                            {
+                                <i class="bi bi-star-fill"></i>
+                            }
+                            else if (i == Math.Ceiling(Model.Transporter.Rating) && Model.Transporter.Rating % 1 != 0) // Половина звезды
+                            {
+                                <i class="bi bi-star-half"></i>
+                            }
+                            else // Пустые звезды
+                            {
+                                <i class="bi bi-star"></i>
+                            }
+                        }
+                    </span>
+                    <span class="text-muted ms-2">(@Model.Transporter.Rating из 5)</span>
+                </div>
+
+                <!-- Описание перевозчика -->
+                @if (!string.IsNullOrEmpty(Model.Transporter.Description))
+                {
+                    <p class="card-text text-muted">@Model.Transporter.Description</p>
+                }
+
+                <!-- Контактная информация -->
+                <div class="mb-3">
+                    <p class="mb-1">
+                        <i class="bi bi-envelope-fill text-primary me-2"></i>
+                        <a href="mailto:@Model.Transporter.Email" class="text-decoration-none">@Model.Transporter.Email</a>
+                    </p>
+                    <p class="mb-1">
+                        <i class="bi bi-telephone-fill text-primary me-2"></i>
+                        <a href="tel:@Model.Transporter.Phone" class="text-decoration-none">@Model.Transporter.Phone</a>
+                    </p>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>

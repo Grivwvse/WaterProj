@@ -1,80 +1,707 @@
 ﻿@model WaterProj.DTOs.TransporterAccountDto
 
-<h2>Редактирование профиля</h2>
+<div class="container mt-5">
+    <!-- Профиль и статистика -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 bg-light bg-opacity-75">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="/images/avatars/default-avatar.jpg"
+                             class="rounded-circle img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;" alt="Фото профиля">
+                    </div>
+                    <h4 class="card-title">@Model.Transporter.Name</h4>
+                    <p class="text-muted mb-1">@Model.Transporter.Login</p>
+                    <p class="text-muted">Перевозчик</p>
 
+                    <!-- Рейтинг перевозчика -->
+                    <div class="mb-3">
+                        <div class="text-warning">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= Math.Floor(Model.Transporter.Rating))
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                                else if (i == Math.Ceiling(Model.Transporter.Rating) && Model.Transporter.Rating % 1 != 0)
+                                {
+                                    <i class="bi bi-star-half"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star"></i>
+                                }
+                            }
+                        </div>
+                        <span class="text-muted">@Model.Transporter.Rating из 5</span>
+                    </div>
 
-<section class="bg2">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <h2 class="text-center text-uppercase text-secondary">Личный кабинет</h2>
+                    <div class="d-grid gap-2 mt-4">
+                        <button id="editButton" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Редактировать профиль
+                        </button>
+                        <button id="changePasswordButton" type="button" class="btn btn-outline-secondary"
+                                data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="bi bi-key"></i> Изменить пароль
+                        </button>
+                        <form asp-action="Logout" method="post">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6 col-sm-12">
-                <h5 class="text-center">Персональные данные</h5>
-                <hr class="mx-5">
-                <form asp-action="Edit" method="post" id="editForm">
-                    <div class="form-group">
-                        <label asp-for="Transporter.Login"></label>
-                        <input name="Login" value="@Model.Transporter.Login" class="form-control" id="login" readonly="readonly" />
-                    </div>
 
-                    <div class="form-group">
-                        <label asp-for="Transporter.Name"></label>
-                        <<input name="Name" value="@Model.Transporter.Name" class="form-control" id="name" readonly="readonly" />
-                    </div>
-                    <!-- Добавьте другие поля по необходимости -->
-                    <br />
-                </form>
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 h-100 bg-light bg-opacity-75">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2">Персональные данные</h5>
+                    <form asp-action="Edit" method="post" id="editForm" class="mt-3">
+                        <input type="hidden" name="TransporterId" value="@Model.Transporter.TransporterId" />
 
-                <button id="editButton" class="btn btn-primary">Редактировать</button>
-
-                <form asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-primary">Выйти</button>
-                </form>
-                <div class="row mx-0 mx-md-5">
-                </div>
-            </div>
-
-
-
-            <div class="col-md-6 col-sm-12">
-                <h5 class="text-center">Маршруты</h5>
-                <hr class="mx-5">
-                <div class="list-group">
-                    @foreach (var route in Model.Routes)
-                    {
-
-                        <a href="@Url.Action("RouteDetails", "Route", new { routeID = route.RouteId })" class="list-group-item list-group-item-action" aria-current="true">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">@route.Name</h5>
-                                <small>3 days ago</small>
-                            </div>
-                            <p class="mb-1">Описание</p>
-                            <small>@route.Description</small>
-                        </a>
-                        <!-- Добавьте другие поля по необходимости 
-                        <div class="list-group justify-content-center d-flex ">
-                            <div href="#" class="list-group-item unclickable" aria-current="true">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">@route.Name</h5>
-                                    <small>2022-2024</small>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input name="Login" value="@Model.Transporter.Login" class="form-control" id="login" readonly="readonly" placeholder="Логин" />
+                                    <label for="login">Логин</label>
                                 </div>
-                                <p class="mb-1">Описание</p>
-                                <small>@route.Description</small>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input name="Name" value="@Model.Transporter.Name" class="form-control" id="name" readonly="readonly" placeholder="Имя" />
+                                    <label for="name">Название компании</label>
+                                </div>
                             </div>
                         </div>
-                        -->
-                    }
-                </div>
-                <div class="row mx-0 mx-md-5">
 
-               
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="email" name="Email" value="@Model.Transporter.Email" class="form-control" id="email" readonly="readonly" placeholder="Email" />
+                                    <label for="email">Электронная почта</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="tel" name="Phone" value="@Model.Transporter.Phone" class="form-control" id="phone" readonly="readonly" placeholder="Телефон" />
+                                    <label for="phone">Телефон</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea name="Description" class="form-control" id="description" style="height: 100px" readonly="readonly" placeholder="Описание">@Model.Transporter.Description</textarea>
+                            <label for="description">Описание компании</label>
+                        </div>
+
+                        <!-- Поле для загрузки аватара (отображается только при редактировании) -->
+                        <div id="avatarUploadContainer" class="mb-3 d-none">
+                            <label for="profileImage" class="form-label">Фото профиля</label>
+                            <input type="file" class="form-control" id="profileImage" name="ProfileImage" accept="image/*" />
+                        </div>
+                    </form>
+
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-white rounded shadow-sm">
+                                <h3 class="text-primary">@(Model.Ships?.Count ?? 0)</h3>
+                                <p class="text-muted mb-0">Кораблей</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-white rounded shadow-sm">
+                                <h3 class="text-primary">@(Model.Routes?.Count ?? 0)</h3>
+                                <p class="text-muted mb-0">Маршрутов</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-white rounded shadow-sm">
+                                <h3 class="text-primary">@(Model.Transporter.Rating)</h3>
+                                <p class="text-muted mb-0">Средний рейтинг</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</section>
 
-<a asp-controller="Route" asp-action="CreateRoute">Регистрация</a>
+    <!-- Модальное окно для изменения пароля -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Изменение пароля</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="ChangePassword" method="post" id="changePasswordForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Текущий пароль</label>
+                            <input type="password" class="form-control" id="currentPassword" name="CurrentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Новый пароль</label>
+                            <input type="password" class="form-control" id="newPassword" name="NewPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Подтвердите новый пароль</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" required>
+                            <div id="passwordMatchError" class="text-danger mt-1 d-none">Пароли не совпадают</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary" id="savePasswordButton">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладки для секций -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs" id="accountTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="ships-tab" data-bs-toggle="tab" data-bs-target="#ships" type="button" role="tab" aria-controls="ships" aria-selected="true">
+                        <i class="bi bi-ship"></i> Мои корабли
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="routes-tab" data-bs-toggle="tab" data-bs-target="#routes" type="button" role="tab" aria-controls="routes" aria-selected="false">
+                        <i class="bi bi-map"></i> Маршруты
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="accountTabsContent">
+                <!-- Вкладка кораблей -->
+                <div class="tab-pane fade show active" id="ships" role="tabpanel" aria-labelledby="ships-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Управление кораблями</h5>
+                        <a asp-controller="Ship" asp-action="CreateShip" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Добавить корабль
+                        </a>
+                    </div>
+
+                    @if (Model.Ships != null && Model.Ships.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Название корабля</th>
+                                        <th>Тип</th>
+                                        <th>Статус</th>
+                                        <th>IMO</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ship in Model.Ships)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (ship.ShipImages != null && ship.ShipImages.Any())
+                                                    {
+                                                        <img src="@ship.ShipImages.First().ImagePath" class="me-2 rounded" alt="@ship.Name" style="width: 40px; height: 40px; object-fit: cover;">
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="bi bi-ship text-secondary"></i>
+                                                        </div>
+                                                    }
+                                                    <span class="fw-bold">@ship.Name</span>
+                                                </div>
+                                            </td>
+                                            <td>@(ship.ShipType.Name ?? "Не указан")</td>
+                                            <td>
+                                                <span class="badge @(ship.Status == ShipStatus.Active ? "bg-success" : ship.Status == ShipStatus.Maintenance ? "bg-warning" : "bg-danger")">
+                                                    @(ship.Status == ShipStatus.Active ? "Активен" : ship.Status == ShipStatus.Maintenance ? "На обслуживании" : "Неактивен")
+                                                </span>
+                                            </td>
+                                            <td>@(string.IsNullOrEmpty(ship.IMO) ? "Не указан" : ship.IMO)</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                                            data-bs-toggle="modal" data-bs-target="#shipModal-@ship.ShipId">
+                                                        <i class="bi bi-info-circle"></i> Подробнее
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm change-status-btn"
+                                                            data-ship-id="@ship.ShipId"
+                                                            data-ship-name="@ship.Name"
+                                                            data-current-status="@ship.Status">
+                                                        <i class="bi bi-toggles"></i> Изменить статус
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Модальное окно для изменения статуса корабля -->
+                        <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="changeStatusModalLabel">Изменение статуса корабля</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Выберите новый статус для корабля <strong id="shipNameText"></strong>:</p>
+
+                                        <div class="mb-3">
+                                            <select class="form-select" id="shipStatus">
+                                                <option value="1">Активен</option>
+                                                <option value="2">На обслуживании</option>
+                                                <option value="3">Не активен</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Предупреждение о маршрутах -->
+                                        <div id="routeWarning" class="alert alert-warning d-none">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                            <span>Внимание! Этот корабль используется в маршрутах. При изменении статуса на "Не активен" или "На обслуживании", соответствующие маршруты не будут отображаться в результатах поиска.</span>
+                                            <div class="mt-2" id="routesList"></div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                        <button type="button" class="btn btn-primary" id="confirmStatusChange">Сохранить</button>
+                                    </div>
+                                    <form id="changeStatusForm" method="post" asp-controller="Ship" asp-action="ChangeStatus">
+                                        <input type="hidden" id="shipIdInput" name="shipId" />
+                                        <input type="hidden" id="statusInput" name="status" />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Модальные окна для каждого корабля -->
+                        @foreach (var ship in Model.Ships)
+                        {
+                            <div class="modal fade" id="shipModal-@ship.ShipId" tabindex="-1" aria-labelledby="shipModalLabel-@ship.ShipId" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="shipModalLabel-@ship.ShipId">@ship.Name</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <!-- Карусель с изображениями корабля -->
+                                                    @if (ship.ShipImages != null && ship.ShipImages.Any())
+                                                    {
+                                                        <div id="shipCarousel-@ship.ShipId" class="carousel slide mb-3" data-bs-ride="carousel">
+                                                            <div class="carousel-inner">
+                                                                @for (int i = 0; i < ship.ShipImages.Count; i++)
+                                                                {
+                                                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                                                        <img src="@ship.ShipImages[i].ImagePath" class="d-block w-100 rounded"
+                                                                             alt="@ship.Name" style="height: 300px; object-fit: cover;">
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                            @if (ship.ShipImages.Count > 1)
+                                                            {
+                                                                <button class="carousel-control-prev" type="button"
+                                                                        data-bs-target="#shipCarousel-@ship.ShipId" data-bs-slide="prev">
+                                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                                    <span class="visually-hidden">Предыдущий</span>
+                                                                </button>
+                                                                <button class="carousel-control-next" type="button"
+                                                                        data-bs-target="#shipCarousel-@ship.ShipId" data-bs-slide="next">
+                                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                                    <span class="visually-hidden">Следующий</span>
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 300px;">
+                                                            <i class="bi bi-ship text-secondary" style="font-size: 5rem;"></i>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <!-- Основная информация о корабле -->
+                                                    <h6 class="text-primary mb-3">Информация о корабле</h6>
+                                                    <table class="table table-sm table-borderless">
+                                                        <tr>
+                                                            <th width="40%">Название:</th>
+                                                            <td>@ship.Name</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Тип корабля:</th>
+                                                            <td>@(ship.ShipType?.Name ?? "Не указан")</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Статус:</th>
+                                                            <td>
+                                                                <span class="badge @(ship.Status == ShipStatus.Active ? "bg-success" : ship.Status == ShipStatus.Maintenance ? "bg-warning" : "bg-danger")">
+                                                                    @(ship.Status == ShipStatus.Active ? "Активен" : ship.Status == ShipStatus.Maintenance ? "На обслуживании" : "Неактивен")
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>IMO номер:</th>
+                                                            <td>@(string.IsNullOrEmpty(ship.IMO) ? "Не указан" : ship.IMO)</td>
+                                                        </tr>
+                                                    </table>
+
+                                                    <h6 class="text-primary mb-2 mt-4">Описание</h6>
+                                                    <p class="mb-4">
+                                                        @(string.IsNullOrEmpty(ship.Description) ? "Описание отсутствует." : ship.Description)
+                                                    </p>
+
+                                                    @if (ship.ShipСonveniences != null && ship.ShipСonveniences.Any())
+                                                    {
+                                                        <h6 class="text-primary mb-2">Удобства на борту</h6>
+                                                        <div class="d-flex flex-wrap gap-2 mb-2">
+                                                            @foreach (var convenience in ship.ShipСonveniences)
+                                                            {
+                                                                <span class="badge bg-light text-dark">
+                                                                    <i class="bi bi-star me-1"></i>@convenience.Сonvenience.Name
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="@Url.Action("Edit", "Ship", new { id = ship.ShipId })" class="btn btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i> Редактировать
+                                            </a>
+                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Закрыть</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i> У вас пока нет добавленных кораблей. Добавьте свой первый корабль для создания маршрутов.
+                        </div>
+                    }
+                </div>
+
+                <!-- Вкладка маршрутов -->
+                <div class="tab-pane fade" id="routes" role="tabpanel" aria-labelledby="routes-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Мои маршруты</h5>
+                        <a asp-controller="Route" asp-action="CreateRoute" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Создать маршрут
+                        </a>
+                    </div>
+
+                    @if (Model.Routes != null && Model.Routes.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Маршрут</th>
+                                        <th>Корабль</th>
+                                        <th>Рейтинг</th>
+                                        <th>Статус</th> <!-- Добавляем новую колонку для отображения статуса -->
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var route in Model.Routes)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <span class="fw-bold">@route.Name</span>
+                                                    <small class="text-muted">@(string.IsNullOrEmpty(route.Description) ? "Без описания" : (route.Description.Length > 60 ? route.Description.Substring(0, 57) + "..." : route.Description))</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="@(route.Ship == null ? "text-danger" : "")">
+                                                    @(route.Ship?.Name ?? "Не назначен")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="text-warning me-1">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            @if (i <= Math.Floor(route.Rating))
+                                                            {
+                                                                <i class="bi bi-star-fill"></i>
+                                                            }
+                                                            else if (i == Math.Ceiling(route.Rating) && route.Rating % 1 != 0)
+                                                            {
+                                                                <i class="bi bi-star-half"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="bi bi-star"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <span class="ms-1">@route.Rating.ToString("F1")</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <!-- Отображаем статус маршрута -->
+                                                @if (route.IsBlocked)
+                                                {
+                                                    <span class="badge bg-danger" title="Блокировка администратором">
+                                                        Заблокирован
+                                                    </span>
+                                                }
+                                                else if (route.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Активен</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Не активен</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="@Url.Action("RouteDetails", "Route", new { routeID = route.RouteId })" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("Edit", "Route", new { id = route.RouteId })" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+
+                                                    <!-- Добавляем кнопку переключения активности -->
+                                                    @if (!route.IsBlocked)
+                                                    {
+                                                        @if (route.IsActive)
+                                                        {
+                                                            <!-- Кнопка деактивации для активных маршрутов -->
+                                                            <form asp-controller="TransporterAccount" asp-action="DeactivateRoute" method="post" class="d-inline">
+                                                                <input type="hidden" name="routeId" value="@route.RouteId" />
+                                                                <button type="submit" class="btn btn-outline-warning btn-sm" title="Деактивировать маршрут">
+                                                                    <i class="bi bi-pause-circle me-1"></i> Деактивировать
+                                                                </button>
+                                                            </form>
+                                                        }
+                                                        else
+                                                        {
+                                                            <!-- Кнопка активации для неактивных маршрутов -->
+                                                            <form asp-controller="TransporterAccount" asp-action="ActivateRoute" method="post" class="d-inline">
+                                                                <input type="hidden" name="routeId" value="@route.RouteId" />
+                                                                @if (route.Ship != null && route.Ship.Status != ShipStatus.Active)
+                                                                {
+                                                                    <button type="submit" class="btn btn-outline-secondary btn-sm route-activation-btn"
+                                                                            data-ship-name="@route.Ship.Name"
+                                                                            data-ship-status="@route.Ship.Status"
+                                                                            title="Корабль должен быть активен">
+                                                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Требуется активация корабля
+                                                                    </button>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Активировать маршрут">
+                                                                        <i class="bi bi-play-circle me-1"></i> Активировать
+                                                                    </button>
+                                                                }
+                                                            </form>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="btn btn-outline-danger btn-sm" disabled title="Маршрут заблокирован администратором">
+                                                            <i class="bi bi-lock-fill me-1"></i> Заблокирован
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i> У вас пока нет созданных маршрутов. Создайте свой первый маршрут для начала работы.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Обработчик для кнопки редактирования
+                const editButton = document.getElementById('editButton');
+                const nameInput = document.getElementById('name');
+                const loginInput = document.getElementById('login');
+                const emailInput = document.getElementById('email');
+                const phoneInput = document.getElementById('phone');
+                const descriptionInput = document.getElementById('description');
+                const avatarUploadContainer = document.getElementById('avatarUploadContainer');
+                const form = document.getElementById('editForm');
+
+                let editing = false;
+
+                editButton.addEventListener('click', () => {
+                    editing = !editing;
+
+                    // Обновляем состояние полей ввода
+                    nameInput.readOnly = !editing;
+                    emailInput.readOnly = !editing;
+                    phoneInput.readOnly = !editing;
+                    descriptionInput.readOnly = !editing;
+
+                    // Отображаем/скрываем поле загрузки аватара
+                    if (editing) {
+                        avatarUploadContainer.classList.remove('d-none');
+                        editButton.textContent = 'Сохранить';
+                        editButton.classList.remove('btn-outline-primary');
+                        editButton.classList.add('btn-success');
+                        editButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
+                    } else {
+                        avatarUploadContainer.classList.add('d-none');
+                        // Отправляем форму
+                        form.submit();
+                    }
+                });
+
+                // Проверка совпадения паролей
+                const newPasswordInput = document.getElementById('newPassword');
+                const confirmPasswordInput = document.getElementById('confirmPassword');
+                const passwordMatchError = document.getElementById('passwordMatchError');
+                const savePasswordButton = document.getElementById('savePasswordButton');
+
+                function checkPasswordMatch() {
+                    if (newPasswordInput.value && confirmPasswordInput.value) {
+                        if (newPasswordInput.value !== confirmPasswordInput.value) {
+                            passwordMatchError.classList.remove('d-none');
+                            savePasswordButton.disabled = true;
+                        } else {
+                            passwordMatchError.classList.add('d-none');
+                            savePasswordButton.disabled = false;
+                        }
+                    }
+                }
+
+                newPasswordInput.addEventListener('input', checkPasswordMatch);
+                confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+                // Обработка отправки формы изменения пароля
+                document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                    if (newPasswordInput.value !== confirmPasswordInput.value) {
+                        e.preventDefault();
+                        passwordMatchError.classList.remove('d-none');
+                    }
+                });
+
+             // Изменение статуса корабля
+             $(document).ready(function() {
+            // Обработка клика по кнопке изменения статуса
+            $('.change-status-btn').click(function() {
+                const shipId = $(this).data('ship-id');
+                const shipName = $(this).data('ship-name');
+                const currentStatus = $(this).data('current-status');
+
+                // Заполняем данные модального окна
+                $('#shipNameText').text(shipName);
+                $('#shipStatus').val(currentStatus);
+                $('#shipIdInput').val(shipId);
+
+                // Проверяем, используется ли корабль в маршрутах
+                checkShipRoutes(shipId);
+
+                // Отображаем модальное окно
+                $('#changeStatusModal').modal('show');
+            });
+
+            // При изменении выбора статуса проверяем необходимость предупреждения
+            $('#shipStatus').change(function() {
+                const shipId = $('#shipIdInput').val();
+                const newStatus = $(this).val();
+
+                // Если выбран неактивный статус, проверяем маршруты
+                if (newStatus != 1) {
+                    checkShipRoutes(shipId);
+                } else {
+                    // Если активный статус, скрываем предупреждение
+                    $('#routeWarning').addClass('d-none');
+                }
+            });
+
+            // Подтверждение изменения статуса
+            $('#confirmStatusChange').click(function() {
+                const status = $('#shipStatus').val();
+                $('#statusInput').val(status);
+                $('#changeStatusForm').submit();
+            });
+
+            // Функция проверки использования корабля в маршрутах
+            function checkShipRoutes(shipId) {
+                $.ajax({
+                    url: '/Ship/GetShipRoutes',
+                    type: 'GET',
+                    data: { shipId: shipId },
+                    success: function(response) {
+                        if (response.success && response.routes && response.routes.length > 0) {
+                            // Корабль используется в маршрутах, показываем предупреждение
+                            $('#routeWarning').removeClass('d-none');
+
+                            // Заполняем список маршрутов
+                            const routesHtml = response.routes.map(route =>
+                                `<div class="mt-1">• ${route.name}</div>`
+                            ).join('');
+
+                            $('#routesList').html('<div class="fw-bold mt-2">Затронутые маршруты:</div>' + routesHtml);
+                        } else {
+                            // Корабль не используется в маршрутах, скрываем предупреждение
+                            $('#routeWarning').addClass('d-none');
+                        }
+                    },
+                    error: function() {
+                        // При ошибке на всякий случай показываем предупреждение
+                        $('#routeWarning').removeClass('d-none');
+                        $('#routesList').html('');
+                    }
+                });
+
+
+                        $(document).ready(function() {
+            // Обработка кнопок активации маршрута с неактивным кораблем
+            $('.route-activation-btn').click(function(e) {
+                e.preventDefault();
+
+                const shipName = $(this).data('ship-name');
+                const shipStatus = $(this).data('ship-status');
+
+                let statusText = shipStatus == 2 ? "находится на обслуживании" : "неактивен";
+
+                // Показываем модальное окно с предупреждением
+                Swal.fire({
+                    title: 'Требуется активация корабля',
+                    html: `Невозможно активировать маршрут, так как корабль <strong>${shipName}</strong> ${statusText}.<br><br>Сначала активируйте корабль в разделе "Мои корабли".`,
+                    icon: 'warning',
+                    confirmButtonText: 'Понятно'
+                });
+            });
+        });
+            }
+        });
+    </script>
+}

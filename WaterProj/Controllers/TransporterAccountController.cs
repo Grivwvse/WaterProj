@@ -20,6 +20,76 @@ namespace WaterProj.Controllers
             _transporterService = transporterService;
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
+        {
+            if (model.NewPassword != model.ConfirmPassword)
+            {
+                TempData["ErrorMessage"] = "Новый пароль и подтверждение пароля не совпадают.";
+                return RedirectToAction("Account");
+            }
+
+            int currentTransporterId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _transporterService.ChangePasswordAsync(currentTransporterId, model.CurrentPassword, model.NewPassword);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = "Пароль успешно изменен!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.ErrorMessage ?? "Произошла ошибка при смене пароля.";
+            }
+
+            return RedirectToAction("Account");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ActivateRoute(int routeId)
+        {
+            Console.WriteLine($"Активация маршрута: routeId={routeId}");
+            return await ChangeRouteStatus(routeId, true);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeactivateRoute(int routeId)
+        {
+            Console.WriteLine($"Деактивация маршрута: routeId={routeId}");
+            return await ChangeRouteStatus(routeId, false);
+        }
+
+        private async Task<IActionResult> ChangeRouteStatus(int routeId, bool isActive)
+        {
+            try
+            {
+                int transporterId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                Console.WriteLine($"ChangeRouteStatus: routeId={routeId}, isActive={isActive}, transporterId={transporterId}");
+
+                var result = await _transporterService.ToggleRouteActivityAsync(routeId, transporterId, isActive);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = isActive
+                        ? "Маршрут успешно активирован."
+                        : "Маршрут успешно деактивирован.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.ErrorMessage;
+                }
+
+                ModelState.Clear();
+                return RedirectToAction("Account");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Ошибка: {ex.Message}";
+                return RedirectToAction("Account");
+            }
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> Account()
         {

@@ -23,6 +23,11 @@ namespace WaterProj.DB
         public DbSet<RouteRating> RouteRatings { get;  set; }
         public DbSet<RouteRatingAdvantage> RouteRatingAdvantages { get;  set; }
         public DbSet<ReviewImage> ReviewImages { get; set; }
+        public DbSet<ShipImage> ShipImages { get; set; }
+        public DbSet<ShipСonvenience> ShipСonveniences { get; set; }
+        public DbSet<Сonvenience> Сonveniences { get; set; }
+        public DbSet<ShipType> ShipTypes { get; set; }
+        public DbSet<Administrator> Administrators { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,6 +52,35 @@ namespace WaterProj.DB
                 .WithMany(s => s.RouteStops)
                 .HasForeignKey(rs => rs.StopId)
                 .OnDelete(DeleteBehavior.Restrict); // чтобы случайно не удалить Stop, если удаляется маршрут
+
+            modelBuilder.Entity<Ship>()
+                .HasMany(s => s.ShipImages)
+                .WithOne(si => si.Ship)
+                .HasForeignKey(si => si.ShipId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Настройка связи многие-ко-многим между Ship и Сonvenience
+            modelBuilder.Entity<ShipСonvenience>()
+                .HasOne(sc => sc.Ship)
+                .WithMany(s => s.ShipСonveniences)
+                .HasForeignKey(sc => sc.ShipId);
+
+            modelBuilder.Entity<ShipСonvenience>()
+                .HasOne(sc => sc.Сonvenience)
+                .WithMany(c => c.ShipСonveniences)
+                .HasForeignKey(sc => sc.СonvenienceId);
+
+            modelBuilder.Entity<Ship>()
+                .HasOne(s => s.ShipType) // У одного Ship есть один ShipType
+                .WithMany(st => st.Ships) // У одного ShipType может быть много Ship
+                .HasForeignKey(s => s.ShipTypeId) // Внешний ключ в таблице Ship
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Ship>()
+                .HasOne(s => s.Transporter)
+                .WithMany(t => t.Ships)
+                .HasForeignKey(s => s.TransporterId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

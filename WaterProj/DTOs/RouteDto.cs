@@ -22,6 +22,7 @@
         public string DepartureTime { get; set; }
         public int DayOfWeek { get; set; } // 0 = Sunday, 1 = Monday, ...
         public string TimeOfDay { get; set; } // "Morning", etc.
+        public int? ExistingStopId { get; set; } // Новое поле для ID существующей остановки
     }
 
     public class RouteLineDto

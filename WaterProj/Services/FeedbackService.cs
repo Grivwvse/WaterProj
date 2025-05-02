@@ -131,7 +131,8 @@ namespace WaterProj.Services
                 }
 
                 // Обновляем средний рейтинг маршрута
-                await UpdateRouteAverageRating(model.RouteId, model.TransporterId);
+                await UpdateRouteAverageRating(model.RouteId);
+                await UpdateTransporterRating(model.TransporterId);
 
                 return new ServiceResult
                 {
@@ -155,7 +156,7 @@ namespace WaterProj.Services
         /// </summary>
         /// <param name="routeId"></param>
         /// <returns></returns>
-        private async Task UpdateRouteAverageRating(int routeId, int transporterId)
+        private async Task UpdateRouteAverageRating(int routeId)
         {
             // Получаем все рейтинги маршрута
             var ratings = await _context.RouteRatings
@@ -174,8 +175,6 @@ namespace WaterProj.Services
                     await _context.SaveChangesAsync();
                 }
             }
-
-            _ = UpdateTransporterRating(transporterId);
         }
 
 
@@ -206,7 +205,7 @@ namespace WaterProj.Services
             if (routeRatings.Any())
             {
                 // Вычисляем средний рейтинг
-                float averageRating = (float)routeRatings.Average();
+                float averageRating = (float)Math.Round(routeRatings.Average(),1);
 
                 // Обновляем рейтинг транспортера
                 var transporter = await _context.Transporters.FindAsync(transporterId);
