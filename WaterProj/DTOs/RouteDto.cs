@@ -7,6 +7,7 @@
         public string Schedule { get; set; }
         public int ShipId { get; set; }
         public string Map { get; set; }
+        public int Price { get; set; }
         public List<StopDto> Stops { get; set; }
         public List<RouteLineDto> RouteLine { get; set; } // Добавляем маршрут (линии)
     }

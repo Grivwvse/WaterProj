@@ -154,28 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Добавляем коллекцию на карту
             myMap.geoObjects.add(existingStopsCollection);
 
-            // Добавляем переключатель видимости существующих остановок
-            const mapContainer = document.getElementById('myMap');
-            const toggleButton = document.createElement('button');
-            toggleButton.className = 'btn btn-sm btn-outline-secondary position-absolute m-2';
-            toggleButton.style.zIndex = 100;
-            toggleButton.style.right = '10px';
-            toggleButton.style.top = '10px';
-            toggleButton.textContent = 'Скрыть существующие остановки';
-            toggleButton.addEventListener('click', function () {
-                const isVisible = existingStopsCollection.isShown();
-                if (isVisible) {
-                    existingStopsCollection.hide();
-                    this.textContent = 'Показать существующие остановки';
-                    this.classList.add('btn-secondary');
-                    this.classList.remove('btn-outline-secondary');
-                } else {
-                    existingStopsCollection.show();
-                    this.textContent = 'Скрыть существующие остановки';
-                    this.classList.remove('btn-secondary');
-                    this.classList.add('btn-outline-secondary');
-                }
-            });
+
 
             mapContainer.parentNode.style.position = 'relative';
             mapContainer.parentNode.appendChild(toggleButton);
@@ -733,6 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const description = document.getElementById('routeDescription').value.trim();
             const scheduleDescription = document.getElementById('scheduleDescription').value.trim();
             const shipId = document.getElementById('shipSelect').value;
+            const price = document.getElementById('routePrice').value;
 
             if (!name || stopsData.length === 0) {
                 alert("Введите название маршрута и добавьте хотя бы одну остановку!");
@@ -741,6 +721,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!shipId) {
                 alert("Выберите судно для маршрута!");
+                return;
+            }
+
+            if (!price || price <= 0) {
+                alert("Введите корректную стоимость маршрута!");
                 return;
             }
 
@@ -761,6 +746,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Description: description,
                 Schedule: scheduleDescription,
                 ShipId: parseInt(shipId),
+                Price: parseInt(price),
                 Stops: stopsData, // Содержит ExistingStopId для существующих остановок
                 Polyline: mapData.lines,
                 Map: JSON.stringify(mapData)
@@ -940,421 +926,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 }); 
 
-
-//document.addEventListener("DOMContentLoaded", function () {
-//    // Проверяем, находимся ли мы на главной странице
-//    if (window.location.pathname != "/") return;
-
-//    console.log("Запуск скрипта поиска и отображения карты на главной странице");
-
-//    // Проверяем наличие элементов для поиска и карты
-//    const mapContainer = document.getElementById('searchMap');
-//    const searchForm = document.getElementById('routeSearchForm');
-
-//    if (!mapContainer) {
-//        console.error("Контейнер для карты не найден на странице");
-//        return;
-//    }
-
-//    // Инициализируем карту, когда API Яндекс.Карт загружен
-//    ymaps.ready(function () {
-//        console.log("API Яндекс.Карт загружен");
-
-//        // Создаем карту
-//        const myMap = new ymaps.Map('searchMap', {
-//            center: [59.938339, 30.313558], // Центр Санкт-Петербурга
-//            zoom: 10,
-//            controls: ['zoomControl', 'typeSelector']
-//        });
-
-//        console.log("Карта создана");
-
-//        // Создаем коллекцию для меток остановок
-//        const stopsCollection = new ymaps.GeoObjectCollection();
-
-//        // Загружаем все остановки и добавляем их на карту
-//        loadStopsAndRoutes();
-
-//        // Инициализируем поиск, если элемент формы найден
-//        if (searchForm) {
-//            initSearch();
-//        }
-
-//        // Функция загрузки всех остановок и маршрутов
-//        async function loadStopsAndRoutes() {
-//            try {
-//                console.log("Загрузка остановок...");
-//                const response = await fetch('/Route/GetAllStops');
-
-//                if (!response.ok) {
-//                    throw new Error(`HTTP ошибка: ${response.status}`);
-//                }
-
-//                const data = await response.json();
-//                console.log("Данные с сервера:", data);
-
-//                // Проверяем структуру данных
-//                if (!data || !data.success) {
-//                    console.error("Неверный формат ответа");
-//                    return;
-//                }
-
-//                const stops = data.stops || [];
-//                console.log(`Получено ${stops.length} остановок`);
-
-//                // Добавляем остановки на карту и в выпадающие списки
-//                addStopsToMap(stops);
-//                populateStopsDropdowns(stops);
-//            } catch (error) {
-//                console.error("Ошибка при загрузке остановок:", error);
-//            }
-//        }
-
-//        // Функция добавления остановок на карту
-//        function addStopsToMap(stops) {
-//            // Очищаем текущие метки
-//            stopsCollection.removeAll();
-
-//            stops.forEach((stop, index) => {
-//                if (stop.latitude !== undefined && stop.longitude !== undefined) {
-//                    const placemark = new ymaps.Placemark(
-//                        [stop.latitude, stop.longitude],
-//                        {
-//                            iconContent: stop.name || `Остановка ${index + 1}`,
-//                            hintContent: stop.name || `Остановка ${index + 1}`,
-//                            balloonContentHeader: 'Остановка',
-//                            balloonContent: `ID: ${stop.stopId}, Координаты: ${stop.latitude.toFixed(6)}, ${stop.longitude.toFixed(6)}`,
-//                            stopId: stop.stopId // Добавляем ID остановки для поиска
-//                        },
-//                        {
-//                            preset: 'islands#blueStretchyIcon'
-//                        }
-//                    );
-
-//                    // Обработчик клика по метке
-//                    placemark.events.add('click', function (e) {
-//                        const stopId = placemark.properties.get('stopId');
-//                        const stopName = placemark.properties.get('iconContent');
-
-//                        // Если открыт поиск маршрутов, можем выбрать эту остановку
-//                        const startSelect = document.getElementById('startStopSelect');
-//                        const endSelect = document.getElementById('endStopSelect');
-
-//                        if (startSelect && endSelect) {
-//                            // Открываем балун с выбором действия
-//                            placemark.properties.set('balloonContentFooter', `
-//                                <div class="mt-2">
-//                                    <button class="btn btn-primary btn-sm" id="selectAsStart">Выбрать как начало</button>
-//                                    <button class="btn btn-success btn-sm" id="selectAsEnd">Выбрать как конец</button>
-//                                </div>
-//                            `);
-
-//                            // После открытия балуна добавляем обработчики на кнопки
-//                            placemark.events.add('balloonopen', function () {
-//                                setTimeout(() => {
-//                                    document.getElementById('selectAsStart')?.addEventListener('click', function () {
-//                                        startSelect.value = stopId;
-//                                        // Вызываем событие change для обработки выбора
-//                                        startSelect.dispatchEvent(new Event('change'));
-//                                        placemark.balloon.close();
-//                                    });
-
-//                                    document.getElementById('selectAsEnd')?.addEventListener('click', function () {
-//                                        endSelect.value = stopId;
-//                                        // Вызываем событие change для обработки выбора
-//                                        endSelect.dispatchEvent(new Event('change'));
-//                                        placemark.balloon.close();
-//                                    });
-//                                }, 100);
-//                            });
-//                        }
-//                    });
-
-//                    stopsCollection.add(placemark);
-//                }
-//            });
-
-//            // Добавляем коллекцию на карту
-//            myMap.geoObjects.add(stopsCollection);
-
-//            // Масштабируем карту, чтобы были видны все метки
-//            if (stopsCollection.getLength() > 0) {
-//                myMap.setBounds(stopsCollection.getBounds(), {
-//                    checkZoomRange: true,
-//                    zoomMargin: 30
-//                });
-//            }
-//        }
-
-//        // Функция заполнения выпадающих списков с остановками
-//        function populateStopsDropdowns(stops) {
-//            const startSelect = document.getElementById('startStopSelect');
-//            const endSelect = document.getElementById('endStopSelect');
-
-//            if (startSelect && endSelect) {
-//                // Очищаем текущие опции
-//                startSelect.innerHTML = '<option value="">Выберите точку отправления</option>';
-//                endSelect.innerHTML = '<option value="">Выберите точку прибытия</option>';
-
-//                // Добавляем остановки в выпадающие списки
-//                stops.forEach(stop => {
-//                    const option = document.createElement('option');
-//                    option.value = stop.stopId;
-//                    option.textContent = stop.name;
-
-//                    const optionCopy = option.cloneNode(true);
-
-//                    startSelect.appendChild(option);
-//                    endSelect.appendChild(optionCopy);
-//                });
-//            }
-//        }
-
-//        // Функция инициализации поиска
-//        function initSearch() {
-//            // Поиск по названию маршрута
-//            const routeNameInput = document.getElementById('routeNameSearch');
-//            // Поиск по остановкам
-//            const startStopSelect = document.getElementById('startStopSelect');
-//            const endStopSelect = document.getElementById('endStopSelect');
-
-//            // Обработчик формы поиска
-//            searchForm.addEventListener('submit', async function (e) {
-//                e.preventDefault();
-
-//                // Собираем данные поиска
-//                const searchData = {
-//                    routeName: routeNameInput?.value || '',
-//                    startStopId: startStopSelect?.value ? parseInt(startStopSelect.value) : null,
-//                    endStopId: endStopSelect?.value ? parseInt(endStopSelect.value) : null
-//                };
-
-//                console.log("Поиск маршрутов с параметрами:", searchData);
-
-//                // Выполняем поиск
-//                await searchRoutes(searchData);
-//            });
-
-//            // Обработчики изменения выбора остановок
-//            if (startStopSelect && endStopSelect) {
-//                startStopSelect.addEventListener('change', highlightSelectedStop);
-//                endStopSelect.addEventListener('change', highlightSelectedStop);
-//            }
-//        }
-
-//        // Функция выделения выбранных остановок на карте
-//        function highlightSelectedStop() {
-//            const startStopId = document.getElementById('startStopSelect').value;
-//            const endStopId = document.getElementById('endStopSelect').value;
-
-//            // Сбрасываем все метки к стандартному виду
-//            stopsCollection.each(function (placemark) {
-//                placemark.options.set('preset', 'islands#blueStretchyIcon');
-//            });
-
-//            // Подсвечиваем выбранные остановки
-//            if (startStopId) {
-//                stopsCollection.each(function (placemark) {
-//                    if (placemark.properties.get('stopId') === parseInt(startStopId)) {
-//                        placemark.options.set('preset', 'islands#greenStretchyIcon');
-//                    }
-//                });
-//            }
-
-//            if (endStopId) {
-//                stopsCollection.each(function (placemark) {
-//                    if (placemark.properties.get('stopId') === parseInt(endStopId)) {
-//                        placemark.options.set('preset', 'islands#redStretchyIcon');
-//                    }
-//                });
-//            }
-//        }
-
-//        // Функция поиска маршрутов
-//        async function searchRoutes(searchData) {
-//            try {
-//                // Показываем индикатор загрузки
-//                const resultsContainer = document.getElementById('searchResults');
-//                if (resultsContainer) {
-//                    resultsContainer.innerHTML = '<div class="alert alert-info">Поиск маршрутов...</div>';
-//                }
-
-//                // Выполняем поиск маршрутов
-//                let apiUrl = '/Route/SearchRoutes';
-
-//                // Если указаны начальная и конечная остановки, используем FindRoutesByStops
-//                if (searchData.startStopId && searchData.endStopId) {
-//                    const response = await fetch('/Route/FindRoutesByStops', {
-//                        method: 'POST',
-//                        headers: {
-//                            'Content-Type': 'application/json'
-//                        },
-//                        body: JSON.stringify({
-//                            startStopIds: [searchData.startStopId],
-//                            endStopIds: [searchData.endStopId]
-//                        })
-//                    });
-
-//                    if (!response.ok) {
-//                        throw new Error(`Ошибка HTTP: ${response.status}`);
-//                    }
-
-//                    const data = await response.json();
-//                    displaySearchResults(data.routes || []);
-//                }
-//                // Если указано только название, ищем по нему
-//                else if (searchData.routeName.trim() !== '') {
-//                    const response = await fetch(`${apiUrl}?name=${encodeURIComponent(searchData.routeName)}`);
-
-//                    if (!response.ok) {
-//                        throw new Error(`Ошибка HTTP: ${response.status}`);
-//                    }
-
-//                    const data = await response.json();
-//                    displaySearchResults(data.routes || []);
-//                }
-//                // Если ничего не указано
-//                else {
-//                    if (resultsContainer) {
-//                        resultsContainer.innerHTML = '<div class="alert alert-warning">Пожалуйста, укажите параметры поиска</div>';
-//                    }
-//                }
-//            } catch (error) {
-//                console.error("Ошибка при поиске маршрутов:", error);
-//                const resultsContainer = document.getElementById('searchResults');
-//                if (resultsContainer) {
-//                    resultsContainer.innerHTML = `<div class="alert alert-danger">Ошибка: ${error.message}</div>`;
-//                }
-//            }
-//        }
-
-//        // Функция отображения результатов поиска
-//        function displaySearchResults(routes) {
-//            const resultsContainer = document.getElementById('searchResults');
-//            if (!resultsContainer) return;
-
-//            if (routes.length === 0) {
-//                resultsContainer.innerHTML = '<div class="alert alert-warning">Маршруты не найдены</div>';
-//                return;
-//            }
-
-//            // Формируем HTML для результатов
-//            let html = '<div class="row">';
-
-//            routes.forEach(route => {
-//                html += `
-//                    <div class="col-md-6 mb-4">
-//                        <div class="card h-100">
-//                            <div class="card-header d-flex justify-content-between">
-//                                <h5 class="mb-0">${route.Name || route.name}</h5>
-//                                <span class="badge bg-primary">${route.TransporterName || route.transporterName || ''}</span>
-//                            </div>
-//                            <div class="card-body">
-//                                <p>${route.Description || route.description || 'Нет описания'}</p>
-//                                <p><strong>Расписание:</strong> ${route.Schedule || route.schedule || 'Не указано'}</p>
-//                                <div class="d-flex mt-3">
-//                                    <button class="btn btn-outline-primary me-2 show-on-map" data-route-id="${route.RouteId || route.routeId}">
-//                                        Показать на карте
-//                                    </button>
-//                                    <a href="/Route/RouteDetails?routeID=${route.RouteId || route.routeId}" class="btn btn-primary">
-//                                        Подробнее
-//                                    </a>
-//                                </div>
-//                            </div>
-//                        </div>
-//                    </div>
-//                `;
-//            });
-
-//            html += '</div>';
-//            resultsContainer.innerHTML = html;
-
-//            // Добавляем обработчики для кнопок "Показать на карте"
-//            document.querySelectorAll('.show-on-map').forEach(btn => {
-//                btn.addEventListener('click', async function () {
-//                    const routeId = this.getAttribute('data-route-id');
-//                    await showRouteOnMap(routeId);
-//                });
-//            });
-//        }
-
-//        // Функция отображения маршрута на карте
-//        async function showRouteOnMap(routeId) {
-//            try {
-//                console.log("Загрузка маршрута для отображения на карте:", routeId);
-
-//                // Загружаем данные маршрута
-//                const response = await fetch(`/Route/GetRouteMapData?id=${routeId}`);
-//                if (!response.ok) {
-//                    throw new Error(`Ошибка HTTP: ${response.status}`);
-//                }
-
-//                const data = await response.json();
-//                if (!data.success) {
-//                    throw new Error(data.error || "Ошибка при загрузке данных маршрута");
-//                }
-
-//                // Парсим данные маршрута
-//                const mapData = JSON.parse(data.map);
-
-//                // Удаляем все линии маршрутов, но оставляем метки остановок
-//                myMap.geoObjects.each(function (obj) {
-//                    if (obj instanceof ymaps.Polyline) {
-//                        myMap.geoObjects.remove(obj);
-//                    }
-//                });
-
-//                // Добавляем линию маршрута
-//                if (mapData.lines && mapData.lines.length > 0) {
-//                    const polyline = new ymaps.Polyline(mapData.lines, {}, {
-//                        strokeColor: '#FF0000',
-//                        strokeWidth: 4,
-//                        strokeOpacity: 0.6
-//                    });
-
-//                    myMap.geoObjects.add(polyline);
-
-//                    // Масштабируем карту под маршрут
-//                    myMap.setBounds(polyline.geometry.getBounds(), {
-//                        checkZoomRange: true,
-//                        zoomMargin: 30
-//                    });
-//                }
-
-//                // Выделяем остановки этого маршрута
-//                if (mapData.stops && mapData.stops.length > 0) {
-//                    // Сначала сбрасываем все метки к стандартному виду
-//                    stopsCollection.each(function (placemark) {
-//                        placemark.options.set('preset', 'islands#blueStretchyIcon');
-//                    });
-
-//                    // Затем выделяем остановки маршрута
-//                    const routeStopIds = mapData.stops.map(stop => stop.StopId || stop.stopId);
-
-//                    stopsCollection.each(function (placemark) {
-//                        const stopId = placemark.properties.get('stopId');
-//                        if (routeStopIds.includes(stopId)) {
-//                            placemark.options.set('preset', 'islands#violetStretchyIcon');
-//                        }
-//                    });
-
-//                    // Особенно выделяем первую и последнюю остановки
-//                    const firstStopId = routeStopIds[0];
-//                    const lastStopId = routeStopIds[routeStopIds.length - 1];
-
-//                    stopsCollection.each(function (placemark) {
-//                        const stopId = placemark.properties.get('stopId');
-//                        if (stopId === firstStopId) {
-//                            placemark.options.set('preset', 'islands#greenStretchyIcon');
-//                        } else if (stopId === lastStopId) {
-//                            placemark.options.set('preset', 'islands#redStretchyIcon');
-//                        }
-//                    });
-//                }
-//            } catch (error) {
-//                console.error("Ошибка при отображении маршрута:", error);
-//                alert("Не удалось отобразить маршрут на карте");
-//            }
-//        }
-//    });
-//});
+function getWordForm(number, form1, form2, form5) {
+    const lastDigit = number % 10;
+    const lastTwoDigits = number % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19)
+        return form5;
+
+    if (lastDigit === 1)
+        return form1;
+
+    if (lastDigit >= 2 && lastDigit <= 4)
+        return form2;
+
+    return form5;
+}
+
+// Применяет склонение к элементам с классом word-form при загрузке страницы
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-word-form]').forEach(element => {
+        const count = parseInt(element.getAttribute('data-count') || '0');
+        const form1 = element.getAttribute('data-form1');
+        const form2 = element.getAttribute('data-form2');
+        const form5 = element.getAttribute('data-form5');
+
+        if (form1 && form2 && form5) {
+            element.textContent = getWordForm(count, form1, form2, form5);
+        }
+    });
+});

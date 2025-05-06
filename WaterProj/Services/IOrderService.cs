@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WaterProj.DTOs;
 using WaterProj.Models;
 using WaterProj.Models.Services;
 
@@ -14,5 +15,19 @@ namespace WaterProj.Services
         Task<Order> GetOrderWithDetailsAsync(int orderId);
         Task<Order> GetOrderbyId(int orderId);
         Task<ServiceResult> CancelOrderAsync(int orderId);
+        /// <summary>
+        /// Получение количества заказов для указанного маршрута
+        /// </summary>
+        /// <param name="routeId">ID маршрута</param>
+        /// <param name="includeOnlyActiveOrders">Учитывать только активные заказы (если true)</param>
+        /// <returns>Количество заказов</returns>
+        Task<int> GetOrderCountForRouteAsync(int routeId, bool includeOnlyActiveOrders = false);
+        Task<Dictionary<int, int>> GetOrderCountsForRoutesAsync(IEnumerable<int> routeIds, bool includeOnlyActiveOrders = false);
+        /// <summary>
+        /// Получение статистики заказов для указанного маршрута
+        /// </summary>
+        /// <param name="routeId">ID маршрута</param>
+        /// <returns>Объект со статистикой заказов</returns>
+        Task<RouteOrderStatsDto> GetOrderStatsForRouteAsync(int routeId);
     }
 }

@@ -12,7 +12,7 @@ using WaterProj.DB;
 namespace WaterProj.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250501114111_InitialCreate")]
+    [Migration("20250506150530_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -105,36 +105,6 @@ namespace WaterProj.Migrations
                     b.ToTable("Consumers");
                 });
 
-            modelBuilder.Entity("WaterProj.Models.Feedback", b =>
-                {
-                    b.Property<int>("FeedbackId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FeedbackId"));
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ConsumerId")
-                        .HasColumnType("integer");
-
-                    b.Property<float>("Rating")
-                        .HasColumnType("real");
-
-                    b.Property<int>("RouteId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("FeedbackId");
-
-                    b.HasIndex("ConsumerId");
-
-                    b.HasIndex("RouteId");
-
-                    b.ToTable("Feedbacks");
-                });
-
             modelBuilder.Entity("WaterProj.Models.Image", b =>
                 {
                     b.Property<int>("ImageID")
@@ -223,6 +193,9 @@ namespace WaterProj.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
 
                     b.Property<float>("Rating")
                         .HasColumnType("real");
@@ -557,25 +530,6 @@ namespace WaterProj.Migrations
                     b.ToTable("Сonveniences");
                 });
 
-            modelBuilder.Entity("WaterProj.Models.Feedback", b =>
-                {
-                    b.HasOne("WaterProj.Models.Consumer", "Consumer")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("ConsumerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WaterProj.Models.Route", "Route")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("RouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Consumer");
-
-                    b.Navigation("Route");
-                });
-
             modelBuilder.Entity("WaterProj.Models.Order", b =>
                 {
                     b.HasOne("WaterProj.Models.Consumer", "Consumer")
@@ -738,15 +692,11 @@ namespace WaterProj.Migrations
 
             modelBuilder.Entity("WaterProj.Models.Consumer", b =>
                 {
-                    b.Navigation("Feedbacks");
-
                     b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("WaterProj.Models.Route", b =>
                 {
-                    b.Navigation("Feedbacks");
-
                     b.Navigation("Orders");
 
                     b.Navigation("RouteStops");

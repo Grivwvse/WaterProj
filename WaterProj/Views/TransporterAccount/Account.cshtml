@@ -128,6 +128,29 @@
         </div>
     </div>
 
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100 bg-light bg-opacity-75">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2">Распределение заказов по статусам</h5>
+                    <div style="height: 300px;">
+                        <canvas id="ordersStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100 bg-light bg-opacity-75">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2">Популярность маршрутов</h5>
+                    <div style="height: 300px;">
+                        <canvas id="routePopularityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Модальное окно для изменения пароля -->
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -416,7 +439,8 @@
                                         <th>Маршрут</th>
                                         <th>Корабль</th>
                                         <th>Рейтинг</th>
-                                        <th>Статус</th> <!-- Добавляем новую колонку для отображения статуса -->
+                                        <th>Статистика заказов</th> <!-- Новая колонка -->
+                                        <th>Статус</th>
                                         <th>Действия</th>
                                     </tr>
                                 </thead>
@@ -455,6 +479,32 @@
                                                         }
                                                     </div>
                                                     <span class="ms-1">@route.Rating.ToString("F1")</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    @if (Model.RouteStats != null && Model.RouteStats.ContainsKey(route.RouteId))
+                                                    {
+                                                        var stats = Model.RouteStats[route.RouteId];
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-2">
+                                                                <span class="badge bg-success" title="Активные заказы">@stats.ActiveOrders</span>
+                                                            </div>
+                                                            <div class="me-2">
+                                                                <span class="badge bg-primary" title="Завершенные заказы">@stats.CompletedOrders</span>
+                                                            </div>
+                                                            <div>
+                                                                <span class="badge bg-danger" title="Отмененные заказы">@stats.CanceledOrders</span>
+                                                            </div>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            Всего: @(stats.ActiveOrders + stats.CompletedOrders + stats.CanceledOrders)
+                                                        </small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Нет данных</span>
+                                                    }
                                                 </div>
                                             </td>
                                             <td>
@@ -546,6 +596,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Обработчик для кнопки редактирования
                 const editButton = document.getElementById('editButton');
@@ -701,7 +752,113 @@
                 });
             });
         });
+
+            // Инициализируем всплывающие подсказки
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
             }
         });
+
+        // Графики статистики
+        $(document).ready(function() {
+            // Существующий код...
+            
+            // Инициализация графиков, если есть данные
+            if (typeof Chart !== 'undefined') {
+                // График распределения заказов по статусам
+                const statusChartCtx = document.getElementById('ordersStatusChart').getContext('2d');
+                
+                // Подсчитываем общее количество заказов по статусам
+                let activeTotal = 0;
+                let completedTotal = 0;
+                let canceledTotal = 0;
+                
+                @if (Model.RouteStats != null && Model.RouteStats.Count > 0)
+                {
+                    @:activeTotal = @Model.RouteStats.Values.Sum(s => s.ActiveOrders);
+                    @:completedTotal = @Model.RouteStats.Values.Sum(s => s.CompletedOrders);
+                    @:canceledTotal = @Model.RouteStats.Values.Sum(s => s.CanceledOrders);
+                }
+                
+                const statusChart = new Chart(statusChartCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Активные', 'Завершенные', 'Отмененные'],
+                        datasets: [{
+                            data: [activeTotal, completedTotal, canceledTotal],
+                            backgroundColor: ['#20c997', '#0d6efd', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                // График популярности маршрутов
+                const routeChartCtx = document.getElementById('routePopularityChart').getContext('2d');
+                
+                // Собираем данные о маршрутах
+                const routeLabels = [];
+                const routeData = [];
+                
+                @if (Model.RouteStats != null && Model.RouteStats.Count > 0)
+                {
+                    foreach (var routeStat in Model.RouteStats)
+                    {
+                        var route = Model.Routes.FirstOrDefault(r => r.RouteId == routeStat.Key);
+                        if (route != null)
+                        {
+                            @:routeLabels.push('@Html.Raw(route.Name.Replace("'", "\\'"))');
+                            @:routeData.push(@(routeStat.Value.ActiveOrders + routeStat.Value.CompletedOrders + routeStat.Value.CanceledOrders));
+                        }
+                    }
+                }
+                
+                const routeChart = new Chart(routeChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: routeLabels,
+                        datasets: [{
+                            label: 'Количество заказов',
+                            data: routeData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Количество заказов'
+                                }
+                            }
+                        }
+                    }
+                }); // <-- Исправлено закрытие конструктора Chart
+            } // Закрытие блока if
+        }); // Закрытие блока $(document).ready
     </script>
 }

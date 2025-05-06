@@ -414,3 +414,73 @@ body {
     .route-card.selected {
         border: 2px solid #0d6efd;
     }
+
+.route-popularity {
+    transition: transform 0.3s ease;
+}
+
+
+.popularity-icon {
+    border-radius: 0;
+}
+
+@media (max-width: 767px) {
+    .d-flex {
+        flex-direction: column;
+    }
+
+    .popularity-icon {
+        width: 100%;
+        text-align: center;
+        padding: 2rem !important;
+    }
+
+    .popularity-text {
+        text-align: center;
+    }
+}
+
+.popularity-badge {
+    transition: all 0.3s ease;
+    border-left: 4px solid #0d6efd;
+}
+
+
+.price-block {
+    position: relative;
+    padding: 10px 0;
+}
+
+.price-badge {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 1.1rem;
+}
+
+.price-input-wrapper {
+    position: relative;
+}
+
+    .price-input-wrapper input {
+        height: 50px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-align: center;
+        border: 2px solid #dee2e6;
+        transition: border-color 0.3s;
+    }
+
+        .price-input-wrapper input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+.price-currency {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #212529;
+}

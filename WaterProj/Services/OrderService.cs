@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WaterProj.DB;
+using WaterProj.DTOs;
 using WaterProj.Models;
 using WaterProj.Models.Services;
 
@@ -186,6 +187,69 @@ namespace WaterProj.Services
                 .Include(o => o.Route)
                 .ThenInclude(r => r.Transporter)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        }
+
+        /// <summary>
+        /// Получение количества заказов для указанных маршрутов
+        /// </summary>
+        /// <param name="routeIds"></param>
+        /// <param name="includeOnlyActiveOrders"></param>
+        /// <returns></returns>
+        public async Task<Dictionary<int, int>> GetOrderCountsForRoutesAsync(IEnumerable<int> routeIds, bool includeOnlyActiveOrders = false)
+        {
+            IQueryable<Order> query = _context.Orders.Where(o => routeIds.Contains(o.RouteId));
+
+                query = query.Where(o => o.Status == OrderStatus.Completed);
+
+
+            return await query
+                .GroupBy(o => o.RouteId)
+                .Select(g => new { RouteId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.RouteId, x => x.Count);
+        }
+
+        /// <summary>
+        /// Получение количества заказов для указанного маршрута
+        /// </summary>
+        /// <param name="routeId">ID маршрута</param>
+        /// <param name="includeOnlyActiveOrders">Учитывать только активные заказы (если true)</param>
+        /// <returns>Количество заказов</returns>
+        public async Task<int> GetOrderCountForRouteAsync(int routeId, bool includeOnlyActiveOrders = false)
+        {
+            if (includeOnlyActiveOrders)
+            {
+                return await _context.Orders
+                    .CountAsync(o => o.RouteId == routeId && o.Status == OrderStatus.Active);
+            }
+
+            return await _context.Orders
+                .CountAsync(o => o.RouteId == routeId && o.Status == OrderStatus.Completed);
+        }
+
+        /// <summary>
+        /// Получение статистики заказов для указанного маршрута
+        /// </summary>
+        /// <param name="routeId">ID маршрута</param>
+        /// <returns>Объект со статистикой заказов</returns>
+        public async Task<RouteOrderStatsDto> GetOrderStatsForRouteAsync(int routeId)
+        {
+            // Получаем статистику одним запросом для лучшей производительности
+            var orderStats = await _context.Orders
+                .Where(o => o.RouteId == routeId)
+                .GroupBy(o => o.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Заполняем статистику
+            var stats = new RouteOrderStatsDto
+            {
+                TotalOrders = orderStats.Sum(x => x.Count),
+                ActiveOrders = orderStats.FirstOrDefault(x => x.Status == OrderStatus.Active)?.Count ?? 0,
+                CompletedOrders = orderStats.FirstOrDefault(x => x.Status == OrderStatus.Completed)?.Count ?? 0,
+                CanceledOrders = orderStats.FirstOrDefault(x => x.Status == OrderStatus.Canceled)?.Count ?? 0
+            };
+
+            return stats;
         }
     }
 }

@@ -13,10 +13,12 @@ namespace WaterProj.Services
     public class TransporterService : ITransporterService 
     {
         private readonly ApplicationDbContext _context;
+        private readonly IOrderService _orderService;
 
-        public TransporterService(ApplicationDbContext context)
+        public TransporterService(ApplicationDbContext context, IOrderService orderService)
         {
             _context = context;
+            _orderService = orderService;
         }
 
 
@@ -84,8 +86,17 @@ namespace WaterProj.Services
             {
                 Transporter = transporter,
                 Routes = routes,
-                Ships = ships
+                Ships = ships,
+                RouteStats = new Dictionary<int, RouteOrderStatsDto>()
             };
+
+
+            // Заполняем статистику заказов для каждого маршрута
+            foreach (var route in routes)
+            {
+                var stats = await _orderService.GetOrderStatsForRouteAsync(route.RouteId);
+                dto.RouteStats[route.RouteId] = stats;
+            }
 
             return dto;
         }
@@ -132,11 +143,6 @@ namespace WaterProj.Services
 
         private readonly IRouteService _routeService;
 
-        public TransporterService(ApplicationDbContext context, IRouteService routeService)
-        {
-            _context = context;
-            _routeService = routeService;
-        }
 
         public async Task<ServiceResult> ToggleRouteActivityAsync(int routeId, int transporterId, bool isActive)
         {

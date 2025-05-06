@@ -15,12 +15,6 @@
                 Перевозчики
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="consumers-tab" data-bs-toggle="tab" data-bs-target="#consumers"
-                    type="button" role="tab" aria-controls="consumers" aria-selected="false">
-                Пользователи
-            </button>
-        </li>
     </ul>
 
     <div class="tab-content" id="userTabsContent">
@@ -119,50 +113,6 @@
                     else
                     {
                         <div class="alert alert-info">В системе нет зарегистрированных перевозчиков</div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Вкладка с потребителями -->
-        <div class="tab-pane fade" id="consumers" role="tabpanel" aria-labelledby="consumers-tab">
-            <div class="card shadow border-0">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Список пользователей</h5>
-                </div>
-                <div class="card-body">
-                    @if (consumers != null && consumers.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Имя</th>
-                                        <th>Логин</th>
-                                        <th>Email</th>
-                                        <th>Действия</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var consumer in consumers)
-                                    {
-                                        <tr>
-                                            <td>@consumer.Name</td>
-                                            <td>@consumer.Login</td>
-                                            <td>
-                                                <a href="#" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-info-circle"></i> Детали
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">В системе нет зарегистрированных пользователей</div>
                     }
                 </div>
             </div>

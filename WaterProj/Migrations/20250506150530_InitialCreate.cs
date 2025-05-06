@@ -180,6 +180,7 @@ namespace WaterProj.Migrations
                     Map = table.Column<string>(type: "text", nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: false),
                     Schedule = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<int>(type: "integer", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsBlocked = table.Column<bool>(type: "boolean", nullable: false),
                     BlockReason = table.Column<string>(type: "text", nullable: true),
@@ -246,34 +247,6 @@ namespace WaterProj.Migrations
                         column: x => x.ShipId,
                         principalTable: "Ships",
                         principalColumn: "ShipId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Feedbacks",
-                columns: table => new
-                {
-                    FeedbackId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ConsumerId = table.Column<int>(type: "integer", nullable: false),
-                    Comment = table.Column<string>(type: "text", nullable: false),
-                    Rating = table.Column<float>(type: "real", nullable: false),
-                    RouteId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Feedbacks", x => x.FeedbackId);
-                    table.ForeignKey(
-                        name: "FK_Feedbacks_Consumers_ConsumerId",
-                        column: x => x.ConsumerId,
-                        principalTable: "Consumers",
-                        principalColumn: "ConsumerId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Feedbacks_Routes_RouteId",
-                        column: x => x.RouteId,
-                        principalTable: "Routes",
-                        principalColumn: "RouteId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -411,16 +384,6 @@ namespace WaterProj.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Feedbacks_ConsumerId",
-                table: "Feedbacks",
-                column: "ConsumerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Feedbacks_RouteId",
-                table: "Feedbacks",
-                column: "RouteId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Orders_ConsumerId",
                 table: "Orders",
                 column: "ConsumerId");
@@ -506,9 +469,6 @@ namespace WaterProj.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Administrators");
-
-            migrationBuilder.DropTable(
-                name: "Feedbacks");
 
             migrationBuilder.DropTable(
                 name: "Images");

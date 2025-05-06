@@ -53,7 +53,7 @@
                             <option value="4">4+</option>
                             <option value="3">3+</option>
                             <option value="2">2+</option>
-                            <option value="1">1+)</option>
+                            <option value="1">1+</option>
                             <option value="no-rating">Без рейтинга</option>
                         </select>
                     </div>
@@ -62,6 +62,8 @@
                         <select class="form-select" id="sortOrder">
                             <option value="rating-desc" selected>По убыванию рейтинга</option>
                             <option value="rating-asc">По возрастанию рейтинга</option>
+                            <option value="popularity-desc">По популярности (убывание)</option>
+                            <option value="popularity-asc">По популярности (возрастание)</option>
                         </select>
                     </div>
                 </div>
@@ -85,7 +87,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h5 class="card-title mb-0">
                                         <span class="route-number">@route.Name</span>
-                                        <span class="route-time">25 минут в пути</span>
+                                        <span class="route-time">От @route.Price руб</span>
                                     </h5>
                                     
 
@@ -116,6 +118,25 @@
                                         Перевозчик: @route.TransporterName Рейтинг : @route.TransporterRating  </div> 
                                         <!--  //(route.TransporterRating > 0.0 ? "Нет данных" : route.TransporterRating)</div> -->
                                     </div>
+
+                                    <!-- Блок популярности маршрута -->
+                                @if (route.RouteOrderStats > 0)
+                                    {
+                                    <div class="popularity-badge mt-2 mb-2 p-2 rounded-3 bg-light">
+                                        <div class="d-flex align-items-center">
+                                            <div class="popularity-icon text-primary me-2">
+                                                <i class="bi bi-people-fill fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold">@route.RouteOrderStats</span>
+                                                <span class="text-muted">
+                                                    <span class="order-word-form" data-count="@route.RouteOrderStats"></span>
+                                                    этот маршрут
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
                                 <div class="mt-3">
                                     <a href="/Route/RouteDetails?routeID=@route.RouteId" class="btn btn-outline-primary btn-sm">Подробнее</a>
     
@@ -178,9 +199,40 @@
 
 <!-- Скрипт фильтрации и сортировки - работает всегда, независимо от метода поиска -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+       document.addEventListener("DOMContentLoaded", function () {
         // Добавляем атрибуты data-rating к карточкам маршрутов
         const cards = document.querySelectorAll(".route-card");
+
+        // Функция склонения слов
+        function getCorrectWordForm(number, form1, form2, form5) {
+            const lastDigit = number % 10;
+            const lastTwoDigits = number % 100;
+
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 19)
+                return form5;
+
+            switch (lastDigit) {
+                case 1:
+                    return form1;
+                case 2:
+                case 3:
+                case 4:
+                    return form2;
+                default:
+                    return form5;
+            }
+        }
+
+        // Применяем склонение к элементам с классом order-word-form
+        document.querySelectorAll('.order-word-form').forEach(element => {
+            const count = parseInt(element.getAttribute('data-count'));
+            element.textContent = getCorrectWordForm(count,
+                "пользователь выбрал",
+                "пользователя выбрали",
+                "пользователей выбрали");
+        });
+
+        // Добавляем атрибуты data-rating к карточкам маршрутов
         cards.forEach(card => {
             // Находим элемент с рейтингом внутри карточки
             const ratingBadge = card.querySelector(".badge");
@@ -198,6 +250,17 @@
 
                 // Добавляем атрибут data-rating
                 card.setAttribute("data-rating", rating);
+            }
+
+            // Находим элемент с количеством заказов внутри карточки
+            const popularityElement = card.querySelector(".popularity-badge .fw-bold");
+            if (popularityElement) {
+                const popularity = parseInt(popularityElement.textContent) || 0;
+                // Добавляем атрибут data-popularity
+                card.setAttribute("data-popularity", popularity);
+            } else {
+                // Если элемент не найден, устанавливаем значение 0
+                card.setAttribute("data-popularity", 0);
             }
         });
 
@@ -256,12 +319,45 @@
             }).sort((a, b) => {
                 const ratingA = parseFloat(a.getAttribute("data-rating") || "0");
                 const ratingB = parseFloat(b.getAttribute("data-rating") || "0");
+                const popularityA = parseInt(a.getAttribute("data-popularity") || "0");
+                const popularityB = parseInt(b.getAttribute("data-popularity") || "0");
 
-                if (selectedSort === "rating-desc") {
-                    return ratingB - ratingA;
-                } else {
-                    return ratingA - ratingB;
+                switch (selectedSort) {
+                    case "rating-desc":
+                        return ratingB - ratingA;
+                    case "rating-asc":
+                        return ratingA - ratingB;
+                    case "popularity-desc":
+                        return popularityB - popularityA;
+                    case "popularity-asc":
+                        return popularityA - popularityB;
+                    default:
+                        return ratingB - ratingA;
                 }
+                    const sortBadge = document.getElementById("sortBadge") || document.createElement("div");
+                    sortBadge.id = "sortBadge";
+                    sortBadge.className = "badge bg-primary mt-2 mb-3";
+
+                    switch (selectedSort) {
+                        case "rating-desc":
+                            sortBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i> Сортировка по убыванию рейтинга';
+                            break;
+                        case "rating-asc":
+                            sortBadge.innerHTML = '<i class="bi bi-star me-1"></i> Сортировка по возрастанию рейтинга';
+                            break;
+                        case "popularity-desc":
+                            sortBadge.innerHTML = '<i class="bi bi-people-fill me-1"></i> Сортировка по убыванию популярности';
+                            break;
+                        case "popularity-asc":
+                            sortBadge.innerHTML = '<i class="bi bi-people me-1"></i> Сортировка по возрастанию популярности';
+                            break;
+                    }
+
+                    // Размещаем бейдж перед контейнером с маршрутами
+                    const routesHeader = document.querySelector(".routes-header");
+                    if (routesHeader && !document.getElementById("sortBadge")) {
+                        routesHeader.appendChild(sortBadge);
+                    }
             });
 
             // Если нет видимых карточек, показываем сообщение

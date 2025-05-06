@@ -11,7 +11,6 @@ namespace WaterProj.DB
         {
         }
         public DbSet<Consumer> Consumers { get; set; }
-        public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Models.Route> Routes { get; set; }
         public DbSet<Ship> Ships { get; set; }

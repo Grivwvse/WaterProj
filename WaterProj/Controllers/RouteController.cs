@@ -164,6 +164,7 @@ namespace WaterProj.Controllers
 
                 var routeData = JsonConvert.DeserializeObject<RouteDto>(routeDataJson);
                 var images = form.Files;
+                Console.WriteLine($"Получено {images.Count} файлов изображений");
 
                 Console.WriteLine($"Десериализовано {routeData.Stops?.Count ?? 0} остановок");
 
@@ -194,6 +195,7 @@ namespace WaterProj.Controllers
                     Map = routeData.Map,
                     Schedule = routeData.Schedule,
                     Rating = 0,
+                    Price = routeData.Price,
                     ShipId = routeData.ShipId,
                     TransporterId = transporterId,
                     RouteStops = new List<RouteStop>()
@@ -268,11 +270,50 @@ namespace WaterProj.Controllers
                     _context.RouteStop.Add(routeStop);
                 }
 
-                // Сохраняем все связи
+                // Сохраняем все связи остановок с маршрутом
                 await _context.SaveChangesAsync();
 
-                // Остальной код не изменяется...
-                // [Код для сохранения изображений остается без изменений]
+                // Обработка и сохранение изображений
+                if (images != null && images.Count > 0)
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "routes");
+
+                    // Убедимся, что директория существует
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    foreach (var image in images)
+                    {
+                        if (image.Length > 0)
+                        {
+                            // Создаем уникальное имя файла
+                            string uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                            // Сохраняем файл на диск
+                            using (var fileStream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await image.CopyToAsync(fileStream);
+                            }
+
+                            // Добавляем запись о изображении в БД
+                            var routeImage = new Image
+                            {
+                                EntityType = "Route",
+                                EntityId = route.RouteId,
+                                ImagePath = $"/images/routes/{uniqueFileName}",
+                                Title = Path.GetFileNameWithoutExtension(image.FileName)
+                            };
+
+                            _context.Images.Add(routeImage);
+                            Console.WriteLine($"Сохранено изображение: {uniqueFileName}");
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
 
                 return Ok(new { success = true, routeId = route.RouteId });
             }

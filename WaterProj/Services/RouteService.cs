@@ -12,8 +12,10 @@ namespace WaterProj.Services
     public class RouteService : IRouteService
     {
         private readonly ApplicationDbContext _context;
-        public RouteService(ApplicationDbContext context)
+        private readonly IOrderService _orderService;
+        public RouteService(ApplicationDbContext context, IOrderService orderService)
         {
+            _orderService = orderService;
             _context = context;
         }
 
@@ -137,6 +139,8 @@ namespace WaterProj.Services
                 .Where(img => img.EntityType == "Route" && img.EntityId == id)
                 .ToListAsync();
 
+            var  routeOrderStats = await _orderService.GetOrderCountForRouteAsync(id, false);
+
 
             var dto = new RouteDetailsDto
             {
@@ -146,7 +150,9 @@ namespace WaterProj.Services
                 Transporter = route.Transporter,
                 RouteAdvantages = advantages,
                 RouteRatings = routeRating,
-                ShipConveniences = shipConveniences
+                ShipConveniences = shipConveniences,
+                RouteOrderStats = routeOrderStats
+
             };
 
             return dto;
@@ -221,7 +227,7 @@ namespace WaterProj.Services
             var routes = await query.ToListAsync();
 
             // Проецируем результат в DTO
-            return routes.Select(r => new RouteSearchResultDto
+            var routeDtos = routes.Select(r => new RouteSearchResultDto
             {
                 RouteId = r.RouteId,
                 Name = r.Name,
@@ -230,8 +236,19 @@ namespace WaterProj.Services
                 TransporterId = r.TransporterId,
                 TransporterName = r.Transporter.Name,
                 TransporterRating = r.Transporter.Rating,
+                Price = r.Price,
                 Rating = r.Rating
             }).ToList();
+
+            var routeIds = routeDtos.Select(r => r.RouteId).ToList();
+            var orderCounts = await _orderService.GetOrderCountsForRoutesAsync(routeIds, false);
+            foreach (var dto in routeDtos)
+            {
+                dto.RouteOrderStats = orderCounts.GetValueOrDefault(dto.RouteId, 0);
+            }
+
+
+            return routeDtos;
         }
 
         public async Task<IEnumerable<Stop>> GetAvailableStops(int startStopId)
@@ -342,6 +359,7 @@ namespace WaterProj.Services
                 // Получаем только ID активных и неблокированных маршрутов
                 var activeRouteIds = routes.Select(r => r.RouteId).ToList();
 
+
                 // Загружаем первые изображения только для активных маршрутов
                 var routeImages = await _context.Images
                     .Where(img => img.EntityType == "Route" && activeRouteIds.Contains(img.EntityId))
@@ -359,9 +377,17 @@ namespace WaterProj.Services
                     TransporterId = r.TransporterId,
                     TransporterName = r.Transporter.Name,
                     TransporterRating = r.Transporter.Rating,
+                    Price = r.Price,
                     Rating = r.Rating,
                     Image = routeImages.FirstOrDefault(img => img.EntityId == r.RouteId)?.ImagePath
                 }).ToList();
+
+                var routeIds = routeDtos.Select(r => r.RouteId).ToList();
+                var orderCounts = await _orderService.GetOrderCountsForRoutesAsync(routeIds, false);
+                foreach (var dto in routeDtos)
+                {
+                    dto.RouteOrderStats = orderCounts.GetValueOrDefault(dto.RouteId, 0);
+                }
 
                 Console.WriteLine($"Маршрутов найдено: {routeDtos.Count}");
                 return routeDtos;

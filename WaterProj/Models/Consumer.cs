@@ -26,12 +26,10 @@ namespace WaterProj.Models
         [Required(ErrorMessage = "Пожалуйста, заполните пароль.")]
         public string PasswordHash { get; set; }
 
-        public List<Feedback> Feedbacks { get; set; }
         public List<Order> Orders { get; set; }
 
         public Consumer()
         {
-            Feedbacks = new List<Feedback>();
             Orders = new List<Order>();
             ProfileImagePath = string.Empty;
         }
