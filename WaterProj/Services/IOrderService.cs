@@ -13,5 +13,6 @@ namespace WaterProj.Services
         Task<ServiceResult> CompleteOrderAsync(int orderId);
         Task<Order> GetOrderWithDetailsAsync(int orderId);
         Task<Order> GetOrderbyId(int orderId);
+        Task<ServiceResult> CancelOrderAsync(int orderId);
     }
 }

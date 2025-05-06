@@ -56,6 +56,34 @@ namespace WaterProj.Services
             }
         }
 
+        public async Task<ServiceResult> CancelOrderAsync(int orderId)
+        {
+            try
+            {
+                var order = await _context.Orders.FindAsync(orderId);
+                if (order == null)
+                {
+                    return new ServiceResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Заказ не найден."
+                    };
+                }
+                order.Status = OrderStatus.Canceled;
+                await _context.SaveChangesAsync();
+                return new ServiceResult { Success = true };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResult
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
+
         public async Task<Order> GetOrderByConsumerAndRouteAsync(int consumerId, int routeId)
         {
             var orders = await GetOrdersByConsumerId(consumerId);

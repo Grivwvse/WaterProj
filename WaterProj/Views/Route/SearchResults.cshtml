@@ -43,6 +43,30 @@
                 <p class="text-muted">Найдено @ViewBag.RouteAmount вариантов проезда</p>
             </div>
 
+            <!-- Блок фильтров -->
+            <div class="filters-block mb-4">
+                <div class="row">
+                    <div class="col-md-6 col-lg-4 mb-2">
+                        <label for="ratingFilter" class="form-label fw-bold">Фильтр по рейтингу:</label>
+                        <select class="form-select" id="ratingFilter">
+                            <option value="all" selected>Все рейтинги</option>
+                            <option value="4">4+</option>
+                            <option value="3">3+</option>
+                            <option value="2">2+</option>
+                            <option value="1">1+)</option>
+                            <option value="no-rating">Без рейтинга</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <label for="sortOrder" class="form-label fw-bold">Сортировка:</label>
+                        <select class="form-select" id="sortOrder">
+                            <option value="rating-desc" selected>По убыванию рейтинга</option>
+                            <option value="rating-asc">По возрастанию рейтинга</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             @if (Model == null || !Model.Any())
             {
                 <p>Маршруты не найдены</p>
@@ -151,3 +175,122 @@
         });
     </script>
 }
+
+<!-- Скрипт фильтрации и сортировки - работает всегда, независимо от метода поиска -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Добавляем атрибуты data-rating к карточкам маршрутов
+        const cards = document.querySelectorAll(".route-card");
+        cards.forEach(card => {
+            // Находим элемент с рейтингом внутри карточки
+            const ratingBadge = card.querySelector(".badge");
+            if (ratingBadge) {
+                // Извлекаем значение рейтинга из текста
+                const ratingText = ratingBadge.textContent;
+                let rating = 0;
+
+                if (ratingText.includes("Рейтинг :")) {
+                    const ratingValue = ratingText.split(":")[1].trim();
+                    if (ratingValue !== "Нет данных") {
+                        rating = parseFloat(ratingValue);
+                    }
+                }
+
+                // Добавляем атрибут data-rating
+                card.setAttribute("data-rating", rating);
+            }
+        });
+
+        const ratingFilter = document.getElementById("ratingFilter");
+        const sortOrder = document.getElementById("sortOrder");
+        const routesContainer = document.querySelector(".routes-container")?.parentNode;
+
+        if (!routesContainer) return;
+
+        // Функция для фильтрации и сортировки маршрутов
+        function filterAndSortRoutes() {
+            const cards = Array.from(document.querySelectorAll(".route-card"));
+            const selectedRating = ratingFilter.value;
+            const selectedSort = sortOrder.value;
+
+            // Сохраняем все родительские контейнеры карточек
+            const routeContainers = Array.from(document.querySelectorAll(".routes-container"));
+
+            // Фильтруем карточки
+            cards.forEach(card => {
+                const rating = parseFloat(card.getAttribute("data-rating") || "0");
+                let shouldShow = true;
+
+                switch (selectedRating) {
+                    case "all":
+                        shouldShow = true;
+                        break;
+                    case "no-rating":
+                        shouldShow = rating < 1;
+                        break;
+                    case "4":
+                        shouldShow = rating >= 4;
+                        break;
+                    case "3":
+                        shouldShow = rating >= 3;
+                        break;
+                    case "2":
+                        shouldShow = rating >= 2;
+                        break;
+                    case "1":
+                        shouldShow = rating >= 1;
+                        break;
+                }
+
+                // Находим родительский контейнер карточки
+                const container = card.closest(".routes-container");
+                if (container) {
+                    container.style.display = shouldShow ? "" : "none";
+                }
+            });
+
+            // Сортировка карточек
+            const sortedCards = cards.filter(card => {
+                const container = card.closest(".routes-container");
+                return container && container.style.display !== "none";
+            }).sort((a, b) => {
+                const ratingA = parseFloat(a.getAttribute("data-rating") || "0");
+                const ratingB = parseFloat(b.getAttribute("data-rating") || "0");
+
+                if (selectedSort === "rating-desc") {
+                    return ratingB - ratingA;
+                } else {
+                    return ratingA - ratingB;
+                }
+            });
+
+            // Если нет видимых карточек, показываем сообщение
+            const noResultsMsg = document.getElementById("noResultsMessage") || document.createElement("div");
+            noResultsMsg.id = "noResultsMessage";
+            noResultsMsg.className = "alert alert-info mt-3";
+            noResultsMsg.innerHTML = "Маршрутов с указанным фильтром не найдено";
+
+            const visibleCount = routeContainers.filter(c => c.style.display !== "none").length;
+
+            if (visibleCount === 0) {
+                if (!document.getElementById("noResultsMessage")) {
+                    routesContainer.appendChild(noResultsMsg);
+                }
+            } else {
+                if (document.getElementById("noResultsMessage")) {
+                    document.getElementById("noResultsMessage").remove();
+                }
+
+                // Переупорядочиваем карточки согласно сортировке
+                sortedCards.forEach(card => {
+                    const container = card.closest(".routes-container");
+                    routesContainer.appendChild(container);
+                });
+            }
+        }
+
+        // Добавляем обработчики событий для элементов фильтра
+        ratingFilter.addEventListener("change", filterAndSortRoutes);
+        sortOrder.addEventListener("change", filterAndSortRoutes);
+    });
+</script>

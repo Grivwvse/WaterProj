@@ -1,4 +1,5 @@
-﻿@model WaterProj.DTOs.ConsumerAccontDto
+﻿@using WaterProj.Extensions
+@model WaterProj.DTOs.ConsumerAccontDto
 @{
     ViewData["Title"] = "Личный кабинет";
 }
@@ -106,26 +107,32 @@
                 <!-- Заказы пользователя -->
                 <div class="card shadow-lg rounded-3 border-0">
                     <div class="card-body">
-                        <h3 class="card-title text-primary mb-4">Мои заказы</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="card-title text-primary mb-0">Мои заказы</h3>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="hideCompletedOrders">
+                                <label class="form-check-label" for="hideCompletedOrders">Скрыть отмененные</label>
+                            </div>
+                        </div>
                         
                         @if (Model.OrdersRoutesDto.Any())
                         {
                             <div class="accordion" id="ordersAccordion">
                                 @foreach (var dto in Model.OrdersRoutesDto)
                                 {
-                                    <div class="accordion-item border mb-3 rounded shadow-sm">
+                                    <div class="accordion-item border mb-3 rounded shadow-sm" data-status="@dto.Order.Status">
                                         <h2 class="accordion-header" id="heading-@dto.Order.OrderId">
-                                            <button class="accordion-button collapsed" 
-                                                    type="button" 
-                                                    data-bs-toggle="collapse" 
-                                                    data-bs-target="#collapse-@dto.Order.OrderId" 
-                                                    aria-expanded="false" 
+                                            <button class="accordion-button collapsed"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#collapse-@dto.Order.OrderId"
+                                                    aria-expanded="false"
                                                     aria-controls="collapse-@dto.Order.OrderId">
                                                 <div class="d-flex justify-content-between align-items-center w-100 pe-3">
                                                     <span>
                                                         <strong>№@dto.Order.OrderId</strong>: @dto.Route.Name
                                                     </span>
-                                                    <span class="badge bg-success ms-2">@dto.Order.Status</span>
+                                                    <span class="badge bg-success ms-2">@dto.Order.Status.GetDisplayName()</span>
                                                 </div>
                                             </button>
                                         </h2>
@@ -147,7 +154,7 @@
                                                     <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="btn btn-outline-primary btn-sm me-2">
                                                         <i class="bi bi-eye"></i> Подробнее
                                                     </a>
-                                                    <a href="@Url.Action("Cancel", "Order", new { id = dto.Order.OrderId })" class="btn btn-outline-danger btn-sm">
+                                                    <a href="@Url.Action("CancelOrder", "Order", new { OrderId = dto.Order.OrderId })" class="btn btn-outline-danger btn-sm">
                                                         <i class="bi bi-x-circle"></i> Отменить
                                                     </a>
                                                 </div>
@@ -265,6 +272,44 @@
             if (newPasswordInput.value !== confirmPasswordInput.value) {
                 e.preventDefault();
                 passwordMatchError.classList.remove('d-none');
+            }
+        });
+
+
+                // Обработчик для чекбокса фильтрации отмененных заказов
+        const hideCompletedOrdersCheckbox = document.getElementById('hideCompletedOrders');
+        const orderItems = document.querySelectorAll('.accordion-item[data-status]');
+
+        hideCompletedOrdersCheckbox.addEventListener('change', function() {
+            const hideOrders = this.checked;
+
+            orderItems.forEach(item => {
+                if (item.getAttribute('data-status') === 'Canceled') {
+                    if (hideOrders) {
+                        item.classList.add('d-none');
+                    } else {
+                        item.classList.remove('d-none');
+                    }
+                }
+            });
+
+            // Проверяем, есть ли видимые элементы после фильтрации
+            const visibleItems = document.querySelectorAll('.accordion-item:not(.d-none)');
+            const noOrdersMessage = document.getElementById('noOrdersAfterFilter');
+
+            // Если сообщение уже существует, удаляем его
+            if (noOrdersMessage) {
+                noOrdersMessage.remove();
+            }
+
+            // Если после фильтрации не осталось видимых элементов, показываем сообщение
+            if (hideOrders && visibleItems.length === 0) {
+                const accordionContainer = document.getElementById('ordersAccordion');
+                const message = document.createElement('div');
+                message.id = 'noOrdersAfterFilter';
+                message.className = 'alert alert-info mt-3';
+                message.innerHTML = '<i class="bi bi-info-circle me-2"></i> Нет активных заказов.';
+                accordionContainer.parentNode.insertBefore(message, accordionContainer.nextSibling);
             }
         });
     </script>

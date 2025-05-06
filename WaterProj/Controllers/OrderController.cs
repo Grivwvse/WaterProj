@@ -73,5 +73,42 @@ namespace WaterProj.Controllers
             return RedirectToAction("FeedbackForm", "Feedback", new { order.OrderId });
         }
 
+    
+
+            /// <summary>
+        /// Функция завершения заказа и перенаправление на форму обратной связи.
+        /// </summary>
+        /// <param name="routeId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> CancelOrder(int OrderId)
+        {
+            var consumerStrId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(consumerStrId))
+            {
+                TempData["ErrorMessage"] = "Пользователь не найден!";
+                return RedirectToAction("Index", "ConsumerAccount");
+            }
+
+            var order = await _orderService.GetOrderbyId(OrderId);
+
+            if (order == null || order.Status != OrderStatus.Active)
+            {
+                TempData["ErrorMessage"] = "Заказ не найден или уже был завершен!";
+                return RedirectToAction("Index", "ConsumerAccount");
+            }
+
+
+            var result = await _orderService.CancelOrderAsync(order.OrderId);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("Index", "ConsumerAccount");
+            }
+
+            TempData["SuccessMessage"] = "Воспонинение стерто!";
+            return RedirectToAction("Index", "ConsumerAccount");
+        }
+
     }
 }
