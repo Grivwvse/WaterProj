@@ -27,6 +27,7 @@ namespace WaterProj.DB
         public DbSet<Сonvenience> Сonveniences { get; set; }
         public DbSet<ShipType> ShipTypes { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
+        public DbSet<RouteDay> RouteDays { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,6 +58,14 @@ namespace WaterProj.DB
                 .WithOne(si => si.Ship)
                 .HasForeignKey(si => si.ShipId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Models.Route>()
+                .HasMany(r => r.RouteDays)
+                .WithOne(rd => rd.Route)
+                .HasForeignKey(rd => rd.RouteId);
+
+            modelBuilder.Entity<RouteDay>()
+                .Property(rd => rd.DayOfWeek)
+                .HasConversion<int>(); // Сохраняем DayOfWeek как int
 
             // Настройка связи многие-ко-многим между Ship и Сonvenience
             modelBuilder.Entity<ShipСonvenience>()

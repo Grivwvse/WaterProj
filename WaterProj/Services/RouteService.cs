@@ -151,7 +151,8 @@ namespace WaterProj.Services
                 RouteAdvantages = advantages,
                 RouteRatings = routeRating,
                 ShipConveniences = shipConveniences,
-                RouteOrderStats = routeOrderStats
+                RouteOrderStats = routeOrderStats,
+                RouteDays = route.RouteDays?.Select(rd => rd.DayOfWeek).ToList() ?? new List<DayOfWeek>()
 
             };
 
@@ -169,6 +170,7 @@ namespace WaterProj.Services
         {
             var route = await _context.Routes
                 .Include(r => r.Transporter)
+                .Include(r => r.RouteDays)
                 .FirstOrDefaultAsync(r => r.RouteId == id);
 
             if (route == null)
@@ -188,6 +190,7 @@ namespace WaterProj.Services
         {
             IQueryable<Models.Route> query = _context.Routes
                 .Include(r => r.Transporter)
+                .Include(r => r.RouteDays)
                 .Include(r => r.RouteStops)
                 .ThenInclude(rs => rs.Stop)
                 .Where(r => r.IsActive && !r.IsBlocked);
@@ -237,7 +240,8 @@ namespace WaterProj.Services
                 TransporterName = r.Transporter.Name,
                 TransporterRating = r.Transporter.Rating,
                 Price = r.Price,
-                Rating = r.Rating
+                Rating = r.Rating,
+                RouteDays = r.RouteDays?.Select(rd => rd.DayOfWeek).ToList() ?? new List<DayOfWeek>()
             }).ToList();
 
             var routeIds = routeDtos.Select(r => r.RouteId).ToList();
@@ -353,6 +357,7 @@ namespace WaterProj.Services
                 // Загружаем только активные и неблокированные маршруты
                 var routes = await _context.Routes
                     .Include(r => r.Transporter)
+                    .Include(r => r.RouteDays)
                     .Where(r => validRouteIds.Contains(r.RouteId) && r.IsActive && !r.IsBlocked)
                     .ToListAsync();
 
@@ -379,8 +384,10 @@ namespace WaterProj.Services
                     TransporterRating = r.Transporter.Rating,
                     Price = r.Price,
                     Rating = r.Rating,
-                    Image = routeImages.FirstOrDefault(img => img.EntityId == r.RouteId)?.ImagePath
+                    Image = routeImages.FirstOrDefault(img => img.EntityId == r.RouteId)?.ImagePath,
+                    RouteDays = r.RouteDays?.Select(rd => rd.DayOfWeek).ToList() ?? new List<DayOfWeek>()
                 }).ToList();
+
 
                 var routeIds = routeDtos.Select(r => r.RouteId).ToList();
                 var orderCounts = await _orderService.GetOrderCountsForRoutesAsync(routeIds, false);

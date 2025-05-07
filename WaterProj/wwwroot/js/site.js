@@ -75,6 +75,8 @@ document.addEventListener("DOMContentLoaded", function () {
             controls: ['zoomControl', 'typeSelector']
         });
 
+        const mapContainer = document.getElementById('myMap');
+
         // Коллекция для маршрутных остановок (выбранные пользователем)
         const placemarkCollection = new ymaps.GeoObjectCollection();
         // Коллекция для отображения существующих остановок из БД
@@ -125,6 +127,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         preset: 'islands#grayStretchyIcon', // Серый цвет для существующих остановок
                         draggable: false
                     });
+
+                    // Добавляем коллекцию на карту
+                    myMap.geoObjects.add(existingStopsCollection);
+
 
                     // Обработчик клика по существующей остановке
                     placemark.events.add('click', function () {
@@ -714,6 +720,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const shipId = document.getElementById('shipSelect').value;
             const price = document.getElementById('routePrice').value;
 
+            // Собираем выбранные дни недели
+            const operatingDays = [];
+            document.querySelectorAll('input[name="operatingDays"]:checked').forEach(checkbox => {
+                operatingDays.push(parseInt(checkbox.value, 10));
+            });
+
             if (!name || stopsData.length === 0) {
                 alert("Введите название маршрута и добавьте хотя бы одну остановку!");
                 return;
@@ -749,6 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Price: parseInt(price),
                 Stops: stopsData, // Содержит ExistingStopId для существующих остановок
                 Polyline: mapData.lines,
+                OperatingDays: operatingDays, // добавляем дни недели
                 Map: JSON.stringify(mapData)
             };
 

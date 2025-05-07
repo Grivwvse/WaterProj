@@ -205,6 +205,17 @@ namespace WaterProj.Controllers
                 _context.Routes.Add(route);
                 await _context.SaveChangesAsync();  // Сохраняем и получаем ID маршрута
 
+                // Добавляем дни недели для маршрута
+                foreach (var day in routeData.OperatingDays)
+                {
+                    var routeDay = new RouteDay
+                    {
+                        RouteId = route.RouteId,
+                        DayOfWeek = day
+                    };
+                    _context.RouteDays.Add(routeDay);
+                }
+
                 // Добавляем остановки и RouteStop записи
                 for (int i = 0; i < routeData.Stops.Count; i++)
                 {
@@ -382,7 +393,7 @@ namespace WaterProj.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> SearchRoutes(string name = null, int? startStopId = null, int? endStopId = null, string startStopName = null, string endStopName = null)
+        public async Task<IActionResult> SearchRoutes(string name = null, int? startStopId = null, int? endStopId = null, string startStopName = null, string endStopName = null, DateTime? departureDate = null)
         {
 
             try
@@ -393,8 +404,9 @@ namespace WaterProj.Controllers
                 {
                     RouteName = name,
                     StartStopId = startStopId,
-                    EndStopId = endStopId
-                    
+                    EndStopId = endStopId,
+                    DepartureDate = departureDate
+
                 };
 
                 // Если указаны обе остановки, используем специальный метод поиска
@@ -422,9 +434,21 @@ namespace WaterProj.Controllers
                     ViewBag.SearchType = "ByName";
                 }
 
+                // Если указана дата, фильтруем маршруты по этой дате (по дням недели)
+                if (departureDate.HasValue)
+                {
+                    DayOfWeek tripDay = departureDate.Value.DayOfWeek;
+                    routes = routes.Where(r => r.RouteDays.Contains(tripDay)).ToList();
+
+                    // Добавляем информацию о выбранной дате в ViewBag
+                    ViewBag.DepartureDate = departureDate.Value.ToString("dd.MM.yyyy");
+                    ViewBag.DepartureDayOfWeek = departureDate.Value.ToString("dddd", new System.Globalization.CultureInfo("ru-RU"));
+                }
+
                 ViewBag.StartStopName = startStopName;
                 ViewBag.EndStopName = endStopName;
                 ViewBag.RouteAmount = routes.Count;
+                ViewBag.SearchDepartureDate = departureDate;
 
                 // Вместо возврата JSON передаем модель в представление SearchResults
                 return View("SearchResults", routes);

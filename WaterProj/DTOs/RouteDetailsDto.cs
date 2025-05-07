@@ -16,6 +16,7 @@ namespace WaterProj.DTOs
         // Для комментариев к маршруту
         public required List<Advantage> RouteAdvantages { get; set; }
         public required List<RouteRating> RouteRatings { get; set; }
+        public required List<DayOfWeek> RouteDays { get; set; }
 
     }
 }

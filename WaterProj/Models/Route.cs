@@ -26,6 +26,8 @@ namespace WaterProj.Models
         public int TransporterId { get; set; }
         [ForeignKey("TransporterId")]
         public Transporter Transporter { get; set; }
+        // Связь с днями недели
+        public ICollection<RouteDay> RouteDays { get; set; }
 
         // Навигационное свойство для связи с остановками
         public List<RouteStop> RouteStops { get; set; }

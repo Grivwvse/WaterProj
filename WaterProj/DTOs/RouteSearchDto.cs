@@ -25,5 +25,6 @@
         public double Rating { get; set; }
         public string? Image { get; set; }
         public int RouteOrderStats { get; set; }
+        public List<DayOfWeek> RouteDays { get; set; } = new List<DayOfWeek>();
     }
 }

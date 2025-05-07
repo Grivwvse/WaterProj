@@ -10,6 +10,7 @@
         public int Price { get; set; }
         public List<StopDto> Stops { get; set; }
         public List<RouteLineDto> RouteLine { get; set; } // Добавляем маршрут (линии)
+        public List<DayOfWeek> OperatingDays { get; set; }
     }
 
     public class StopDto

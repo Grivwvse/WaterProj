@@ -68,12 +68,9 @@
         </div>
 
         <!-- Блок с минимальной ценой билета -->
-        <div class="route-price card mb-4 shadow-lg border-0 rounded-3 overflow-hidden">
+        <div class="route-price card mb-4 shadow-lg overflow-hidden">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="bi bi-ticket-perforated text-primary" style="font-size: 2.5rem;"></i>
-                    </div>
                     <div>
                         <h4 class="mb-0">Цена от <span class="text-primary fw-bold">@Model.Route.Price.ToString("N0")</span> рублей</h4>
                         <p class="mb-0 text-muted">Стоимость указана за одного пассажира, для получения более точной информации свяжитесь с перевозчиком</p>
@@ -85,8 +82,55 @@
         <!-- Расписание маршрута -->
         <div class="card shadow-lg mb-5">
             <div class="card-body">
-                <h3 class="card-title text-primary">Расписание маршрута</h3>
-                <p class="card-text">@Model.Route.Schedule</p>
+                <h3 class="card-title text-primary">Расписание</h3>
+
+                <!-- Дни недели -->
+                @if (Model.Route.RouteDays != null && Model.Route.RouteDays.Any())
+                {
+                    <div class="mb-3">
+                        <div class="d-flex flex-wrap">
+                            @foreach (var day in Model.Route.RouteDays.OrderBy(d => (int)d.DayOfWeek))
+                            {
+                                <span class="badge bg-primary me-2 mb-2 p-2">
+                                    @switch (day.DayOfWeek)
+                                    {
+                                        case DayOfWeek.Monday:
+                                            <text>Понедельник</text>
+                                            break;
+                                        case DayOfWeek.Tuesday:
+                                            <text>Вторник</text>
+                                            break;
+                                        case DayOfWeek.Wednesday:
+                                            <text>Среда</text>
+                                            break;
+                                        case DayOfWeek.Thursday:
+                                            <text>Четверг</text>
+                                            break;
+                                        case DayOfWeek.Friday:
+                                            <text>Пятница</text>
+                                            break;
+                                        case DayOfWeek.Saturday:
+                                            <text>Суббота</text>
+                                            break;
+                                        case DayOfWeek.Sunday:
+                                            <text>Воскресенье</text>
+                                            break;
+                                    }
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Информация о днях выполнения маршрута отсутствует
+                    </div>
+                }
+
+                <!-- Описание расписания -->
+                <h5 class="text-secondary">Подробное расписание:</h5>
+                <p class="card-text">@(string.IsNullOrEmpty(Model.Route.Schedule) ? "Подробное расписание не указано" : Model.Route.Schedule)</p>
             </div>
         </div>
 

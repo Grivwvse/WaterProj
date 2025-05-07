@@ -280,6 +280,26 @@ namespace WaterProj.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RouteDays",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RouteId = table.Column<int>(type: "integer", nullable: false),
+                    DayOfWeek = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RouteDays", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RouteDays_Routes_RouteId",
+                        column: x => x.RouteId,
+                        principalTable: "Routes",
+                        principalColumn: "RouteId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RouteRatings",
                 columns: table => new
                 {
@@ -399,6 +419,11 @@ namespace WaterProj.Migrations
                 column: "RouteRatingId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RouteDays_RouteId",
+                table: "RouteDays",
+                column: "RouteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RouteRatingAdvantages_AdvantageId",
                 table: "RouteRatingAdvantages",
                 column: "AdvantageId");
@@ -478,6 +503,9 @@ namespace WaterProj.Migrations
 
             migrationBuilder.DropTable(
                 name: "ReviewImages");
+
+            migrationBuilder.DropTable(
+                name: "RouteDays");
 
             migrationBuilder.DropTable(
                 name: "RouteRatingAdvantages");

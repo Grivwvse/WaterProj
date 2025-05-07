@@ -21,6 +21,14 @@
                                 <input type="text" class="form-control" id="routeNameSearch" name="name" placeholder="Введите название или часть описания">
                             </div>
 
+                            <!-- Дата поездки -->
+                            <div class="col-md-12">
+                                <label for="departureDate" class="form-label">
+                                    <i class="bi bi-calendar-event"></i> Дата поездки
+                                </label>
+                                <input type="date" class="form-control" id="departureDate" name="departureDate" min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            </div>
+
                             <!-- Разделитель -->
                             <div class="col-md-12 text-center">
                                 <h5 class="text-muted">Или выберите остановки</h5>

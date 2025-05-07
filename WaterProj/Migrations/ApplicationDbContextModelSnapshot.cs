@@ -216,6 +216,27 @@ namespace WaterProj.Migrations
                     b.ToTable("Routes");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.RouteDay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RouteId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("RouteDays");
+                });
+
             modelBuilder.Entity("WaterProj.Models.RouteRating", b =>
                 {
                     b.Property<int>("RouteRatingId")
@@ -565,6 +586,17 @@ namespace WaterProj.Migrations
                     b.Navigation("Transporter");
                 });
 
+            modelBuilder.Entity("WaterProj.Models.RouteDay", b =>
+                {
+                    b.HasOne("WaterProj.Models.Route", "Route")
+                        .WithMany("RouteDays")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Route");
+                });
+
             modelBuilder.Entity("WaterProj.Models.RouteRating", b =>
                 {
                     b.HasOne("WaterProj.Models.Consumer", "Consumer")
@@ -695,6 +727,8 @@ namespace WaterProj.Migrations
             modelBuilder.Entity("WaterProj.Models.Route", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("RouteDays");
 
                     b.Navigation("RouteStops");
                 });
