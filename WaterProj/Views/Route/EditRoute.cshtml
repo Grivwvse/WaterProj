@@ -1,0 +1,204 @@
+﻿@model WaterProj.DTOs.EditRouteDto
+
+@{
+    ViewData["Title"] = "Редактирование маршрута";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg mb-5">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Редактирование маршрута</h3>
+        </div>
+        <div class="card-body">
+            <div id="alertPlaceholder"></div>
+
+            <form id="editRouteForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="RouteId" />
+
+                <div class="row">
+                    <!-- Левая колонка с основной информацией -->
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h4 class="text-primary">Информация о маршруте</h4>
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label">Название маршрута</label>
+                                <input asp-for="Name" class="form-control" readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Описание</label>
+                                <textarea asp-for="Description" class="form-control" readonly rows="4"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Price" class="form-label">Цена (₽)</label>
+                                <input asp-for="Price" class="form-control" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка с редактируемыми данными -->
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h4 class="text-primary">Расписание</h4>
+                            <div class="mb-3">
+                                <label asp-for="Schedule" class="form-label">Описание расписания</label>
+                                <textarea asp-for="Schedule" class="form-control" rows="4" placeholder="Введите подробное описание расписания маршрута"></textarea>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label d-block">Дни выполнения маршрута</label>
+                                <div class="row">
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-monday" value="1" class="route-day-checkbox" />
+                                        <label for="day-monday">Пн</label>
+                                    </div>
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-tuesday" value="2" class="route-day-checkbox" />
+                                        <label for="day-tuesday">Вт</label>
+                                    </div>
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-wednesday" value="3" class="route-day-checkbox" />
+                                        <label for="day-wednesday">Ср</label>
+                                    </div>
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-thursday" value="4" class="route-day-checkbox" />
+                                        <label for="day-thursday">Чт</label>
+                                    </div>
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-friday" value="5" class="route-day-checkbox" />
+                                        <label for="day-friday">Пт</label>
+                                    </div>
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-saturday" value="6" class="route-day-checkbox" />
+                                        <label for="day-saturday">Сб</label>
+                                    </div>
+                                    <div class="col-auto day-checkbox">
+                                        <input type="checkbox" id="day-sunday" value="0" class="route-day-checkbox" />
+                                        <label for="day-sunday">Вс</label>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="routeDaysInput" name="RouteDays" />
+                                <div class="invalid-feedback">Укажите хотя бы один день недели</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ShipId" class="form-label">Корабль</label>
+                                <select asp-for="ShipId" class="form-select">
+                                    @foreach (var ship in Model.AvailableShips)
+                                    {
+                                        <option value="@ship.ShipId">@ship.Name</option>
+                                    }
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Назад
+                    </a>
+                    <button type="button" id="saveRouteBtn" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Сохранить изменения
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Инициализация выбранных дней недели
+            const routeDays = @Html.Raw(Json.Serialize(Model.RouteDays));
+
+            // Отметка чекбоксов для дней недели
+            routeDays.forEach(day => {
+                const checkbox = document.querySelector(`.route-day-checkbox[value="${day}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+
+            // Обработчик кнопки сохранения
+            document.getElementById("saveRouteBtn").addEventListener("click", function() {
+                saveRoute();
+            });
+
+            function saveRoute() {
+                // Сбор выбранных дней недели
+                const selectedDays = [];
+                document.querySelectorAll(".route-day-checkbox:checked").forEach(checkbox => {
+                    selectedDays.push(parseInt(checkbox.value));
+                });
+
+                // Валидация
+                if (selectedDays.length === 0) {
+                    document.getElementById("routeDaysInput").nextElementSibling.style.display = "block";
+                    return;
+                }
+
+                // Создание данных для отправки
+                const routeData = {
+                    RouteId: @Model.RouteId,
+                    Name: document.getElementById("Name").value,
+                    Description: document.getElementById("Description").value,
+                    Price: parseInt(document.getElementById("Price").value),
+                    ShipId: document.getElementById("ShipId").value,
+                    Schedule: document.getElementById("Schedule").value,
+                    RouteDays: selectedDays
+                };
+
+                // Отправка данных на сервер
+                fetch("/Route/UpdateRoute", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify(routeData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", "Маршрут успешно обновлен");
+                        setTimeout(() => {
+                            window.location.href = "/Route/RouteDetails?routeID=@Model.RouteId";
+                        }, 1500);
+                    } else {
+                        let errorMessage = data.message || 'Неизвестная ошибка';
+
+                        // Если есть ошибки валидации, показываем их
+                        if (data.validationErrors) {
+                            errorMessage += ': ' + data.validationErrors.map(err =>
+                                `Поле ${err.field} - ${err.errors.join(', ')}`
+                            ).join('; ');
+                        }
+
+                        showAlert("danger", errorMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка:", error);
+                    showAlert("danger", "Произошла ошибка при обновлении маршрута");
+                });
+            }
+
+            function showAlert(type, message) {
+                const alertPlaceholder = document.getElementById("alertPlaceholder");
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                alertPlaceholder.innerHTML = alertHtml;
+            }
+        });
+    </script>
+}

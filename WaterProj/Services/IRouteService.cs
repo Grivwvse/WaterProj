@@ -8,6 +8,14 @@ namespace WaterProj.Services
     {
         Task<Models.Route> GetByIdAsync(int id);
         Task<RouteDetailsDto> GetRouteDetails(int id);
+        /// <summary>
+        /// Получение доступных остановок для указанных маршрутов
+        /// </summary>
+        /// <param name="startStopId">ID начальной остановки</param>
+        /// <param name="routeIds">Список ID маршрутов для фильтрации</param>
+        /// <returns>Список доступных остановок</returns>
+        Task<List<Stop>> GetAvailableStopsForRoutes(int startStopId, List<int> routeIds);
+
 
         /// <summary>
         /// Получение всех остановок из базы данных
@@ -24,7 +32,7 @@ namespace WaterProj.Services
         /// <returns></returns>
         Task<List<Models.Route>> GetRoutesByIdsAsync(List<int> routeIds);
 
-        Task<IEnumerable<Stop>> GetAvailableStops(int startStopId);
+        Task<List<Stop>> GetAvailableStops(int startStopId);
 
 
         Task<List<Models.Route>> GetRoutesByShip(int shipId);
@@ -35,6 +43,15 @@ namespace WaterProj.Services
         // Метод для поиска по остановкам
         Task<List<RouteSearchResultDto>> FindRoutesByStopsAsync(List<int> startStopIds, List<int> endStopIds);
         Task<(Stop? StartStop, Stop? EndStop)> GetRouteEndpointsAsync(int routeId);
+        /// <summary>
+        /// Обновление расписания, дней недели и корабля маршрута
+        /// </summary>
+        /// <param name="routeId">ID маршрута</param>
+        /// <param name="shipId">ID назначаемого корабля</param>
+        /// <param name="schedule">Новое расписание</param>
+        /// <param name="routeDays">Новые дни недели</param>
+        /// <returns>Результат операции</returns>
+        Task<ServiceResult> EditRoute(int routeId, int shipId, string schedule, List<DayOfWeek> routeDays);
 
 
 

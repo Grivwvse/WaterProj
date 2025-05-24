@@ -2,7 +2,7 @@
 
 namespace WaterProj.Models
 {
-    public class Administrator
+    public class Administrator 
     {
         [Key]
         public int AdminId { get; set; }

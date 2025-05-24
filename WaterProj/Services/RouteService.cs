@@ -6,6 +6,8 @@ using SixLabors.ImageSharp.Processing;
 
 using SixLabors.ImageSharp;
 using WaterProj.Models.Services;
+using Microsoft.AspNetCore.Routing;
+using Glimpse.Core.Extensibility;
 
 namespace WaterProj.Services
 {
@@ -23,6 +25,7 @@ namespace WaterProj.Services
         {
             return await _context.Routes.FindAsync(id);
         }
+
 
         public async Task<List<Models.Route>> GetRoutesByIdsAsync(List<int> routeIds)
         {
@@ -159,6 +162,50 @@ namespace WaterProj.Services
             return dto;
         }
 
+        public async Task<ServiceResult> EditRoute(int routeId, int shipId, string schedule, List<DayOfWeek> routeDays)
+        {
+            try
+            {
+                var routetmp = await GetByIdAsync(routeId);
+                if (routetmp == null)
+                {
+                    return new ServiceResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Маршрут не найден"
+                    };
+                }
+                routetmp.ShipId = shipId;
+                routetmp.Schedule = schedule;
+
+                // Удаляем старые дни маршрута
+                if (routetmp.RouteDays != null)
+                {
+                    _context.RouteDays.RemoveRange(routetmp.RouteDays);
+                }
+
+                // Затем добавляем новые
+                routetmp.RouteDays = routeDays.Select(day => new RouteDay
+                {
+                    RouteId = routeId,
+                    DayOfWeek = day
+                }).ToList();
+
+                await UpdateRoute(routetmp);
+
+                return new ServiceResult
+                {
+                    Success = true
+                };
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
 
         /// <summary>
         /// Получение перевозчика, связанного с маршрутом
@@ -255,53 +302,54 @@ namespace WaterProj.Services
             return routeDtos;
         }
 
-        public async Task<IEnumerable<Stop>> GetAvailableStops(int startStopId)
+        public async Task<List<Stop>> GetAvailableStops(int startStopId)
         {
-            // Находим все активные и неблокированные маршруты, в которых встречается данная остановка
-            var routesWithStartStop = await _context.RouteStop
-                .Where(rs => rs.StopId == startStopId)
-                .Join(_context.Routes,
-                    rs => rs.RouteId,
-                    r => r.RouteId,
-                    (rs, r) => new { RouteStop = rs, Route = r })
-                .Where(x => x.Route.IsActive && !x.Route.IsBlocked)
-                .Select(x => new { x.RouteStop.RouteId, x.RouteStop.StopOrder })
-                .ToListAsync();
-
-            if (!routesWithStartStop.Any())
-                return new List<Stop>();
-
-            // Список для хранения доступных остановок
-            var availableStopIds = new HashSet<int>();
-
-            // Для каждого маршрута находим остановки, которые идут ПОСЛЕ выбранной
-            foreach (var routeInfo in routesWithStartStop)
+            try
             {
-                // Получаем порядок выбранной остановки в текущем маршруте
-                int startStopOrder = routeInfo.StopOrder;
-
-                // Находим все остановки в этом маршруте, которые идут ПОСЛЕ выбранной (имеют больший порядковый номер)
-                var nextStops = await _context.RouteStop
-                    .Where(rs => rs.RouteId == routeInfo.RouteId && rs.StopOrder > startStopOrder)
-                    .Select(rs => rs.StopId)
+                // Находим все маршруты, содержащие эту остановку
+                var routesWithStop = await _context.RouteStop
+                    .Where(rs => rs.StopId == startStopId)
+                    .Select(rs => rs.RouteId)
+                    .Distinct()
                     .ToListAsync();
 
-                // Добавляем их в набор доступных остановок
-                foreach (var stopId in nextStops)
+                // Если таких маршрутов нет, возвращаем пустой список
+                if (!routesWithStop.Any())
                 {
-                    availableStopIds.Add(stopId);
+                    return new List<Stop>();
                 }
-            }
 
-            // Получаем полную информацию о доступных остановках
-            if (availableStopIds.Any())
+                // Дополнительно фильтруем маршруты - исключаем те, где startStopId является последней остановкой
+                var validRouteIds = new List<int>();
+                foreach (var routeId in routesWithStop)
+                {
+                    // Получаем все остановки маршрута в порядке следования
+                    var routeStops = await _context.RouteStop
+                        .Where(rs => rs.RouteId == routeId)
+                        .OrderBy(rs => rs.StopOrder)
+                        .ToListAsync();
+
+                    // Находим позицию выбранной остановки
+                    var startStopPosition = routeStops
+                        .FirstOrDefault(rs => rs.StopId == startStopId)?.StopOrder;
+
+                    // Если это не последняя остановка, добавляем маршрут в список валидных
+                    if (startStopPosition.HasValue && startStopPosition.Value < routeStops.Last().StopOrder)
+                    {
+                        validRouteIds.Add(routeId);
+                    }
+                }
+
+                // Используем только валидные маршруты
+                return await GetAvailableStopsForRoutes(startStopId, validRouteIds);
+            }
+            catch (Exception ex)
             {
-                return await _context.Stops
-                    .Where(s => availableStopIds.Contains(s.StopId))
-                    .ToListAsync();
+                // Логируем ошибку
+                Console.WriteLine($"Ошибка в GetAvailableStops: {ex.Message}");
+                // Возвращаем пустой список в случае ошибки
+                return new List<Stop>();
             }
-
-            return new List<Stop>();
         }
 
         /// <summary>
@@ -430,5 +478,98 @@ namespace WaterProj.Services
             return (startStop, endStop);
         }
 
+        public async Task<List<Stop>> GetAvailableStopsForRoutes(int startStopId, List<int> routeIds)
+        {
+            try
+            {
+                if (routeIds == null || !routeIds.Any())
+                {
+                    return new List<Stop>();
+                }
+
+                Console.WriteLine($"Поиск доступных остановок для начальной точки {startStopId} в маршрутах: {string.Join(", ", routeIds)}");
+
+                // 1. Находим маршруты, в которых startStopId не является конечной точкой
+                var routeStops = await _context.RouteStop
+                    .Where(rs => routeIds.Contains(rs.RouteId))
+                    .ToListAsync();
+
+                // Группируем остановки по маршрутам для определения их порядка
+                var routeStopGroups = routeStops
+                    .GroupBy(rs => rs.RouteId)
+                    .ToList();
+
+                // 2. Отфильтровываем маршруты, где startStopId является последней остановкой
+                var validRouteIds = new List<int>();
+                foreach (var routeGroup in routeStopGroups)
+                {
+                    var routeId = routeGroup.Key;
+                    var stops1 = routeGroup.OrderBy(rs => rs.StopOrder).ToList();
+
+                    // Проверяем, содержит ли маршрут выбранную начальную остановку
+                    var startStopEntry = stops1.FirstOrDefault(rs => rs.StopId == startStopId);
+                    if (startStopEntry == null)
+                    {
+                        // Этот маршрут не содержит выбранную начальную остановку
+                        continue;
+                    }
+
+                    // Проверяем, не является ли startStopId последней остановкой в маршруте
+                    if (startStopEntry.StopOrder < stops1.Max(rs => rs.StopOrder))
+                    {
+                        validRouteIds.Add(routeId);
+                    }
+                }
+
+                if (!validRouteIds.Any())
+                {
+                    Console.WriteLine("Нет подходящих маршрутов с выбранной начальной точкой");
+                    return new List<Stop>();
+                }
+
+                // 3. Получаем порядковые номера стартовой остановки в каждом маршруте
+                var routeStopsWithStartStop = routeStops
+                    .Where(rs => rs.StopId == startStopId && validRouteIds.Contains(rs.RouteId))
+                    .ToList();
+
+                if (!routeStopsWithStartStop.Any())
+                {
+                    return new List<Stop>();
+                }
+
+                // Создаем словарь [RouteId] -> [StopOrder]
+                var routeStartOrders = routeStopsWithStartStop
+                    .ToDictionary(rs => rs.RouteId, rs => rs.StopOrder);
+
+                // 4. Получаем ID остановок, которые идут ПОСЛЕ выбранной начальной остановки
+                var availableStopIds = routeStops
+                    .Where(rs => routeStartOrders.ContainsKey(rs.RouteId) &&
+                              rs.StopOrder > routeStartOrders[rs.RouteId])
+                    .Select(rs => rs.StopId)
+                    .Distinct()
+                    .ToList();
+
+                // Если нет доступных остановок, возвращаем пустой список
+                if (!availableStopIds.Any())
+                {
+                    return new List<Stop>();
+                }
+
+                // 5. Загружаем сами остановки по найденным ID
+                var stops = await _context.Stops
+                    .Where(s => availableStopIds.Contains(s.StopId))
+                    .ToListAsync();
+
+                Console.WriteLine($"Найдено {stops.Count} доступных остановок");
+                return stops;
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку
+                Console.WriteLine($"Ошибка в GetAvailableStopsForRoutes: {ex.Message}");
+                // Возвращаем пустой список в случае ошибки
+                return new List<Stop>();
+            }
+        }
     }
 }

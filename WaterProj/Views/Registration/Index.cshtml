@@ -4,56 +4,125 @@
     ViewData["Title"] = "Регистрация";
 }
 
-<h2>Регистрация</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Регистрация пользователя</h2>
+                </div>
+                
+                <div class="card-body p-4">
+                    @if (ViewBag.ValidationErrors != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Пожалуйста, исправьте следующие ошибки:
+                            <ul class="mb-0 mt-2">
+                                @foreach (string error in ViewBag.ValidationErrors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </div>
+                    }
 
-@if (ViewBag.ValidationErrors != null)
-{
-    <div class="text-danger">
-        <ul>
-            @foreach (string error in ViewBag.ValidationErrors)
-            {
-                <li>@error</li>
-            }
-        </ul>
-    </div>
-}
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <form asp-action="Index" method="post">
+                        <div class="row">
+                            <!-- Левая колонка -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">Имя</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input asp-for="Name" class="form-control" placeholder="Введите ваше имя" />
+                                    </div>
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
 
-<form asp-action="Index" method="post">
-    <div>
-        <label asp-for="Name"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
-    </div>
-    <div>
-        <label asp-for="Surname"></label>
-        <input asp-for="Surname" class="form-control" />
-        <span asp-validation-for="Surname" class="text-danger"></span>
-    </div>
-    <div>
-        <label asp-for="Phone"></label>
-        <input asp-for="Phone" class="form-control" />
-        <span asp-validation-for="Phone" class="text-danger"></span>
-    </div>
-    <div>
-        <label asp-for="Login"></label>
-        <input asp-for="Login" class="form-control" />
-        <span asp-validation-for="Login" class="text-danger"></span>
-    </div>
-    <div>
-        <label asp-for="PasswordHash"></label>
-        <input asp-for="PasswordHash" type="password" class="form-control" />
-        <span asp-validation-for="PasswordHash" class="text-danger"></span>
-    </div>
-    <br />
-    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
-</form>
+                                <div class="mb-3">
+                                    <label asp-for="Surname" class="form-label">Фамилия</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                        <input asp-for="Surname" class="form-control" placeholder="Введите вашу фамилию" />
+                                    </div>
+                                    <span asp-validation-for="Surname" class="text-danger small"></span>
+                                </div>
 
-<a asp-controller="Registration" asp-action="RegisterTransporter">Регистрация в качестве перевозчика</a>
+                                <div class="mb-3">
+                                    <label asp-for="Phone" class="form-label">Телефон</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                        <input asp-for="Phone" class="form-control" placeholder="+7 (XXX) XXX-XX-XX" />
+                                    </div>
+                                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <!-- Правая колонка -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Login" class="form-label">Логин</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                                        <input asp-for="Login" class="form-control" placeholder="Придумайте логин" />
+                                    </div>
+                                    <span asp-validation-for="Login" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="PasswordHash" class="form-label">Пароль</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                        <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Придумайте пароль" />
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="PasswordHash" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Зарегистрироваться
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer text-center py-3 bg-light">
+                    <div class="text-muted mb-2">Вы представитель компании-перевозчика?</div>
+                    <a asp-controller="Registration" asp-action="RegisterTransporter" class="btn btn-outline-secondary">
+                        <i class="bi bi-building me-1"></i> Регистрация в качестве перевозчика
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // Переключение видимости пароля
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('@Html.IdFor(m => m.PasswordHash)');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    </script>
 }

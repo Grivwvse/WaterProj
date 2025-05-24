@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="WaterProj.Controllers.AdministratorController" Collapsed="true">
+    <Position X="0.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAABBAAAAQAAAAEAQAAQIUAAAAAAAgEAAAAAAAAIg=</HashCode>
+      <FileName>Controllers\AdministratorController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.AuthorizationController" Collapsed="true">
+    <Position X="4.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAA=</HashCode>
+      <FileName>Controllers\AuthorizationController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.ConsumerAccountController" Collapsed="true">
+    <Position X="6" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAIAAACgAAACAAEAAAAAAAA=</HashCode>
+      <FileName>Controllers\ConsumerAccountController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.FeedbackController" Collapsed="true">
+    <Position X="0.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAABAAAAAAAAAAAEAAABAAAAAAAAEAAACAAAAAAAAA=</HashCode>
+      <FileName>Controllers\FeedbackController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.OrderController" Collapsed="true">
+    <Position X="2.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEAAAAAAAgAAAAACAQAAAAAAA=</HashCode>
+      <FileName>Controllers\OrderController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.RegistrationController" Collapsed="true">
+    <Position X="4.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAABAAAAgAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Controllers\RegistrationController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.RouteController" Collapsed="true">
+    <Position X="6" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAEgAAACBAAAAEAEBAAAAAAAgAQQBCSDAAAAQBA=</HashCode>
+      <FileName>Controllers\RouteController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.ShipController" Collapsed="true">
+    <Position X="0.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAABAAAAAwAAFwAAAAAAAAAAAA=</HashCode>
+      <FileName>Controllers\ShipController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Controllers.TransporterAccountController" Collapsed="true">
+    <Position X="2.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAgAAAgAAAEAAIAAIAAAAAAAACAAAAAAAAAEA=</HashCode>
+      <FileName>Controllers\TransporterAccountController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WaterProj.Services.AdministratorService" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAwAAAABAgAARAAAAAAAAAAAAAAAAAgQCAAAAAEAIAA=</HashCode>
+      <FileName>Services\AdministratorService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Font Name="Arial" Size="10" />
+</ClassDiagram>

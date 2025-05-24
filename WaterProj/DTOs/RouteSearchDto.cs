@@ -5,10 +5,13 @@
         public string? RouteName { get; set; }
         public int? StartStopId { get; set; }
         public int? EndStopId { get; set; }
+        public string? startStopName { get; set; }
+        public string? endStopName { get; set; }
         public string? TransporterName { get; set; }
         public DateTime? DepartureDate { get; set; }
         
     }
+
 
     public class RouteSearchResultDto
     {

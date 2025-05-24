@@ -101,12 +101,237 @@
                // Глобальная переменная для хранения полилиний маршрутов
                let routePolylines = [];
 
+                // Добавляем обработчик изменения даты здесь, сразу после инициализации переменных
+        const datePicker = document.getElementById('departureDate');
+        if (datePicker) {
+              datePicker.addEventListener('change', async function() {
+        console.log("Выбрана дата:", this.value);
+
+        // Проверяем, есть ли выбранная начальная точка
+        const startStopId = document.getElementById('startStopSelect').value;
+
+        if (this.value) {
+            if (startStopId) {
+                // Если уже выбрана начальная точка, обновляем доступные остановки
+                await loadStopsByDate(new Date(this.value));
+                await updateAvailableStops(startStopId);
+            } else {
+                // Если начальная точка не выбрана, просто загружаем остановки для даты
+                loadStopsByDate(new Date(this.value));
+            }
+        } else {
+            // Если дата не выбрана
+            if (startStopId) {
+                // Сначала загружаем все остановки
+                await loadStops();
+                // Потом обновляем доступные для выбранной начальной
+                await updateAvailableStops(startStopId);
+            } else {
+                // Если начальная точка не выбрана, просто загружаем все остановки
+                loadStops();
+            }
+        }
+    });
+        }
+
+        // Проверяем, выбрана ли дата при загрузке страницы
+        if (datePicker && datePicker.value) {
+            console.log("Дата уже выбрана при загрузке:", datePicker.value);
+            // Если дата уже выбрана, загружаем остановки для этой даты
+            loadStopsByDate(new Date(datePicker.value));
+        } else {
+            // Загружаем все остановки
+            loadStops();
+        }
+
                // Загружаем все остановки
-               loadStops();
+               //loadStops();
 
                // Инициализируем обработчики выбора остановок
                initStopSelectors();
 
+
+
+                // Функция загрузки остановок с учетом даты
+        async function loadStopsByDate(date) {
+            try {
+                console.log("Загрузка остановок для даты:", date);
+
+                // Создаем индикатор загрузки
+                showLoadingIndicator();
+
+                const formattedDate = date.toISOString();
+                console.log("Форматированная дата:", formattedDate);
+
+                const url = `/Route/GetStopsByOperatingDay?date=${encodeURIComponent(formattedDate)}`;
+                console.log("URL запроса:", url);
+
+                const response = await fetch(url);
+                console.log("Статус ответа:", response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ошибка: ${response.status}`);
+                }
+
+                const responseText = await response.text();
+                console.log("Текст ответа:", responseText.substring(0, 200) + "...");
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error("Ошибка парсинга JSON:", e);
+                    throw new Error("Неверный формат ответа от сервера");
+                }
+
+                if (!data.success) {
+                    throw new Error("Ошибка от сервера: " + (data.error || "неизвестная ошибка"));
+                }
+
+                console.log(`Загружено ${data.stops.length} остановок, доступных маршрутов: ${data.activeRouteCount}`);
+
+                // Очищаем текущие остановки с карты
+                clearMap();
+
+                // Обновляем массив всех остановок только теми, что работают в выбранный день
+                allStops = data.stops;
+
+                // Добавляем остановки на карту
+                addStopsToMap(data.stops);
+
+                // Обновляем выпадающие списки
+                populateStopsDropdowns(data.stops);
+
+                // Показываем информацию о количестве маршрутов
+                showRouteCountInfo(data.activeRouteCount);
+
+                hideLoadingIndicator();
+            } catch (error) {
+                console.error("Ошибка при загрузке остановок по дате:", error);
+                alert("Произошла ошибка при загрузке остановок для выбранной даты");
+                // В случае ошибки загружаем все остановки
+                loadStops();
+            }
+        }
+
+        // Вспомогательные функции для работы с датой
+        function showLoadingIndicator() {
+            let indicator = document.getElementById('mapLoadingIndicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'mapLoadingIndicator';
+                indicator.className = 'position-absolute top-50 start-50 translate-middle bg-white p-3 rounded shadow';
+                indicator.style.zIndex = 1000;
+                indicator.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <span class="ms-2">Загрузка остановок...</span>
+                    </div>
+                `;
+
+                const mapContainer = document.getElementById('searchMap');
+                if (mapContainer) {
+                    mapContainer.style.position = 'relative';
+                    mapContainer.appendChild(indicator);
+                }
+            } else {
+                indicator.style.display = 'block';
+            }
+        }
+
+        function hideLoadingIndicator() {
+            const indicator = document.getElementById('mapLoadingIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function showRouteCountInfo(count) {
+            let infoElement = document.getElementById('routeCountInfo');
+            if (!infoElement) {
+                infoElement = document.createElement('div');
+                infoElement.id = 'routeCountInfo';
+                infoElement.className = 'alert alert-info mt-3';
+
+                const mapContainer = document.getElementById('searchMap');
+                if (mapContainer && mapContainer.parentElement) {
+                    mapContainer.parentElement.appendChild(infoElement);
+                }
+            }
+
+            const routeWord = getRouteWordForm(count);
+            infoElement.textContent = `Доступно ${count} ${routeWord} на выбранную дату`;
+            infoElement.style.display = 'block';
+        }
+
+        function getRouteWordForm(count) {
+            const lastDigit = count % 10;
+            const lastTwoDigits = count % 100;
+
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+                return "маршрутов";
+            }
+
+            if (lastDigit === 1) {
+                return "маршрут";
+            }
+
+            if (lastDigit >= 2 && lastDigit <= 4) {
+                return "маршрута";
+            }
+
+            return "маршрутов";
+        }
+
+        // Функция очистки карты
+        function clearMap() {
+            // Очищаем коллекцию остановок
+            stopsCollection.removeAll();
+
+            // Удаляем все маршруты с карты
+            clearRoutePolylines();
+        }
+
+        // Функция загрузки всех остановок (оригинальная функция)
+        async function loadStops() {
+            try {
+                showLoadingIndicator();
+
+                const response = await fetch('/Route/GetAllStops');
+                if (!response.ok) {
+                    throw new Error(`HTTP ошибка: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error("Ошибка при загрузке данных остановок");
+                }
+
+                // Очищаем карту перед добавлением новых остановок
+                clearMap();
+
+                allStops = data.stops || [];
+
+                // Добавляем остановки на карту
+                addStopsToMap(allStops);
+
+                // Заполняем выпадающие списки
+                populateStopsDropdowns(allStops);
+
+                // Скрываем информацию о количестве маршрутов
+                const infoElement = document.getElementById('routeCountInfo');
+                if (infoElement) {
+                    infoElement.style.display = 'none';
+                }
+
+                hideLoadingIndicator();
+            } catch (error) {
+                console.error("Ошибка при загрузке остановок:", error);
+                hideLoadingIndicator();
+            }
+        }
                // Функция загрузки всех остановок
                async function loadStops() {
                    try {
@@ -133,79 +358,140 @@
                }
 
                // Функция добавления остановок на карту
-               function addStopsToMap(stops) {
-                   stops.forEach((stop) => {
-                       if (stop.latitude !== undefined && stop.longitude !== undefined) {
-                           const placemark = new ymaps.Placemark(
-                               [stop.latitude, stop.longitude],
-                               {
-                                   iconContent: stop.name,
-                                   hintContent: stop.name,
-                                   balloonContentHeader: 'Остановка',
-                                   balloonContent: `ID: ${stop.stopId}, Координаты: ${stop.latitude.toFixed(6)}, ${stop.longitude.toFixed(6)}`,
-                                   stopId: stop.stopId
-                               },
-                               {
-                                   preset: 'islands#blueStretchyIcon'
-                               }
-                           );
+      function addStopsToMap(stops) {
+        stops.forEach((stop) => {
+            if (stop.latitude !== undefined && stop.longitude !== undefined) {
+                const placemark = new ymaps.Placemark(
+                    [stop.latitude, stop.longitude],
+                    {
+                        iconContent: stop.name,
+                        hintContent: stop.name,
+                        balloonContentHeader: 'Остановка',
+                        balloonContent: `ID: ${stop.stopId}, Координаты: ${stop.latitude.toFixed(6)}, ${stop.longitude.toFixed(6)}`,
+                        stopId: stop.stopId
+                    },
+                    {
+                        preset: 'islands#blueStretchyIcon'
+                    }
+                );
 
-                           // Обработчик клика по метке
-                           placemark.events.add('click', function() {
-                               const stopId = placemark.properties.get('stopId');
-                               const stopName = placemark.properties.get('iconContent');
+                // Обработчик клика по метке
+                placemark.events.add('click', function() {
+                    const stopId = placemark.properties.get('stopId');
+                    const stopName = placemark.properties.get('iconContent');
+                    const isAvailable = placemark.properties.get('isAvailable');
+                    const isStartPoint = document.getElementById('startStopSelect').value == stopId;
+                    const preset = placemark.options.get('preset');
+                    const isGray = preset === 'islands#grayStretchyIcon';
 
-                               // Открываем балун с выбором действия
-                               placemark.properties.set('balloonContentFooter', `
-                                   <div class="mt-2">
-                                       <button class="btn btn-primary btn-sm" id="selectAsStart">Выбрать как начало</button>
-                                       <button class="btn btn-success btn-sm" id="selectAsEnd">Выбрать как конец</button>
-                                   </div>
-                               `);
+                    // Формируем содержимое балуна
+                    let balloonText = '<div class="mt-2">';
+                    balloonText += `
+                        <button class="btn btn-primary btn-sm" id="selectAsStart">Выбрать как начало</button>
+                    `;
 
-                               // После открытия балуна добавляем обработчики на кнопки
-                               placemark.events.add('balloonopen', function() {
-                                   setTimeout(() => {
-                                       document.getElementById('selectAsStart')?.addEventListener('click', async function() {
-                                           // Устанавливаем значение в выпадающий список
-                                           document.getElementById('startStopSelect').value = stopId;
-                                           document.getElementById('startStopName').value = stopName;
+                    // Проверяем начальную точку
+                    const startStopId = document.getElementById('startStopSelect').value;
 
-                                           // Важно: вызываем фильтрацию доступных точек
-                                           await updateAvailableStops(stopId);
+                    // Добавляем кнопку "Выбрать как конец" для всех точек, кроме начальной
+                    if (!isStartPoint && (startStopId === '' || (isAvailable !== false && !isGray))) {
+                         balloonText += `
+                             <button class="btn btn-success btn-sm ms-1" id="selectAsEnd">Выбрать как конец</button>
+                         `;
+                     } else if (isStartPoint) {
+                         balloonText += `
+                             <span class="ms-1 text-muted">Точка уже выбрана как начальная</span>
+                         `;
+                     } else if (isGray || isAvailable === false) {
+                         // Если это серая точка (до начальной) или явно отмечена как недоступная
+                         balloonText += `
+                             <span class="ms-1 text-muted">Недоступна как конечная точка</span>
+                         `;
+                     }
 
-                                           // Подсвечиваем выбранную точку
-                                           highlightSelectedStops();
+                    balloonText += '</div>';
 
-                                           // Закрываем балун
-                                           placemark.balloon.close();
-                                       });
+                    // Устанавливаем содержимое балуна
+                    placemark.properties.set('balloonContentFooter', balloonText);
 
-                                       document.getElementById('selectAsEnd')?.addEventListener('click', function() {
-                                           document.getElementById('endStopSelect').value = stopId;
-                                           document.getElementById('endStopName').value = stopName;
-                                           highlightSelectedStops();
-                                           placemark.balloon.close();
-                                       });
-                                   }, 100);
-                               });
-                           });
+                    // Обработчики кнопок в балуне
+                    placemark.events.add('balloonopen', function() {
+                        setTimeout(() => {
+                            // Кнопка "Выбрать как начало"
+                            const startButton = document.getElementById('selectAsStart');
+                            if (startButton) {
+                                startButton.addEventListener('click', async function() {
+                                    document.getElementById('startStopSelect').value = stopId;
+                                    document.getElementById('startStopName').value = stopName;
 
-                           stopsCollection.add(placemark);
-                       }
-                   });
+                                    await updateAvailableStops(stopId);
+                                    placemark.balloon.close();
+                                });
+                            }
 
-                   // Добавляем коллекцию на карту
-                   myMap.geoObjects.add(stopsCollection);
+                            // Кнопка "Выбрать как конец"
+                            const endButton = document.getElementById('selectAsEnd');
+                            if (endButton) {
+                                endButton.addEventListener('click', function() {
+                                    console.log(`Выбираем конечную остановку ID: ${stopId}, Название: ${stopName}`);
 
-                   // Масштабируем карту, чтобы были видны все метки
-                   if (stopsCollection.getLength() > 0) {
-                       myMap.setBounds(stopsCollection.getBounds(), {
-                           checkZoomRange: true,
-                           zoomMargin: 30
-                       });
-                   }
-               }
+                                    // Обновляем выпадающий список и добавляем опцию, если её нет
+                                    const endSelect = document.getElementById('endStopSelect');
+
+                                    // Проверяем, существует ли такая опция
+                                    let optionExists = false;
+                                    for (let i = 0; i < endSelect.options.length; i++) {
+                                        if (endSelect.options[i].value == stopId) {
+                                            optionExists = true;
+                                            endSelect.selectedIndex = i;
+                                            break;
+                                        }
+                                    }
+
+                                    // Добавляем опцию, если её нет
+                                    if (!optionExists) {
+                                        const option = document.createElement('option');
+                                        option.value = stopId;
+                                        option.textContent = stopName;
+                                        endSelect.add(option);
+                                        endSelect.value = stopId;
+                                    }
+
+                                    // Проверяем, что значение установилось
+                                    console.log(`Установлено значение в endSelect: ${endSelect.value}`);
+
+                                    // Обновляем скрытое поле имени
+                                    document.getElementById('endStopName').value = stopName;
+
+                                    // Подсвечиваем точку на карте как конечную
+                                    highlightSelectedStops();
+
+                                    // Удаляем маршруты
+                                    clearRoutePolylines();
+
+                                    // Закрываем балун
+                                    placemark.balloon.close();
+                                });
+                            }
+                        }, 100);
+                    });
+                });
+
+                stopsCollection.add(placemark);
+            }
+        });
+
+        // Добавляем коллекцию на карту
+        myMap.geoObjects.add(stopsCollection);
+
+        // Масштабируем карту
+        if (stopsCollection.getLength() > 0) {
+            myMap.setBounds(stopsCollection.getBounds(), {
+                checkZoomRange: true,
+                zoomMargin: 30
+            });
+        }
+    }
 
                // Функция заполнения выпадающих списков с остановками
                function populateStopsDropdowns(stops) {
@@ -279,22 +565,7 @@
                    });
                }
 
-               // Функция сброса всех точек к исходному состоянию
-               function resetAllStops() {
-                   // Показываем все точки
-                   stopsCollection.each(function(placemark) {
-                       placemark.options.set('visible', true);
-                       placemark.options.set('preset', 'islands#blueStretchyIcon');
-                   });
-
-                   // Заполняем выпадающий список конечных точек всеми точками
-                   populateStopsDropdowns(allStops);
-
-                   // Удаляем все маршруты с карты
-                   clearRoutePolylines();
-               }
-
-               // Функция обновления доступных точек назначения
+                   // Функция отображения маршрутов от выбранной начальной точки
     async function showRoutesFromStartStop(startStopId) {
         try {
             console.log("Загрузка маршрутов для начальной точки ID:", startStopId);
@@ -302,205 +573,453 @@
             // Удаляем предыдущие маршруты с карты
             clearRoutePolylines();
 
-            try {
-                // Получаем маршруты с выбранной начальной точкой
-                const url = `/Route/GetRoutesFromStartStop?startStopId=${startStopId}`;
-                console.log("Отправка запроса по адресу:", url);
+            // Получаем выбранную дату (если есть)
+            const selectedDateElement = document.getElementById('departureDate');
+            let dateParam = '';
+            let selectedDate = null;
 
-                const response = await fetch(url);
-                console.log("Статус ответа:", response.status, response.statusText);
+            if (selectedDateElement && selectedDateElement.value) {
+                selectedDate = new Date(selectedDateElement.value);
+                dateParam = `&date=${encodeURIComponent(selectedDate.toISOString())}`;
+                console.log("Выбрана дата для фильтрации маршрутов:", selectedDate);
+            }
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ошибка: ${response.status}`);
-                }
+            // Получаем маршруты с выбранной начальной точкой и датой
+            const url = `/Route/GetRoutesFromStartStop?startStopId=${startStopId}${dateParam}`;
+            console.log("Отправка запроса по адресу:", url);
 
-                const responseText = await response.text();
-                console.log("Текст ответа:", responseText);
+            const response = await fetch(url);
+            console.log("Статус ответа:", response.status, response.statusText);
 
-                let data;
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error("Ошибка при загрузке маршрутов: " + (data.error || "неизвестная ошибка"));
+            }
+
+            const routes = data.routes || [];
+            console.log(`Получено ${routes.length} маршрутов для начальной точки ID:${startStopId}`);
+
+            // Добавляем маршруты на карту
+            for (const route of routes) {
                 try {
-                    data = JSON.parse(responseText);
-                } catch (e) {
-                    console.error("Ошибка парсинга JSON:", e);
-                    throw new Error("Неверный формат ответа от сервера");
-                }
+                    console.log(`Обработка маршрута #${route.routeId}`);
 
-                if (!data.success) {
-                    throw new Error("Ошибка при загрузке маршрутов: " + (data.error || "неизвестная ошибка"));
-                }
+                    // Если карта маршрута отсутствует, пропускаем его
+                    if (!route.map) {
+                        console.warn(`Маршрут #${route.routeId} не содержит данных карты`);
+                        continue;
+                    }
 
-                const routes = data.routes || [];
-                console.log(`Получено ${routes.length} маршрутов для начальной точки ID:${startStopId}`, routes);
-
-                // Добавляем маршруты на карту
-                for (const route of routes) {
+                    let mapData;
                     try {
-                        console.log(`Обработка маршрута #${route.routeId}:`, route);
+                        mapData = JSON.parse(route.map);
+                    } catch (e) {
+                        console.error("Ошибка парсинга данных карты:", e);
+                        continue;
+                    }
 
-                        // Если карта маршрута отсутствует, пропускаем его
-                        if (!route.map) {
-                            console.warn(`Маршрут #${route.routeId} не содержит данных карты`);
-                            continue;
+                    // Проверяем наличие данных линий
+                    if (!mapData.lines || !Array.isArray(mapData.lines) || mapData.lines.length < 2) {
+                        console.warn(`Маршрут #${route.routeId} не содержит корректных данных линий`);
+                        continue;
+                    }
+
+                    // Проверяем, что все координаты - действительные числа
+                    const validCoordinates = mapData.lines.filter(point =>
+                        Array.isArray(point) &&
+                        point.length === 2 &&
+                        !isNaN(point[0]) &&
+                        !isNaN(point[1])
+                    );
+
+                    if (validCoordinates.length < 2) {
+                        console.warn(`Маршрут #${route.routeId} не содержит достаточного количества валидных координат`);
+                        continue;
+                    }
+
+                    // Проверка направления маршрута с учетом даты
+                    try {
+                        let routeStopsUrl = `/Route/GetRouteStops?routeId=${route.routeId}&startStopId=${startStopId}`;
+                        if (dateParam) {
+                            routeStopsUrl += dateParam;
                         }
 
-                        console.log("Данные карты маршрута:", route.map);
-                        let mapData;
-                        try {
-                            mapData = JSON.parse(route.map);
-                        } catch (e) {
-                            console.error("Ошибка парсинга данных карты:", e);
+                        const routeStopsResponse = await fetch(routeStopsUrl);
+                        const routeStopsData = await routeStopsResponse.json();
+
+                        if (!routeStopsData.success || !routeStopsData.hasAvailableStops) {
+                            console.log(`Маршрут #${route.routeId} пропущен: нет доступных остановок после выбранной`);
                             continue;
                         }
+                    } catch (error) {
+                        console.error(`Ошибка при проверке направления маршрута #${route.routeId}:`, error);
+                        continue;
+                    }
 
-                        // Проверяем наличие данных линий
-                        if (!mapData.lines || !Array.isArray(mapData.lines) || mapData.lines.length < 2) {
-                            console.warn(`Маршрут #${route.routeId} не содержит корректных данных линий`);
-                            continue;
-                        }
+                    // Создаем полилинию для маршрута
+                    const polyline = new ymaps.Polyline(validCoordinates, {
+                        hintContent: route.name || `Маршрут #${route.routeId}`,
+                        routeId: route.routeId
+                    }, {
+                        strokeColor: getRandomColor(), // Случайный цвет для каждого маршрута
+                        strokeWidth: 3,
+                        strokeOpacity: 0.7,
+                        strokeStyle: 'dash'
+                    });
 
-                        // Проверяем, что все координаты - действительные числа
-                        const validCoordinates = mapData.lines.filter(point =>
-                            Array.isArray(point) &&
-                            point.length === 2 &&
-                            !isNaN(point[0]) &&
-                            !isNaN(point[1])
-                        );
+                    // Добавляем обработчик клика по маршруту
+                    polyline.events.add('click', function(e) {
+                        const routeId = polyline.properties.get('routeId');
+                        const routeName = polyline.properties.get('hintContent');
 
-                        if (validCoordinates.length < 2) {
-                            console.warn(`Маршрут #${route.routeId} не содержит достаточного количества валидных координат`);
-                            continue;
-                        }
+                        console.log("Клик по маршруту:", { routeId, routeName });
 
-                        // Проверка направления маршрута
-                        try {
-                            const routeStopsResponse = await fetch(`/Route/GetRouteStops?routeId=${route.routeId}&startStopId=${startStopId}`);
-                            const routeStopsData = await routeStopsResponse.json();
+                        // Содержимое балуна с кнопкой перехода к деталям маршрута
+                        const balloonContentBody = `
+                            <div style="padding:5px;">
+                                <p>Маршрут #${routeId}</p>
+                                <p><a href="/Route/RouteDetails?routeID=${routeId}" class="btn btn-primary btn-sm">Подробнее</a></p>
+                            </div>
+                        `;
 
-                            if (!routeStopsData.success || !routeStopsData.hasAvailableStops) {
-                                console.log(`Маршрут #${route.routeId} пропущен: нет доступных остановок после выбранной`);
-                                continue;
+                        polyline.properties.set('balloonContentHeader', routeName || `Маршрут #${routeId}`);
+                        polyline.properties.set('balloonContentBody', balloonContentBody);
+
+                        // Открываем балун
+                        polyline.balloon.open(e.get('coords'));
+                    });
+
+                    // Добавляем полилинию на карту
+                    myMap.geoObjects.add(polyline);
+                    console.log("Полилиния добавлена на карту");
+
+                    // Сохраняем ссылку на полилинию для возможности удаления
+                    routePolylines.push(polyline);
+                } catch (parseError) {
+                    console.error(`Ошибка при обработке маршрута #${route.routeId}:`, parseError);
+                }
+            }
+
+            // Если маршрутов нет, выводим информацию
+            if (routes.length === 0) {
+                console.log("Для выбранной начальной точки не найдено маршрутов");
+            }
+
+        } catch (error) {
+            console.error("Ошибка при получении маршрутов:", error);
+        }
+    }
+
+                // Функция сброса всех точек к исходному состоянию с учетом даты
+    function resetAllStops() {
+        // Проверяем, выбрана ли дата
+        const selectedDateElement = document.getElementById('departureDate');
+
+        if (selectedDateElement && selectedDateElement.value) {
+            // Если дата выбрана, загружаем остановки только для этой даты
+            loadStopsByDate(new Date(selectedDateElement.value));
+        } else {
+            // Если дата не выбрана, показываем все точки
+            stopsCollection.each(function(placemark) {
+                placemark.options.set('visible', true);
+                placemark.options.set('preset', 'islands#blueStretchyIcon');
+            });
+
+            // Заполняем выпадающий список конечных точек всеми точками
+            populateStopsDropdowns(allStops);
+        }
+
+        // Удаляем все маршруты с карты
+        clearRoutePolylines();
+    }
+
+             // Функция обновления доступных точек назначения
+         // Функция обновления доступных точек назначения
+    async function updateAvailableStops(startStopId) {
+        try {
+            console.log("Обновление доступных остановок для начальной точки ID:", startStopId);
+
+            // Показываем индикатор загрузки
+            showLoadingIndicator();
+
+            // Получаем выбранную дату (если есть)
+            const selectedDateElement = document.getElementById('departureDate');
+            let dateParam = '';
+            let selectedDate = null;
+
+            if (selectedDateElement && selectedDateElement.value) {
+                selectedDate = new Date(selectedDateElement.value);
+                dateParam = `&date=${encodeURIComponent(selectedDate.toISOString())}`;
+                console.log("Выбрана дата для фильтрации маршрутов:", selectedDate);
+            }
+
+            // 2. Получаем маршруты, проходящие через выбранную начальную точку
+            const routesUrl = `/Route/GetRoutesFromStartStop?startStopId=${startStopId}${dateParam}`;
+            const routesResponse = await fetch(routesUrl);
+            if (!routesResponse.ok) {
+                throw new Error(`HTTP ошибка при получении маршрутов: ${routesResponse.status}`);
+            }
+
+            const routesData = await routesResponse.json();
+            if (!routesData.success) {
+                throw new Error("Ошибка при загрузке маршрутов");
+            }
+
+            const validRoutes = routesData.routes || [];
+            console.log(`Найдено ${validRoutes.length} маршрутов через начальную точку ${startStopId}`);
+
+            // 1. Получаем доступные конечные точки (те, которые идут ПОСЛЕ выбранной начальной)
+            const url = `/Route/GetAvailableStops?startStopId=${startStopId}${dateParam}`;
+            console.log("URL запроса доступных остановок:", url);
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error("Ошибка при загрузке доступных точек назначения");
+            }
+
+            let availableStopIds = data.availableStopIds || [];
+            console.log("Доступные точки назначения:", availableStopIds);
+
+            // Если сервер вернул пустой список, но есть маршруты, определим доступные точки самостоятельно
+            if (availableStopIds.length === 0 && validRoutes.length > 0) {
+                console.log("Сервер вернул пустой список. Определяем доступные конечные точки на клиенте.");
+
+                const stopIdsAfterStart = new Set();
+
+                for (const route of validRoutes) {
+                    try {
+                        const routeId = route.routeId;
+                        const stopUrl = `/Route/GetAllRouteStops?routeId=${routeId}`;
+
+                        const stopResponse = await fetch(stopUrl);
+                        if (!stopResponse.ok) continue;
+
+                        const stopData = await stopResponse.json();
+                        if (!stopData.success || !Array.isArray(stopData.stops)) continue;
+
+                        const stops = stopData.stops;
+                        const startStopIndex = stops.findIndex(s => s.stopId == startStopId);
+
+                        if (startStopIndex !== -1 && startStopIndex < stops.length - 1) {
+                            // Добавляем все остановки, идущие после начальной
+                            for (let i = startStopIndex + 1; i < stops.length; i++) {
+                                stopIdsAfterStart.add(stops[i].stopId);
                             }
-                        } catch (error) {
-                            console.error(`Ошибка при проверке направления маршрута #${route.routeId}:`, error);
-                            continue;
                         }
-
-                        // Создаем полилинию для маршрута
-                        const polyline = new ymaps.Polyline(validCoordinates, {
-                            hintContent: route.name || `Маршрут #${route.routeId}`,
-                            routeId: route.routeId
-                        }, {
-                            strokeColor: getRandomColor(), // Случайный цвет для каждого маршрута
-                            strokeWidth: 3,
-                            strokeOpacity: 0.7,
-                            strokeStyle: 'dash'
-                        });
-
-                        // Добавляем обработчик клика по маршруту
-                        polyline.events.add('click', function(e) {
-                            const routeId = polyline.properties.get('routeId');
-                            const routeName = polyline.properties.get('hintContent');
-
-                            console.log("Клик по маршруту:", { routeId, routeName });
-
-                            // Используем самый простой способ с текстовым содержимым
-                            const balloonContentBody = `
-                                <div style="padding:5px;">
-                                    <p>Маршрут #${routeId}</p>
-                                    <p><a href="/Route/RouteDetails?routeID=${routeId}" class="btn btn-primary btn-sm">Подробнее</a></p>
-                                </div>
-                            `;
-
-                            polyline.properties.set('balloonContentHeader', routeName || `Маршрут #${routeId}`);
-                            polyline.properties.set('balloonContentBody', balloonContentBody);
-
-                            // Открываем балун
-                            polyline.balloon.open(e.get('coords'));
-                        });
-
-                        // Добавляем полилинию на карту
-                        myMap.geoObjects.add(polyline);
-                        console.log("Полилиния добавлена на карту");
-
-                        // Сохраняем ссылку на полилинию для возможности удаления
-                        routePolylines.push(polyline);
-                    } catch (parseError) {
-                        console.error(`Ошибка при обработке маршрута #${route.routeId}:`, parseError);
+                    } catch (error) {
+                        console.error(`Ошибка при обработке маршрута ${route.routeId}:`, error);
                     }
                 }
-            } catch (serverError) {
-                console.error("Ошибка при получении данных с сервера:", serverError);
-            }
-        } catch (error) {
-            console.error("Общая ошибка в showRoutesFromStartStop:", error);
 
-            // В случае общей ошибки устанавливаем центр в центр Санкт-Петербурга
-            myMap.setCenter([59.938339, 30.313558], 10);
+                // Используем найденные остановки
+                availableStopIds = Array.from(stopIdsAfterStart);
+                console.log("Определены доступные конечные точки на клиенте:", availableStopIds);
+            }
+
+            // 3. Получаем все остановки на этих маршрутах
+            // Множества для хранения ID остановок
+            const allRouteStopIds = new Set(); // все остановки на маршрутах с выбранной начальной точкой
+            const stopsBeforeStart = new Set(); // остановки, идущие ДО начальной точки
+
+            // Для каждого маршрута получаем его остановки
+            for (const route of validRoutes) {
+                try {
+                    const routeId = route.routeId;
+                    const stopUrl = `/Route/GetAllRouteStops?routeId=${routeId}`;
+                    console.log(`Получение остановок для маршрута ${routeId} по URL: ${stopUrl}`);
+
+                    const stopResponse = await fetch(stopUrl);
+
+                    if (!stopResponse.ok) {
+                        console.error(`Ошибка HTTP при получении остановок для маршрута ${routeId}: ${stopResponse.status}`);
+                        continue;
+                    }
+
+                    const stopResponseText = await stopResponse.text();
+                    console.log(`Ответ от сервера для маршрута ${routeId}: ${stopResponseText.substring(0, 100)}...`);
+
+                    const stopData = JSON.parse(stopResponseText);
+
+                    if (stopData.success && Array.isArray(stopData.stops)) {
+                        // Для отладки
+                        console.log(`Маршрут #${routeId}: получено ${stopData.stops.length} остановок`);
+
+                        // Находим индекс начальной остановки в маршруте
+                        const stops = stopData.stops;
+                        const startStopIndex = stops.findIndex(s => s.stopId == startStopId);
+
+                        if (startStopIndex !== -1) {
+                            console.log(`Маршрут #${routeId}: найдена начальная остановка на позиции ${startStopIndex}`);
+
+                            // Добавляем все остановки этого маршрута в общий набор
+                            stops.forEach((stop, index) => {
+                                allRouteStopIds.add(stop.stopId);
+
+                                // Если остановка идет ДО начальной, добавляем в отдельный набор
+                                if (index < startStopIndex) {
+                                    stopsBeforeStart.add(stop.stopId);
+                                }
+                            });
+                        } else {
+                            console.warn(`Маршрут #${routeId}: начальная остановка ${startStopId} не найдена в списке остановок`);
+                        }
+                    } else {
+                        console.warn(`Маршрут #${routeId}: неверный формат данных от сервера или отсутствуют остановки`);
+                    }
+                } catch (error) {
+                    console.error(`Ошибка при получении остановок для маршрута ${route.routeId}:`, error);
+                }
+            }
+
+            console.log("Все остановки на маршрутах:", [...allRouteStopIds]);
+            console.log("Остановки до начальной точки:", [...stopsBeforeStart]);
+
+            // 4. Обрабатываем точки на карте - делаем видимыми только остановки связанных маршрутов
+            stopsCollection.each(function(placemark) {
+                const stopId = parseInt(placemark.properties.get('stopId'));
+
+                // По умолчанию делаем точку невидимой
+                placemark.options.set('visible', false);
+
+                // Если остановка находится на маршруте с выбранной начальной точкой
+                if (allRouteStopIds.has(stopId)) {
+                    // 1. Делаем её видимой
+                    placemark.options.set('visible', true);
+
+                    // 2. Определяем тип остановки
+                    const isStartStop = (stopId == startStopId);
+                    const isBeforeStartStop = stopsBeforeStart.has(stopId);
+                    const isAvailableEndStop = availableStopIds.includes(stopId);
+
+                    // Сохраняем флаг доступности для использования в балуне
+                    placemark.properties.set('isAvailable', isAvailableEndStop);
+
+                    // 3. Меняем цвет в зависимости от типа
+                    if (isStartStop) {
+                        // Начальная точка (зеленая)
+                        placemark.options.set('preset', 'islands#greenStretchyIcon');
+                    } else if (isBeforeStartStop) {
+                        // Остановка до начальной точки (серая и недоступная)
+                        placemark.options.set('preset', 'islands#grayStretchyIcon');
+                        placemark.properties.set('isAvailable', false); // Явно отмечаем как недоступную
+                    } else if (isAvailableEndStop) {
+                        // Доступная конечная остановка (синяя)
+                        placemark.options.set('preset', 'islands#blueStretchyIcon');
+                        placemark.properties.set('isAvailable', true); // Явно отмечаем как доступную
+                    } else {
+                        // Промежуточная точка после начальной, делаем синей (активной)
+                        placemark.options.set('preset', 'islands#blueStretchyIcon');
+                        // Устанавливаем доступность в зависимости от того, можно ли её выбрать как конечную
+                        placemark.properties.set('isAvailable', availableStopIds.includes(stopId));
+                    }
+                }
+            });
+
+            // 5. Обновляем выпадающий список конечных точек
+            const endSelect = document.getElementById('endStopSelect');
+            const currentEndStopId = endSelect.value;
+
+            // Очищаем список
+            endSelect.innerHTML = '<option value="">Выберите пункт прибытия</option>';
+
+            // Добавляем доступные остановки
+            if (availableStopIds.length > 0) {
+                availableStopIds.forEach(stopId => {
+                    const stop = allStops.find(s => s.stopId == stopId);
+                    if (stop) {
+                        console.log(`Добавление опции: ID=${stopId}, Имя=${stop.name}`);
+                        const option = document.createElement('option');
+                        option.value = stopId;
+                        option.textContent = stop.name;
+                        endSelect.appendChild(option);
+                    }
+                });
+
+                // Восстанавливаем выбранное значение, если оно было
+                if (currentEndStopId && availableStopIds.includes(parseInt(currentEndStopId))) {
+                    endSelect.value = currentEndStopId;
+                }
+            } else {
+                endSelect.innerHTML += '<option disabled>Нет доступных конечных точек</option>';
+            }
+
+            // 6. Отображаем маршруты для выбранной начальной точки
+            await showRoutesFromStartStop(startStopId);
+
+            // Скрываем индикатор загрузки
+            hideLoadingIndicator();
+
+            // Масштабируем карту, чтобы были видны все активные остановки
+            const visibleStops = [];
+            stopsCollection.each(function(placemark) {
+                if (placemark.options.get('visible')) {
+                    visibleStops.push(placemark);
+                }
+            });
+
+            if (visibleStops.length > 0) {
+                // Собираем координаты всех видимых остановок
+                let allCoordinates = [];
+                visibleStops.forEach(stop => {
+                    if (stop && stop.geometry) {
+                        const coordinates = stop.geometry.getCoordinates();
+                        if (coordinates && coordinates.length === 2) {
+                            allCoordinates.push(coordinates);
+                        }
+                    }
+                });
+
+                // Устанавливаем границы карты только если есть валидные координаты
+                if (allCoordinates.length > 0) {
+                    // Создаем объект, описывающий область видимых точек
+                    let bounds = [
+                        [Number.MAX_VALUE, Number.MAX_VALUE], // минимальные координаты
+                        [-Number.MAX_VALUE, -Number.MAX_VALUE] // максимальные координаты
+                    ];
+
+                    // Находим минимальные и максимальные координаты
+                    allCoordinates.forEach(coords => {
+                        bounds[0][0] = Math.min(bounds[0][0], coords[0]);
+                        bounds[0][1] = Math.min(bounds[0][1], coords[1]);
+                        bounds[1][0] = Math.max(bounds[1][0], coords[0]);
+                        bounds[1][1] = Math.max(bounds[1][1], coords[1]);
+                    });
+
+                    // Устанавливаем границы с проверкой
+                    myMap.setBounds(bounds, {
+                        checkZoomRange: true,
+                        zoomMargin: 30
+                    }).catch(error => {
+                        console.log("Ошибка при масштабировании карты:", error);
+                        // Можно установить фиксированный зум в случае ошибки
+                        myMap.setZoom(10);
+                    });
+                } else {
+                    console.log("Нет координат для масштабирования");
+                }
+            }
+
+            console.log("Завершено обновление доступных остановок");
+        } catch (error) {
+            console.error("Ошибка при обновлении доступных точек:", error);
+            hideLoadingIndicator();
+            alert("Произошла ошибка при обновлении доступных остановок. Перезагружаем все точки.");
+            // В случае ошибки возвращаем все точки
+            resetAllStops();
         }
     }
 
 
-                        // Функция обновления доступных точек назначения
-                    async function updateAvailableStops(startStopId) {
-                        try {
-                            console.log("Обновление доступных остановок для начальной точки ID:", startStopId);
-
-                            // Запрос к серверу для получения доступных точек назначения
-                            const response = await fetch(`/Route/GetAvailableStops?startStopId=${startStopId}`);
-                            if (!response.ok) {
-                                throw new Error(`HTTP ошибка: ${response.status}`);
-                            }
-
-                            const data = await response.json();
-                            if (!data.success) {
-                                throw new Error("Ошибка при загрузке доступных точек назначения");
-                            }
-
-                            const availableStopIds = data.availableStopIds || [];
-                            console.log("Доступные точки назначения:", availableStopIds);
-
-                            // Обновляем видимость точек на карте
-                            stopsCollection.each(function(placemark) {
-                                const stopId = placemark.properties.get('stopId');
-
-                                // Всегда оставляем видимой начальную точку
-                                if (stopId == startStopId) {
-                                    placemark.options.set('visible', true);
-                                    placemark.options.set('preset', 'islands#greenStretchyIcon');
-                                }
-                                // Скрываем недоступные точки
-                                else if (!availableStopIds.includes(stopId)) {
-                                    placemark.options.set('visible', false);
-                                } else {
-                                    // Возвращаем нормальный вид доступным точкам
-                                    placemark.options.set('visible', true);
-                                    placemark.options.set('preset', 'islands#blueStretchyIcon');
-                                }
-                            });
-
-                            // Обновляем выпадающий список конечных точек
-                            const endSelect = document.getElementById('endStopSelect');
-                            endSelect.innerHTML = '<option value="">Выберите пункт прибытия</option>';
-
-                            // Добавляем только доступные остановки в выпадающий список
-                            availableStopIds.forEach(stopId => {
-                                const stop = allStops.find(s => s.stopId == stopId);
-                                if (stop) {
-                                    const option = document.createElement('option');
-                                    option.value = stop.stopId;
-                                    option.textContent = stop.name;
-                                    endSelect.appendChild(option);
-                                }
-                            });
-
-                            // Отображаем маршруты для выбранной начальной точки
-                            await showRoutesFromStartStop(startStopId);
-                        } catch (error) {
-                            console.error("Ошибка при обновлении доступных точек:", error);
-                            // В случае ошибки возвращаем все точки
-                            resetAllStops();
-                        }
-                    }
+         
                // Функция для удаления всех маршрутов с карты
                function clearRoutePolylines() {
                    // Удаляем все ранее добавленные маршруты
@@ -568,4 +1087,6 @@
                }
            });
        });
+
+
 </script>

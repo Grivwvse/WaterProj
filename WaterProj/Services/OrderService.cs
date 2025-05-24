@@ -34,7 +34,7 @@ namespace WaterProj.Services
         {
             try
             {
-                var order = await _context.Orders.FindAsync(orderId);
+                var order = await _context.Set<Order>().FindAsync(orderId);
                 if (order == null)
                 {
                     return new ServiceResult
