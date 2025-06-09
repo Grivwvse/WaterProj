@@ -23,13 +23,13 @@ namespace WaterProj.Services
 
         public async Task<Models.Route> GetByIdAsync(int id)
         {
-            return await _context.Routes.FindAsync(id);
+            return await _context.Set<Models.Route>().FindAsync(id);
         }
 
 
         public async Task<List<Models.Route>> GetRoutesByIdsAsync(List<int> routeIds)
         {
-            return await _context.Routes
+            return await _context.Set<Models.Route>()
                 .Where(r => routeIds.Contains(r.RouteId))
                 .ToListAsync();
         }
@@ -37,7 +37,7 @@ namespace WaterProj.Services
         public async Task<List<Models.Route>> GetRoutesByShip(int shipId)
         {
             // Возвращаем полные объекты маршрутов, а не только id и name
-            return await _context.Routes
+            return await _context.Set<Models.Route>()
                 .Where(r => r.ShipId == shipId)
                 .ToListAsync();
         }
@@ -46,7 +46,7 @@ namespace WaterProj.Services
         {
             try
             {
-                _context.Routes.Update(route);
+                _context.Set<Models.Route>().Update(route);
                 return new ServiceResult
                 {
                     Success = await _context.SaveChangesAsync() > 0
@@ -71,20 +71,20 @@ namespace WaterProj.Services
             try
             {
                 // Находим ID всех активных и неблокированных маршрутов
-                var activeRouteIds = await _context.Routes
+                var activeRouteIds = await _context.Set<Models.Route>()
                     .Where(r => r.IsActive && !r.IsBlocked)
                     .Select(r => r.RouteId)
                     .ToListAsync();
 
                 // Получаем ID остановок, которые относятся к активным маршрутам
-                var activeStopIds = await _context.RouteStop
+                var activeStopIds = await _context.Set<RouteStop>()
                     .Where(rs => activeRouteIds.Contains(rs.RouteId))
                     .Select(rs => rs.StopId)
                     .Distinct()
                     .ToListAsync();
 
                 // Получаем данные об остановках
-                var stops = await _context.Stops
+                var stops = await _context.Set<Stop>()
                     .Where(s => activeStopIds.Contains(s.StopId))
                     .AsNoTracking()
                     .ToListAsync();
@@ -112,18 +112,18 @@ namespace WaterProj.Services
             {
                 throw new NotFoundException("Транспортёр или маршрут не найден");
             }
-            var ship = await _context.Ships
+            var ship = await _context.Set<Ship>()
                 .Where(r => r.ShipId == route.ShipId)
                 .Include(r => r.ShipImages)
                 .Include(r => r.ShipType)
                 .Include(r => r.ShipСonveniences)
                 .FirstOrDefaultAsync();
 
-            var shipConveniences = await _context.Сonveniences
+            var shipConveniences = await _context.Set<Сonvenience>()
                 .Where(c => c.ShipСonveniences.Any(sc => sc.ShipId == ship.ShipId))
                 .ToListAsync();
 
-            var routeRating = await _context.RouteRatings
+            var routeRating = await _context.Set<RouteRating>()
                 .Where(r => r.RouteId == id)
                 .Include(rr => rr.RouteRatingAdvantages)
                 .Include(r => r.Consumer)
@@ -138,7 +138,7 @@ namespace WaterProj.Services
                 .Select(rra => rra.Advantage) 
                 .ToList(); 
 
-            var images = await _context.Images
+            var images = await _context.Set<Models.Image>()
                 .Where(img => img.EntityType == "Route" && img.EntityId == id)
                 .ToListAsync();
 
@@ -181,7 +181,7 @@ namespace WaterProj.Services
                 // Удаляем старые дни маршрута
                 if (routetmp.RouteDays != null)
                 {
-                    _context.RouteDays.RemoveRange(routetmp.RouteDays);
+                    _context.Set<RouteDay>().RemoveRange(routetmp.RouteDays);
                 }
 
                 // Затем добавляем новые
@@ -215,7 +215,7 @@ namespace WaterProj.Services
         /// <exception cref="NotFoundException">Если маршрут не найден</exception>
         public async Task<Models.Route> GetRouteTransporterAsync(int id)
         {
-            var route = await _context.Routes
+            var route = await _context.Set<Models.Route>()
                 .Include(r => r.Transporter)
                 .Include(r => r.RouteDays)
                 .FirstOrDefaultAsync(r => r.RouteId == id);
@@ -235,7 +235,7 @@ namespace WaterProj.Services
 
         public async Task<List<RouteSearchResultDto>> SearchRoutesAsync(RouteSearchDto searchParams)
         {
-            IQueryable<Models.Route> query = _context.Routes
+            IQueryable<Models.Route> query = _context.Set<Models.Route>()
                 .Include(r => r.Transporter)
                 .Include(r => r.RouteDays)
                 .Include(r => r.RouteStops)
@@ -459,7 +459,7 @@ namespace WaterProj.Services
         public async Task<(Stop? StartStop, Stop? EndStop)> GetRouteEndpointsAsync(int routeId)
         {
             // Загружаем RouteStops для указанного маршрута, включая связанные Stop
-            var routeStops = await _context.RouteStop
+            var routeStops = await _context.Set<RouteStop>()
                 .Where(rs => rs.RouteId == routeId)
                 .Include(rs => rs.Stop) 
                 .OrderBy(rs => rs.StopOrder)
@@ -490,7 +490,7 @@ namespace WaterProj.Services
                 Console.WriteLine($"Поиск доступных остановок для начальной точки {startStopId} в маршрутах: {string.Join(", ", routeIds)}");
 
                 // 1. Находим маршруты, в которых startStopId не является конечной точкой
-                var routeStops = await _context.RouteStop
+                var routeStops = await _context.Set<RouteStop>()
                     .Where(rs => routeIds.Contains(rs.RouteId))
                     .ToListAsync();
 
@@ -556,7 +556,7 @@ namespace WaterProj.Services
                 }
 
                 // 5. Загружаем сами остановки по найденным ID
-                var stops = await _context.Stops
+                var stops = await _context.Set<Stop>()
                     .Where(s => availableStopIds.Contains(s.StopId))
                     .ToListAsync();
 

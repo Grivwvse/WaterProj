@@ -24,7 +24,7 @@ namespace WaterProj.Services
 
         public async Task<ServiceResult> ChangePasswordAsync(int transporterId, string currentPassword, string newPassword)
         {
-            var transporter = await _context.Transporters.FindAsync(transporterId);
+            var transporter = await _context.Set<Transporter>().FindAsync(transporterId);
             if (transporter == null)
                 return new ServiceResult { Success = false, ErrorMessage = "Перевозчик не найден." };
 
@@ -43,37 +43,29 @@ namespace WaterProj.Services
             // Хешируем новый пароль
             transporter.PasswordHash = passwordHasher.HashPassword(transporter, newPassword);
 
-            _context.Transporters.Update(transporter);
+            _context.Set<Transporter>().Update(transporter);
             await _context.SaveChangesAsync();
 
             return new ServiceResult { Success = true };
         }
 
-        // Метод для шифрования пароля (должен соответствовать методу, используемому при регистрации)
-        private string EncryptPassword(string password)
-        {
-            // Здесь следует использовать тот же метод шифрования, который применяется при регистрации
-            // Например, хеширование пароля с использованием BCrypt или другой библиотеки
-            return password; // Заглушка - замените на реальное шифрование
-        }
-
         public async Task<TransporterAccountDto> GetAllAccountInfo(int transporterId)
         {
             //Берем перевозчика по ID из БД
-            var transporter = await _context.Transporters
+            var transporter = await _context.Set<Transporter>()
                 .FirstOrDefaultAsync(t => t.TransporterId == transporterId);
 
             if (transporter == null)
                 throw new NotFoundException("Транспортёр не найден");
 
             //Беерем маршруты по ID перевозчика
-            var routes = await _context.Routes
+            var routes = await _context.Set<Models.Route>()
                 .Include(r => r.Ship)
                 .Where(r => r.TransporterId == transporterId)
                 .ToListAsync();
 
             //Беерем Корабли по ID перевозчика 
-            var ships = await _context.Ships
+            var ships = await _context.Set<Ship>()
                 .Include(s => s.Transporter)
                 .Include(s => s.ShipType)
                 .Include(s => s.ShipImages)
@@ -103,7 +95,7 @@ namespace WaterProj.Services
 
         public async Task<Transporter> GetByIdAsync(int id)
         {
-            return await _context.Transporters.FindAsync(id);
+            return await _context.Set<Transporter>().FindAsync(id);
         }
 
         public async Task<Transporter> GetTransporterInfoByIdAsync(int id)
@@ -126,7 +118,7 @@ namespace WaterProj.Services
 
         public async Task<ServiceResult> UpdateTransporterAsync(int userId, Transporter model)
         {
-            var transporter = await _context.Transporters.FindAsync(userId);
+            var transporter = await _context.Set<Transporter>().FindAsync(userId);
             if (transporter == null)
                 return new ServiceResult { Success = false, ErrorMessage = "Пользователь не найден." };
 
@@ -136,7 +128,7 @@ namespace WaterProj.Services
             transporter.Phone = model.Phone;
             transporter.Description = model.Description;
 
-            _context.Transporters.Update(transporter);
+            _context.Set<Transporter>().Update(transporter);
             await _context.SaveChangesAsync();
             return new ServiceResult { Success = true };
         }

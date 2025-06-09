@@ -113,7 +113,7 @@
         document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordInput = document.getElementById('@Html.IdFor(m => m.PasswordHash)');
             const icon = this.querySelector('i');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 icon.classList.remove('bi-eye');
@@ -123,6 +123,140 @@
                 icon.classList.remove('bi-eye-slash');
                 icon.classList.add('bi-eye');
             }
+        });
+
+        // Валидация формы
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+
+            // Находим все поля формы
+            const nameInput = document.getElementById('@Html.IdFor(m => m.Name)');
+            const surnameInput = document.getElementById('@Html.IdFor(m => m.Surname)');
+            const phoneInput = document.getElementById('@Html.IdFor(m => m.Phone)');
+            const loginInput = document.getElementById('@Html.IdFor(m => m.Login)');
+            const passwordInput = document.getElementById('@Html.IdFor(m => m.PasswordHash)');
+
+            // Установка маски для телефона
+            phoneInput.addEventListener('input', function(e) {
+                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+                if (x[1] != '') {
+                    e.target.value = '+' + x[1] + (x[2] ? ' (' + x[2] + ')' : '') + (x[3] ? ' ' + x[3] : '') + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
+                } else {
+                    e.target.value = '';
+                }
+            });
+
+            // Функция проверки
+            function validateField(input, errorSelector, validationFn, errorMessage) {
+                const errorElement = document.querySelector(errorSelector);
+                const isValid = validationFn(input.value);
+
+                if (!isValid) {
+                    errorElement.textContent = errorMessage;
+                    input.classList.add('is-invalid');
+                    return false;
+                } else {
+                    errorElement.textContent = '';
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                    return true;
+                }
+            }
+
+            // Валидация перед отправкой формы
+            form.addEventListener('submit', function(e) {
+                let isFormValid = true;
+
+                // Валидация имени
+                isFormValid = validateField(
+                    nameInput,
+                    '[data-valmsg-for="Name"]',
+                    (value) => value.trim().length >= 2 && /^[А-ЯЁа-яёA-Za-z\s-]+$/.test(value),
+                    'Имя должно содержать не менее 2 символов и только буквы'
+                ) && isFormValid;
+
+                // Валидация фамилии
+                isFormValid = validateField(
+                    surnameInput,
+                    '[data-valmsg-for="Surname"]',
+                    (value) => value.trim().length >= 2 && /^[А-ЯЁа-яёA-Za-z\s-]+$/.test(value),
+                    'Фамилия должна содержать не менее 2 символов и только буквы'
+                ) && isFormValid;
+
+                // Валидация телефона
+                isFormValid = validateField(
+                    phoneInput,
+                    '[data-valmsg-for="Phone"]',
+                    (value) => /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(value),
+                    'Введите корректный номер телефона в формате +7 (XXX) XXX-XX-XX'
+                ) && isFormValid;
+
+                // Валидация логина
+                isFormValid = validateField(
+                    loginInput,
+                    '[data-valmsg-for="Login"]',
+                    (value) => value.trim().length >= 5 && /^[a-zA-Z0-9_]+$/.test(value),
+                    'Логин должен содержать не менее 5 символов и состоять из букв, цифр и знака подчеркивания'
+                ) && isFormValid;
+
+                // Валидация пароля
+                isFormValid = validateField(
+                    passwordInput,
+                    '[data-valmsg-for="PasswordHash"]',
+                    (value) => value.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value),
+                    'Пароль должен содержать не менее 8 символов, включая заглавные, строчные буквы и цифры'
+                ) && isFormValid;
+
+                if (!isFormValid) {
+                    e.preventDefault();
+                }
+            });
+
+            // Валидация при потере фокуса для каждого поля
+            nameInput.addEventListener('blur', function() {
+                validateField(
+                    nameInput,
+                    '[data-valmsg-for="Name"]',
+                    (value) => value.trim().length >= 2 && /^[А-ЯЁа-яёA-Za-z\s-]+$/.test(value),
+                    'Имя должно содержать не менее 2 символов и только буквы'
+                );
+            });
+
+            surnameInput.addEventListener('blur', function() {
+                validateField(
+                    surnameInput,
+                    '[data-valmsg-for="Surname"]',
+                    (value) => value.trim().length >= 2 && /^[А-ЯЁа-яёA-Za-z\s-]+$/.test(value),
+                    'Фамилия должна содержать не менее 2 символов и только буквы'
+                );
+            });
+
+            phoneInput.addEventListener('blur', function() {
+                validateField(
+                    phoneInput,
+                    '[data-valmsg-for="Phone"]',
+                    (value) => /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(value),
+                    'Введите корректный номер телефона в формате +7 (XXX) XXX-XX-XX'
+                );
+            });
+
+            loginInput.addEventListener('blur', function() {
+                validateField(
+                    loginInput,
+                    '[data-valmsg-for="Login"]',
+                    (value) => value.trim().length >= 5 && /^[a-zA-Z0-9_]+$/.test(value),
+                    'Логин должен содержать не менее 5 символов и состоять из букв, цифр и знака подчеркивания'
+                );
+            });
+
+            passwordInput.addEventListener('blur', function() {
+                validateField(
+                    passwordInput,
+                    '[data-valmsg-for="PasswordHash"]',
+                    (value) => value.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value),
+                    'Пароль должен содержать не менее 8 символов, включая заглавные, строчные буквы и цифры'
+                );
+            });
         });
     </script>
 }

@@ -60,7 +60,7 @@ namespace WaterProj.Services
 
         public async Task<Consumer> GetByIdAsync(int id)
         {
-            return await _context.Consumers.FindAsync(id);
+            return await _context.Set<Consumer>().FindAsync(id);
         }
 
         public async Task<ConsumerAccontDto> GetAllAccountInfo(int id)
@@ -100,14 +100,14 @@ namespace WaterProj.Services
 
         public async Task<ServiceResult> UpdateConsumerAsync(int userId, Consumer model)
         {
-            var consumer = await _context.Consumers.FindAsync(userId);
+            var consumer = await _context.Set<Consumer>().FindAsync(userId);
             if (consumer == null)
                 return new ServiceResult { Success = false, ErrorMessage = "Пользователь не найден." };
 
             consumer.Login = model.Login;
             consumer.Name = model.Name;
 
-            _context.Consumers.Update(consumer);
+            _context.Set<Consumer>().Update(consumer);
             await _context.SaveChangesAsync();
             return new ServiceResult { Success = true };
         }

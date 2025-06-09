@@ -24,7 +24,7 @@ namespace WaterProj.Services
         public async Task<bool> IsRouteInActiveOrdersAsync(int routeId, int userId)
         {
 
-            return await _context.Orders
+            return await _context.Set<Order>()
                 .AnyAsync(o => o.RouteId == routeId &&
                                o.ConsumerId == userId &&
                                o.Status == OrderStatus.Active);
@@ -61,7 +61,7 @@ namespace WaterProj.Services
         {
             try
             {
-                var order = await _context.Orders.FindAsync(orderId);
+                var order = await _context.Set<Order>().FindAsync(orderId);
                 if (order == null)
                 {
                     return new ServiceResult
@@ -93,7 +93,7 @@ namespace WaterProj.Services
 
         public async Task<List<Order>> GetOrdersByConsumerId(int consumerId)
         {
-            return await _context.Orders
+            return await _context.Set<Order>()
                 .Where(o => o.ConsumerId == consumerId)
                 .ToListAsync();
         }
@@ -173,7 +173,7 @@ namespace WaterProj.Services
 
         public async Task<Order> GetOrderbyId(int orderId)
         {
-            return await _context.Orders.Where(o => o.OrderId == orderId).FirstOrDefaultAsync();
+            return await _context.Set<Order>().Where(o => o.OrderId == orderId).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace WaterProj.Services
         /// <returns></returns>
         public async Task<Order> GetOrderWithDetailsAsync(int orderId)
         {
-            return await _context.Orders
+            return await _context.Set<Order>()
                 .Include(o => o.Route)
                 .ThenInclude(r => r.Transporter)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
@@ -197,7 +197,7 @@ namespace WaterProj.Services
         /// <returns></returns>
         public async Task<Dictionary<int, int>> GetOrderCountsForRoutesAsync(IEnumerable<int> routeIds, bool includeOnlyActiveOrders = false)
         {
-            IQueryable<Order> query = _context.Orders.Where(o => routeIds.Contains(o.RouteId));
+            IQueryable<Order> query = _context.Set<Order>().Where(o => routeIds.Contains(o.RouteId));
 
                 query = query.Where(o => o.Status == OrderStatus.Completed);
 
@@ -218,11 +218,11 @@ namespace WaterProj.Services
         {
             if (includeOnlyActiveOrders)
             {
-                return await _context.Orders
+                return await _context.Set<Order>()
                     .CountAsync(o => o.RouteId == routeId && o.Status == OrderStatus.Active);
             }
 
-            return await _context.Orders
+            return await _context.Set<Order>()
                 .CountAsync(o => o.RouteId == routeId && o.Status == OrderStatus.Completed);
         }
 

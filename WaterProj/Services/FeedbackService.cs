@@ -51,7 +51,7 @@ namespace WaterProj.Services
 
         public async Task<List<Advantage>> GetAvailableRouteAdvantages()
         {
-            return await _context.Advantages.ToListAsync();
+            return await _context.Set<Advantage>().ToListAsync();
         }
 
         public async Task<ServiceResult> SaveFeedback( FeedbackDto model, IFormFileCollection photos, int consumerId)
