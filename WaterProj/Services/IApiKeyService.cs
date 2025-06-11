@@ -2,9 +2,6 @@
 {
     public interface IApiKeyService
     {
-        public interface IApiKeyService
-        {
-            string GetYandexMapsApiKey();
-        }
+        string GetYandexMapsApiKey();
     }
 }

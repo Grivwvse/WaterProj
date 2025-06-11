@@ -1,4 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@using WaterProj.Services
+@inject IApiKeyService ApiKeyService
+
+@{
+    var apiKey = ApiKeyService.GetYandexMapsApiKey();
+}
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -77,7 +85,7 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=@apiKey&lang=ru_RU" type="text/javascript"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

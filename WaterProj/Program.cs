@@ -33,9 +33,18 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IShipService, ShipService>();
 builder.Services.AddScoped<IAdministratorService, AdministratorService>();
+builder.Services.AddScoped<IApiKeyService, ApiKeyService>();
 
 
-
+// Для Production - загружаем ключи из переменных окружения
+if (builder.Environment.IsProduction())
+{
+    var yandexApiKey = Environment.GetEnvironmentVariable("YANDEX_MAPS_API_KEY");
+    if (!string.IsNullOrEmpty(yandexApiKey))
+    {
+        builder.Configuration["ApiKeys:YandexMaps"] = yandexApiKey;
+    }
+}
 
 
 var app = builder.Build();

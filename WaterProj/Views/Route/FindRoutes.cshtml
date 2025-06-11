@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Поиск маршрутов";
 }
 
@@ -84,6 +85,23 @@
 
  <script>
        document.addEventListener("DOMContentLoaded", function() {
+            // Проверяем, загрузился ли API
+            if (typeof ymaps !== 'undefined') {
+                initYMaps();
+            } else {
+                // Если API не загрузился сразу, ждем 500мс
+                setTimeout(function() {
+                    if (typeof ymaps !== 'undefined') {
+                        initYMaps();
+                    } else {
+                        console.error('Не удалось загрузить API Яндекс.Карт');
+                        document.getElementById('searchMap').innerHTML =
+                            '<div class="alert alert-danger">Не удалось загрузить карту</div>';
+                    }
+                }, 500);
+            }
+            
+           function initYMaps() {
            // Инициализация карты, когда API Яндекс.Карт загружен
            ymaps.ready(function() {
                const myMap = new ymaps.Map('searchMap', {
@@ -1093,6 +1111,7 @@
                    updateStopNames();
                }
            });
+           }
        });
 
 

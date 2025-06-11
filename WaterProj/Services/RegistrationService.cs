@@ -31,6 +31,7 @@ namespace WaterProj.Services
                 // Генерация хеша пароля
                 model.PasswordHash = _passwordHasherT.HashPassword(model, model.PasswordHash);
 
+
                 await _context.Transporters.AddAsync(model);
                 await _context.SaveChangesAsync();
                 return new ServiceResult { Success = true };
@@ -58,6 +59,10 @@ namespace WaterProj.Services
                 // Генерация хеша пароля
                 model.PasswordHash = _passwordHasher.HashPassword(model, model.PasswordHash);
 
+                if (model.ProfileImagePath == null)
+                {
+                    model.ProfileImagePath = "/images/avatars/default-avatar.jpg"; // Устанавливаем пустую строку, если путь к изображению не указан
+                }
                 await _context.Consumers.AddAsync(model);
                 await _context.SaveChangesAsync();
                 return new ServiceResult { Success = true };
