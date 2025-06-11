@@ -106,10 +106,19 @@ namespace WaterProj.Services
 
             consumer.Login = model.Login;
             consumer.Name = model.Name;
+            consumer.Surname = model.Surname;
+            consumer.Phone = model.Phone;
 
             _context.Set<Consumer>().Update(consumer);
             await _context.SaveChangesAsync();
             return new ServiceResult { Success = true };
+        }
+
+        public async Task<bool> IsLoginExistsAsync(string login, int currentUserId)
+        {
+            // Проверяем, существует ли другой пользователь с таким логином
+            return await _context.Consumers
+                .AnyAsync(c => c.Login == login && c.ConsumerId != currentUserId);
         }
 
         public async Task<ServiceResult> UpdateProfileImage(int consumerId, IFormFile imageFile)

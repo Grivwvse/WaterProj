@@ -30,6 +30,25 @@ namespace WaterProj.Controllers
            return View(consumerAccontDto);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CheckLoginAvailability(string login)
+        {
+            if (string.IsNullOrEmpty(login))
+            {
+                return Json(new { available = false, message = "Логин не может быть пустым" });
+            }
+
+            var currentConsumerId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool loginExists = await _consumerService.IsLoginExistsAsync(login, currentConsumerId);
+
+            if (loginExists)
+            {
+                return Json(new { available = false, message = "Этот логин уже занят другим пользователем" });
+            }
+
+            return Json(new { available = true });
+        }
+
         [HttpPost]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
         {

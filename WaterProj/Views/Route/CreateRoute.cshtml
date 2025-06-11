@@ -44,12 +44,12 @@
     <!-- Остановки -->
     <div class="card shadow-lg mb-4">
         <div class="card-body">
-            <h5 class="text-primary">Добавление остановок</h5>
-            <div class="form-group mb-3">
+            <h5 class="text-primary">Расписание</h5>
+            <div class="form-group mb-3 d-none">
                 <label for="coords" class="form-label">Координаты:</label>
                 <input type="text" id="coords" class="form-control" readonly />
             </div>
-            <div class="form-group mb-3">
+            <div class="form-group mb-3 d-none">
                 <label for="iconContent" class="form-label">Название (iconContent):</label>
                 <input type="text" id="iconContent" class="form-control" />
             </div>
@@ -57,7 +57,7 @@
                 <label for="scheduleDescription" class="form-label">Опишите ваше расписание:</label>
                 <textarea id="scheduleDescription" class="form-control" rows="3"></textarea>
             </div>
-            <button id="saveStop" class="btn btn-primary">Сохранить остановку</button>
+            <button id="saveStop" class=" d-none btn btn-primary">Сохранить остановку</button>
         </div>
     </div>
 

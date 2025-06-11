@@ -7,7 +7,7 @@ namespace WaterProj.Services
     {
         Task<Consumer> GetByIdAsync(int id);
         Task<ServiceResult> UpdateConsumerAsync(int userId, Consumer model);
-
+        Task<bool> IsLoginExistsAsync(string login, int currentUserId);
         Task<ConsumerAccontDto> GetAllAccountInfo(int id);
 
         Task<ServiceResult> UpdateProfileImage(int consumerId, IFormFile imageFile);

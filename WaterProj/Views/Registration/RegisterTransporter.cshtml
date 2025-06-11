@@ -120,20 +120,150 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
-        // Переключение видимости пароля
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordInput = document.getElementById('@Html.IdFor(m => m.PasswordHash)');
-            const icon = this.querySelector('i');
+    // Переключение видимости пароля
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('@Html.IdFor(m => m.PasswordHash)');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+
+    // Функция мгновенной валидации формы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Получаем все поля и кнопку отправки
+        const nameInput = document.getElementById('@Html.IdFor(m => m.Name)');
+        const emailInput = document.getElementById('@Html.IdFor(m => m.Email)');
+        const phoneInput = document.getElementById('@Html.IdFor(m => m.Phone)');
+        const loginInput = document.getElementById('@Html.IdFor(m => m.Login)');
+        const passwordInput = document.getElementById('@Html.IdFor(m => m.PasswordHash)');
+        const descriptionInput = document.getElementById('@Html.IdFor(m => m.Description)');
+        const submitButton = document.querySelector('button[type="submit"]');
+        
+        // Набор полей для валидации
+        const inputFields = [nameInput, emailInput, phoneInput, loginInput, passwordInput];
+        
+        // Функции валидации для каждого поля
+        const validators = {
+            // Название компании: не пустое и не менее 2 символов
+            [nameInput.id]: function(value) {
+                if (!value.trim()) return 'Название компании обязательно для заполнения';
+                if (value.trim().length < 2) return 'Название компании должно содержать минимум 2 символа';
+                return null;
+            },
             
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
+            // Email: не пустой и соответствует формату email
+            [emailInput.id]: function(value) {
+                if (!value.trim()) return 'Email обязателен для заполнения';
+                var re = /^[a-z0-9\.\_%+-]+@@[a-z0-9\.\-]+\.[a-z]{2,4}$/i;
+                if (!re.test(value)) return 'Введите корректный email адрес';
+                return null;
+            },
+            
+            // Телефон: не пустой и соответствует формату российского телефона
+            [phoneInput.id]: function(value) {
+                if (!value.trim()) return 'Номер телефона обязателен для заполнения';
+                const re = /^(\+7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+                if (!re.test(value)) return 'Введите корректный номер телефона';
+                return null;
+            },
+            
+            // Логин: не пустой и минимум 3 символа
+            [loginInput.id]: function(value) {
+                if (!value.trim()) return 'Логин обязателен для заполнения';
+                if (value.trim().length < 3) return 'Логин должен содержать минимум 3 символа';
+                return null;
+            },
+            
+            // Пароль: не пустой и минимум 6 символов
+            [passwordInput.id]: function(value) {
+                if (!value.trim()) return 'Пароль обязателен для заполнения';
+                if (value.trim().length < 6) return 'Пароль должен содержать минимум 6 символов';
+                return null;
+            }
+        };
+        
+        // Описание - проверяем только длину, если заполнено
+        if (descriptionInput) {
+            validators[descriptionInput.id] = function(value) {
+                if (value.trim().length > 1000) return 'Описание не должно превышать 1000 символов';
+                return null;
+            };
+            inputFields.push(descriptionInput);
+        }
+        
+        // Проверяет все поля и возвращает true, если форма валидна
+        function validateForm() {
+            let isValid = true;
+            
+            inputFields.forEach(function(input) {
+                if (input && validators[input.id]) {
+                    const error = validators[input.id](input.value);
+                    displayError(input, error);
+                    if (error) isValid = false;
+                }
+            });
+            
+            // Обновляем состояние кнопки отправки
+            submitButton.disabled = !isValid;
+            if (!isValid) {
+                submitButton.classList.add('btn-secondary');
+                submitButton.classList.remove('btn-primary');
             } else {
-                passwordInput.type = 'password';
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
+                submitButton.classList.remove('btn-secondary');
+                submitButton.classList.add('btn-primary');
+            }
+            
+            return isValid;
+        }
+        
+        // Отображает сообщение об ошибке для поля
+        function displayError(input, errorMessage) {
+            const errorElement = input.parentNode.parentNode.querySelector('.text-danger');
+            
+            if (errorElement) {
+                if (errorMessage) {
+                    errorElement.textContent = errorMessage;
+                    input.classList.add('is-invalid');
+                    input.classList.remove('is-valid');
+                } else {
+                    errorElement.textContent = '';
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                }
+            }
+        }
+        
+        // Добавляем обработчики события input для всех полей
+        inputFields.forEach(function(input) {
+            if (input) {
+                input.addEventListener('input', function() {
+                    // Проверяем текущее поле
+                    const error = validators[input.id] ? validators[input.id](input.value) : null;
+                    displayError(input, error);
+                    
+                    // Проверяем всю форму для обновления состояния кнопки
+                    validateForm();
+                });
             }
         });
+        
+        // Валидация при отправке формы
+        document.querySelector('form').addEventListener('submit', function(event) {
+            if (!validateForm()) {
+                event.preventDefault();
+            }
+        });
+        
+        // Проверяем форму при загрузке страницы
+        validateForm();
+    });
     </script>
 }

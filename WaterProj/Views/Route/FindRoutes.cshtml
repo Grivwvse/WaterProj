@@ -366,8 +366,8 @@
                     {
                         iconContent: stop.name,
                         hintContent: stop.name,
-                        balloonContentHeader: 'Остановка',
-                        balloonContent: `ID: ${stop.stopId}, Координаты: ${stop.latitude.toFixed(6)}, ${stop.longitude.toFixed(6)}`,
+                        balloonContentHeader: stop.name,
+                        balloonContent: `Координаты: ${stop.latitude.toFixed(6)}, ${stop.longitude.toFixed(6)}`,
                         stopId: stop.stopId
                     },
                     {
@@ -666,10 +666,17 @@
                         routeId: route.routeId
                     }, {
                         strokeColor: getRandomColor(), // Случайный цвет для каждого маршрута
-                        strokeWidth: 3,
+                        strokeWidth: 4,
                         strokeOpacity: 0.7,
-                        strokeStyle: 'dash'
+                        strokeStyle: 'solid',
+                        // Увеличиваем зону клика
+                        interactivityModel: 'default#generous', // Расширенная область клика
+                        geodesicEnabled: false, // Отключает геодезическую линию
+                        hitTolerance: 8, // Увеличивает область клика (в пикселях) вокруг линии
+                        hasBalloon: true // Всегда доступный балун
                     });
+
+
 
                     // Добавляем обработчик клика по маршруту
                     polyline.events.add('click', function(e) {
@@ -681,12 +688,12 @@
                         // Содержимое балуна с кнопкой перехода к деталям маршрута
                         const balloonContentBody = `
                             <div style="padding:5px;">
-                                <p>Маршрут #${routeId}</p>
+                                <p>Нажмите подробнее для просмотра </p>
                                 <p><a href="/Route/RouteDetails?routeID=${routeId}" class="btn btn-primary btn-sm">Подробнее</a></p>
                             </div>
                         `;
 
-                        polyline.properties.set('balloonContentHeader', routeName || `Маршрут #${routeId}`);
+                        polyline.properties.set('balloonContentHeader', `Маршрут ${routeName}` || `Маршрут #${routeId}`);
                         polyline.properties.set('balloonContentBody', balloonContentBody);
 
                         // Открываем балун

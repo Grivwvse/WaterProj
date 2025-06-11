@@ -7,5 +7,6 @@ namespace WaterProj.Services
     {
         Task<ServiceResult> RegisterTransporterAsync(Transporter model);
         Task<ServiceResult> RegisterCounsumerAsync(Consumer model);
+        Task<bool> IsLoginAvailable(string login);
     }
 }

@@ -425,18 +425,32 @@ body {
 }
 
 @media (max-width: 767px) {
-    .d-flex {
+    /* Общее правило для всех d-flex (оставляем как есть) */
+    .d-flex:not(.route-points):not(.route-point):not(.icon):not(.price-block .d-flex) {
         flex-direction: column;
     }
 
-    .popularity-icon {
-        width: 100%;
-        text-align: center;
-        padding: 2rem !important;
+    /* Специфичные правила для ценового блока */
+    .price-block .d-flex {
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
     }
 
-    .popularity-text {
-        text-align: center;
+    /* Стили для элементов в блоке цены */
+    .price-badge {
+        width: auto !important;
+        flex-shrink: 0 !important;
+    }
+
+    .price-input-wrapper {
+        flex: 1 !important;
+        width: auto !important;
+    }
+
+    .price-currency {
+        width: auto !important;
+        flex-shrink: 0 !important;
     }
 }
 
@@ -517,3 +531,167 @@ body {
     .day-checkbox input[type="checkbox"]:checked + label:hover {
         background-color: #0b5ed7;
     }
+
+.route-days {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+    .route-days .badge {
+        display: inline-flex !important;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+
+.days-container {
+    width: 100%;
+    white-space: nowrap;
+    margin-bottom: 10px;
+}
+
+.days-scroll {
+    display: inline-flex;
+    flex-wrap: nowrap;
+}
+
+.day-badge {
+    display: inline-block;
+    min-width: 40px;
+    flex-shrink: 0;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 576px) {
+    .days-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.badge-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+    .badge-container .badge {
+        display: inline-block !important;
+        margin-bottom: 5px !important;
+    }
+
+.route-price * {
+    text-align: left !important;
+}
+
+.route-price .d-flex {
+    justify-content: flex-start !important;
+}
+
+@media (max-width: 767.98px) {
+    .route-price .card-body {
+        text-align: left !important;
+        padding-left: 15px !important;
+    }
+}
+
+
+@media (max-width: 767px) {
+    /* Общее правило для большинства d-flex (оставляем, но исключаем наши контейнеры) */
+    .d-flex:not(.route-points):not(.route-point):not(.icon) {
+        flex-direction: column;
+    }
+
+    /* Принудительно устанавливаем горизонтальное направление для элементов маршрута */
+    .route-points {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        width: auto !important;
+    }
+
+    .route-point {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .icon {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Фиксированный размер для разделителя маршрута */
+    .route-separator {
+        width: auto !important;
+        flex-shrink: 0 !important;
+        text-align: center !important;
+        margin: 0 10px !important;
+    }
+
+    /* Обеспечиваем, чтобы содержимое внутри route-point не растягивалось */
+    .route-point .details {
+        flex: 1;
+        overflow: hidden;
+    }
+}
+
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+@media (max-width: 767.98px) {
+    .route-points {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .route-point {
+        width: 100%;
+    }
+
+    .route-separator {
+        transform: rotate(90deg);
+        margin: 10px 0 !important;
+        align-self: center;
+    }
+
+    .min-width-0 {
+        min-width: 0;
+    }
+
+    .details {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+}
+
+/* На планшетах и больших экранах сохраняем горизонтальный вид */
+@media (min-width: 768px) {
+    .route-points {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+}

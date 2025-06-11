@@ -92,7 +92,7 @@
                         </div>
 
                         <div class="form-floating mb-3">
-                            <textarea name="Description" class="form-control" id="description" style="height: 100px" readonly="readonly" placeholder="Описание">@Model.Transporter.Description</textarea>
+                            <textarea name="Description" class="form-control" id="description" style="height: 200px" readonly="readonly" placeholder="Описание">@Model.Transporter.Description</textarea>
                             <label for="description">Описание компании</label>
                         </div>
 
@@ -403,9 +403,6 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <a href="@Url.Action("Edit", "Ship", new { id = ship.ShipId })" class="btn btn-outline-secondary">
-                                                <i class="bi bi-pencil"></i> Редактировать
-                                            </a>
                                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Закрыть</button>
                                         </div>
                                     </div>
@@ -598,40 +595,18 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Обработчик для кнопки редактирования
-                const editButton = document.getElementById('editButton');
-                const nameInput = document.getElementById('name');
-                const loginInput = document.getElementById('login');
-                const emailInput = document.getElementById('email');
-                const phoneInput = document.getElementById('phone');
-                const descriptionInput = document.getElementById('description');
-                const avatarUploadContainer = document.getElementById('avatarUploadContainer');
-                const form = document.getElementById('editForm');
+          // Обработчик для кнопки редактирования
+    const editButton = document.getElementById('editButton');
+    const nameInput = document.getElementById('name');
+    const loginInput = document.getElementById('login');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const descriptionInput = document.getElementById('description');
+    const avatarUploadContainer = document.getElementById('avatarUploadContainer');
+    const form = document.getElementById('editForm');
 
-                let editing = false;
 
-                editButton.addEventListener('click', () => {
-                    editing = !editing;
-
-                    // Обновляем состояние полей ввода
-                    nameInput.readOnly = !editing;
-                    emailInput.readOnly = !editing;
-                    phoneInput.readOnly = !editing;
-                    descriptionInput.readOnly = !editing;
-
-                    // Отображаем/скрываем поле загрузки аватара
-                    if (editing) {
-                        avatarUploadContainer.classList.remove('d-none');
-                        editButton.textContent = 'Сохранить';
-                        editButton.classList.remove('btn-outline-primary');
-                        editButton.classList.add('btn-success');
-                        editButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
-                    } else {
-                        avatarUploadContainer.classList.add('d-none');
-                        // Отправляем форму
-                        form.submit();
-                    }
-                });
+    let editing = false;
 
                 // Проверка совпадения паролей
                 const newPasswordInput = document.getElementById('newPassword');
@@ -860,5 +835,218 @@
                 }); // <-- Исправлено закрытие конструктора Chart
             } // Закрытие блока if
         }); // Закрытие блока $(document).ready
+
+        // Валидация формы редактирования профиля
+function validateProfileForm() {
+    let isValid = true;
+    const errorMessages = {};
+    
+    // Получение элементов формы
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const descriptionInput = document.getElementById('description');
+    
+    // Очистка предыдущих сообщений об ошибках
+    clearValidationErrors();
+    
+    // Валидация имени компании
+    if (!nameInput.value.trim()) {
+        errorMessages.name = 'Название компании обязательно для заполнения';
+        isValid = false;
+    } else if (nameInput.value.trim().length < 2) {
+        errorMessages.name = 'Название компании должно содержать минимум 2 символа';
+        isValid = false;
+    }
+    
+    // Валидация email
+    if (!emailInput.value.trim()) {
+        errorMessages.email = 'Email обязателен для заполнения';
+        isValid = false;
+    } else if (!validateEmail(emailInput.value)) {
+        errorMessages.email = 'Введите корректный email адрес';
+        isValid = false;
+    }
+    
+    // Валидация телефона
+    if (!phoneInput.value.trim()) {
+        errorMessages.phone = 'Номер телефона обязателен для заполнения';
+        isValid = false;
+    } else if (!validatePhone(phoneInput.value)) {
+        errorMessages.phone = 'Введите корректный номер телефона';
+        isValid = false;
+    }
+    
+    // Валидация описания
+    if (descriptionInput.value.trim().length > 1000) {
+        errorMessages.description = 'Описание не должно превышать 1000 символов';
+        isValid = false;
+    }
+    
+    // Отображение ошибок, если они есть
+    if (!isValid) {
+        showValidationErrors(errorMessages);
+    }
+    
+    return isValid;
+}
+
+// Функция для проверки email
+function validateEmail(email) {
+    var re = /^[a-z0-9\.\_%+-]+@@[a-z0-9\.\-]+\.[a-z]{2,4}$/i;
+    return re.test(email);
+}
+// Функция для проверки телефона
+function validatePhone(phone) {
+    const re = /^(\+7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+    return re.test(phone);
+}
+
+        // Функция для отображения ошибок валидации
+        function showValidationErrors(errors) {
+            for (const field in errors) {
+                const input = document.getElementById(field);
+                if (input) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback d-block';
+                    errorDiv.textContent = errors[field];
+
+                    input.classList.add('is-invalid');
+                    input.parentNode.appendChild(errorDiv);
+                }
+            }
+
+            // Блокируем кнопку сохранения при наличии ошибок
+            if (editing) {
+                editButton.disabled = true;
+                editButton.classList.remove('btn-success');
+                editButton.classList.add('btn-secondary');
+            }
+        }
+
+        // Функция для очистки ошибок валидации
+        function clearValidationErrors() {
+            const invalidInputs = document.querySelectorAll('.is-invalid');
+            const errorMessages = document.querySelectorAll('.invalid-feedback');
+
+            invalidInputs.forEach(input => input.classList.remove('is-invalid'));
+            errorMessages.forEach(msg => msg.parentNode.removeChild(msg));
+
+            // Разблокируем кнопку сохранения при отсутствии ошибок
+            if (editing) {
+                editButton.disabled = false;
+                editButton.classList.remove('btn-secondary');
+                editButton.classList.add('btn-success');
+            }
+        }
+
+        // Валидация формы редактирования профиля (изменено для поддержки проверки без отображения ошибок)
+        function validateProfileForm(showErrors = true) {
+            let isValid = true;
+            const errorMessages = {};
+
+            // Получение элементов формы
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const descriptionInput = document.getElementById('description');
+
+            if (showErrors) {
+                clearValidationErrors();
+            }
+
+            // Валидация имени компании
+            if (!nameInput.value.trim()) {
+                errorMessages.name = 'Название компании обязательно для заполнения';
+                isValid = false;
+            } else if (nameInput.value.trim().length < 2) {
+                errorMessages.name = 'Название компании должно содержать минимум 2 символа';
+                isValid = false;
+            }
+
+            // Валидация email
+            if (!emailInput.value.trim()) {
+                errorMessages.email = 'Email обязателен для заполнения';
+                isValid = false;
+            } else if (!validateEmail(emailInput.value)) {
+                errorMessages.email = 'Введите корректный email адрес';
+                isValid = false;
+            }
+
+            // Валидация телефона
+            if (!phoneInput.value.trim()) {
+                errorMessages.phone = 'Номер телефона обязателен для заполнения';
+                isValid = false;
+            } else if (!validatePhone(phoneInput.value)) {
+                errorMessages.phone = 'Введите корректный номер телефона';
+                isValid = false;
+            }
+
+            // Валидация описания
+            if (descriptionInput.value.trim().length > 1000) {
+                errorMessages.description = 'Описание не должно превышать 1000 символов';
+                isValid = false;
+            }
+
+            if (!isValid && showErrors) {
+                showValidationErrors(errorMessages);
+            } else if (isValid && showErrors) {
+                clearValidationErrors();
+            }
+
+            return isValid;
+        }
+
+        // Модифицируем обработчик кнопки редактирования
+        document.getElementById('editButton').addEventListener('click', function() {
+            // Если уже в режиме редактирования и нажата кнопка сохранения
+            if (editing) {
+                // Выполняем валидацию перед отправкой формы
+                if (validateProfileForm()) {
+                    avatarUploadContainer.classList.add('d-none');
+                    // Отправляем форму только если валидация прошла успешно
+                    form.submit();
+                }
+                // Если валидация не прошла, форма не отправляется
+            } else {
+                // Переход в режим редактирования
+                editing = true;
+
+                // Обновляем состояние полей ввода
+                nameInput.readOnly = false;
+                emailInput.readOnly = false;
+                phoneInput.readOnly = false;
+                descriptionInput.readOnly = false;
+
+                // Обновляем вид кнопки
+                avatarUploadContainer.classList.remove('d-none');
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-success');
+                this.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
+
+                // Проверяем валидность формы сразу при переходе в режим редактирования
+                validateProfileForm();
+            }
+        });
+
+        // Добавляем обработчики для полей, чтобы выполнять валидацию при каждом изменении
+        ['name', 'email', 'phone', 'description'].forEach(id => {
+            const field = document.getElementById(id);
+            if (field) {
+                field.addEventListener('input', function() {
+                    // Удаляем сообщение об ошибке у текущего поля
+                    this.classList.remove('is-invalid');
+                    const errorMsg = this.parentNode.querySelector('.invalid-feedback');
+                    if (errorMsg) {
+                        errorMsg.parentNode.removeChild(errorMsg);
+                    }
+
+                    // Перепроверяем всю форму после каждого изменения
+                    if (editing) {
+                        validateProfileForm(true);
+                    }
+                });
+            }
+        });
     </script>
 }

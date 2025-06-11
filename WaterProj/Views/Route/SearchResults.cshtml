@@ -27,26 +27,30 @@
                 </div>
                 }
 
-                <div class="route-points mb-4">
-                    <div class="route-point">
-                        <div class="icon bg-success text-white">
+                <div class="route-points mb-4 flex-wrap">
+                    <div class="route-point mb-2 mb-md-0 flex-grow-1 min-width-0">
+                        <div class="icon bg-success text-white flex-shrink-0">
                             <i class="bi bi-circle-fill"></i>
                         </div>
-                        <div class="details">
+                        <div class="details ms-2 min-width-0">
                             <h5 class="mb-1">Откуда</h5>
-                            <p class="mb-0" id="startStopField">Остановка "@ViewBag.StartStopName"</p>
+                            <p class="mb-0 text-truncate" id="startStopField" title="@ViewBag.StartStopName">
+                                Остановка "@ViewBag.StartStopName"
+                            </p>
                         </div>
                     </div>
-                    <div class="route-separator">
-                        <i class="bi bi-arrow-right"></i> <!-- Стрелка вправо -->
+                    <div class="route-separator mx-2 text-center">
+                        <i class="bi bi-arrow-right"></i>
                     </div>
-                    <div class="route-point">
-                        <div class="icon bg-danger text-white">
+                    <div class="route-point flex-grow-1 min-width-0">
+                        <div class="icon bg-danger text-white flex-shrink-0">
                             <i class="bi bi-geo-alt-fill"></i>
                         </div>
-                        <div class="details">
+                        <div class="details ms-2 min-width-0">
                             <h5 class="mb-1">Куда</h5>
-                            <p class="mb-0" id="endStopField">Остановка "@ViewBag.EndStopName"</p>
+                            <p class="mb-0 text-truncate" id="endStopField" title="@ViewBag.EndStopName">
+                                Остановка "@ViewBag.EndStopName"
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -99,7 +103,7 @@
                         <!-- Карточка 1 -->
                         <div class="card route-card" data-route-id="@route.RouteId">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex justify-content-between align-items-center  mb-2">
                                     <h5 class="card-title mb-0">
                                         <span class="route-number">@route.Name</span>
                                         <span class="route-time">От @route.Price руб</span>
@@ -126,45 +130,96 @@
 
                                     
                                 </div>
-                                <p class="card-text">@(string.IsNullOrEmpty(route.Description) ? "Нет описания" : route.Description)</p>
+                                <p class="card-text">
+                                    @if (string.IsNullOrEmpty(route.Description))
+                                    {
+                                        <span>Нет описания</span>
+                                    }
+                                    else
+                                    {
+                                        <span id="short-description-@route.RouteId">
+                                            @if (route.Description.Length > 100)
+                                            {
+                                                @route.Description.Substring(0, 100)
+
+                                                <text>...</text>
+                                                <a href="javascript:void(0);" class="text-primary"
+                                                   onclick="toggleText('description', '@route.RouteId')">Читать далее</a>
+                                            }
+                                            else
+                                            {
+                                                @route.Description
+                                            }
+                                        </span>
+                                        @if (route.Description.Length > 100)
+                                        {
+                                            <span id="full-description-@route.RouteId" class="d-none" style="white-space: pre-line;">
+                                                @route.Description
+                                                <a href="javascript:void(0);" class="text-primary"
+                                                   onclick="toggleText('description', '@route.RouteId')">Свернуть</a>
+                                            </span>
+                                        }
+                                    }
+                                </p>
                                 <div class="route-details">
                                     <!-- Дни недели маршрута -->
                                     @if (route.RouteDays != null && route.RouteDays.Any())
                                     {
-                                        <div class="route-days d-flex align-items-center">
-                                            <i class="bi bi-calendar-week me-1"></i>
-                                            @foreach (var day in route.RouteDays.OrderBy(d => (int)d))
-                                            {
-                                                <span class="badge bg-light text-dark me-1">
-                                                    @switch (day)
-                                                    {
-                                                        case DayOfWeek.Monday:
-                                                            <text>Пн</text>
-                                                            break;
-                                                        case DayOfWeek.Tuesday:
-                                                            <text>Вт</text>
-                                                            break;
-                                                        case DayOfWeek.Wednesday:
-                                                            <text>Ср</text>
-                                                            break;
-                                                        case DayOfWeek.Thursday:
-                                                            <text>Чт</text>
-                                                            break;
-                                                        case DayOfWeek.Friday:
-                                                            <text>Пт</text>
-                                                            break;
-                                                        case DayOfWeek.Saturday:
-                                                            <text>Сб</text>
-                                                            break;
-                                                        case DayOfWeek.Sunday:
-                                                            <text>Вс</text>
-                                                            break;
-                                                    }
-                                                </span>
+                                        <div class="d-flex text-start mb-2">
+                                            @{
+                                                var daysText = string.Join(", ", route.RouteDays.OrderBy(d => (int)d)
+                                                .Select(d => d switch
+                                                {
+                                                    DayOfWeek.Monday => "Пн",
+                                                    DayOfWeek.Tuesday => "Вт",
+                                                    DayOfWeek.Wednesday => "Ср",
+                                                    DayOfWeek.Thursday => "Чт",
+                                                    DayOfWeek.Friday => "Пт",
+                                                    DayOfWeek.Saturday => "Сб",
+                                                    DayOfWeek.Sunday => "Вс",
+                                                    _ => ""
+                                                }));
                                             }
+                                            <div class="d-flex text-start mb-2">
+                                                <div class="d-inline-flex">
+                                                    <i class="bi bi-calendar-week me-1"></i>
+                                                    <div class="bg-light rounded px-2 py-1 text-dark me-1">@daysText</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     }
-                                    <div>Расписание @(string.IsNullOrEmpty(route.Schedule) ? "Нет описания" : route.Schedule  )</div>
+                                    <div>
+                                        <strong>Расписание:</strong>
+                                        @if (string.IsNullOrEmpty(route.Schedule))
+                                        {
+                                            <span>Нет данных</span>
+                                        }
+                                        else
+                                        {
+                                            <span id="short-schedule-@route.RouteId">
+                                                @if (route.Schedule.Length > 100)
+                                                {
+                                                    @route.Schedule.Substring(0, 100)
+
+                                                    <text>...</text>
+                                                    <a href="javascript:void(0);" class="text-primary"
+                                                       onclick="toggleText('schedule', '@route.RouteId')">Читать далее</a>
+                                                }
+                                                else
+                                                {
+                                                    @route.Schedule
+                                                }
+                                            </span>
+                                            @if (route.Schedule.Length > 100)
+                                            {
+                                                <span id="full-schedule-@route.RouteId" class="d-none" style="white-space: pre-line;">
+                                                    @route.Schedule
+                                                    <a href="javascript:void(0);" class="text-primary"
+                                                       onclick="toggleText('schedule', '@route.RouteId')">Свернуть</a>
+                                                </span>
+                                            }
+                                        }
+                                    </div>
                                     <div>
                                         Перевозчик: @route.TransporterName Рейтинг : @route.TransporterRating  </div> 
                                         <!--  //(route.TransporterRating > 0.0 ? "Нет данных" : route.TransporterRating)</div> -->
@@ -293,37 +348,40 @@
                 "пользователей выбрали");
         });
 
-        // Добавляем атрибуты data-rating к карточкам маршрутов
-        cards.forEach(card => {
-            // Находим элемент с рейтингом внутри карточки
-            const ratingBadge = card.querySelector(".badge");
-            if (ratingBadge) {
-                // Извлекаем значение рейтинга из текста
-                const ratingText = ratingBadge.textContent;
-                let rating = 0;
+    // Исправленный код для установки атрибута data-popularity
+    cards.forEach(card => {
+        // Находим элемент с рейтингом внутри карточки
+        const ratingBadge = card.querySelector(".badge");
+        if (ratingBadge) {
+            // Извлекаем значение рейтинга из текста
+            const ratingText = ratingBadge.textContent;
+            let rating = 0;
 
-                if (ratingText.includes("Рейтинг :")) {
-                    const ratingValue = ratingText.split(":")[1].trim();
-                    if (ratingValue !== "Нет данных") {
-                        rating = parseFloat(ratingValue);
-                    }
+            if (ratingText.includes("Рейтинг :")) {
+                const ratingValue = ratingText.split(":")[1].trim();
+                if (ratingValue !== "Нет данных") {
+                    rating = parseFloat(ratingValue);
                 }
-
-                // Добавляем атрибут data-rating
-                card.setAttribute("data-rating", rating);
             }
 
-            // Находим элемент с количеством заказов внутри карточки
-            const popularityElement = card.querySelector(".popularity-badge .fw-bold");
-            if (popularityElement) {
-                const popularity = parseInt(popularityElement.textContent) || 0;
-                // Добавляем атрибут data-popularity
-                card.setAttribute("data-popularity", popularity);
-            } else {
-                // Если элемент не найден, устанавливаем значение 0
-                card.setAttribute("data-popularity", 0);
-            }
-        });
+            // Добавляем атрибут data-rating
+            card.setAttribute("data-rating", rating);
+        }
+
+        // Находим элемент с количеством заказов внутри карточки (кнопку с иконкой людей)
+        const popularityBtn = card.querySelector(".btn-outline-light.text-primary .bi-people-fill");
+        if (popularityBtn) {
+            // Получаем текст, который находится рядом с иконкой (количество заказов)
+            const popularityText = popularityBtn.parentNode.textContent.trim();
+            // Извлекаем число из текста
+            const popularity = parseInt(popularityText.match(/\d+/)[0]) || 0;
+            // Добавляем атрибут data-popularity
+            card.setAttribute("data-popularity", popularity);
+        } else {
+            // Если элемент не найден, устанавливаем значение 0
+            card.setAttribute("data-popularity", 0);
+        }
+    });
 
         const ratingFilter = document.getElementById("ratingFilter");
         const sortOrder = document.getElementById("sortOrder");
@@ -450,4 +508,18 @@
         ratingFilter.addEventListener("change", filterAndSortRoutes);
         sortOrder.addEventListener("change", filterAndSortRoutes);
     });
+
+
+    function toggleText(type, routeId) {
+        const shortElement = document.getElementById(`short-${type}-${routeId}`);
+        const fullElement = document.getElementById(`full-${type}-${routeId}`);
+
+        if (shortElement.classList.contains('d-none')) {
+            shortElement.classList.remove('d-none');
+            fullElement.classList.add('d-none');
+        } else {
+            shortElement.classList.add('d-none');
+            fullElement.classList.remove('d-none');
+        }
+    }
 </script>

@@ -47,7 +47,7 @@
                         
                         <!-- Кнопки действий -->
                         <div class="d-grid gap-2 mt-4">
-                            <button id="editButton" class="btn btn-outline-primary">
+                            <button id="editButton" type="button" class="btn btn-outline-primary">
                                 <i class="bi bi-pencil"></i> Редактировать профиль
                             </button>
                             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
@@ -100,6 +100,7 @@
                                     </div>
                                 </div>
                             </div>
+
                         </form>
                     </div>
                 </div>
@@ -132,7 +133,12 @@
                                                     <span>
                                                         <strong>№@dto.Order.OrderId</strong>: @dto.Route.Name
                                                     </span>
-                                                    <span class="badge bg-success ms-2">@dto.Order.Status.GetDisplayName()</span>
+                                                    <span class="badge ms-2
+                                                    @(dto.Order.Status == OrderStatus.Canceled ? "bg-danger" :
+                                                      dto.Order.Status == OrderStatus.Active ? "bg-warning text-dark" :
+                                                      dto.Order.Status == OrderStatus.Completed ? "bg-success" : "bg-secondary")">
+                                                      @dto.Order.Status.GetDisplayName()
+                                                    </span>
                                                 </div>
                                             </button>
                                         </h2>
@@ -154,9 +160,12 @@
                                                     <a href="@Url.Action("RouteDetails", "Route", new { routeID = dto.Order.RouteId })" class="btn btn-outline-primary btn-sm me-2">
                                                         <i class="bi bi-eye"></i> Подробнее
                                                     </a>
-                                                    <a href="@Url.Action("CancelOrder", "Order", new { OrderId = dto.Order.OrderId })" class="btn btn-outline-danger btn-sm">
-                                                        <i class="bi bi-x-circle"></i> Отменить
-                                                    </a>
+                                                    @if (dto.Order.Status == OrderStatus.Active)
+                                                    {
+                                                        <a href="@Url.Action("CancelOrder", "Order", new { OrderId = dto.Order.OrderId })" class="btn btn-outline-danger btn-sm me-2">
+                                                            <i class="bi bi-x-circle"></i> Отменить
+                                                        </a>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
@@ -226,25 +235,267 @@
         const form = document.getElementById('editForm');
 
         let editing = false;
+        let formIsValid = false; // Флаг валидности формы
+
+        // Функция для обновления состояния кнопки сохранения
+        function updateSaveButtonState() {
+            if (editing) {
+                editButton.disabled = !formIsValid;
+                // Визуальное оформление в зависимости от валидности
+                if (formIsValid) {
+                    editButton.classList.add('btn-success');
+                    editButton.classList.remove('btn-secondary');
+                } else {
+                    editButton.classList.remove('btn-success');
+                    editButton.classList.add('btn-secondary');
+                }
+            }
+        }
 
         editButton.addEventListener('click', () => {
-            editing = !editing;
-            
-            // Обновляем состояние полей ввода
-            nameInput.readOnly = !editing;
-            surnameInput.readOnly = !editing;
-            phoneInput.readOnly = !editing;
-            loginInput.readOnly = !editing;
-
             if (editing) {
+                // Если мы уже в режиме редактирования и нажали кнопку сохранить
+                if (formIsValid) {
+                    // Отправляем форму только если данные валидны
+                    form.submit();
+                    // Переключаем режим редактирования
+                    editing = false;
+                    // Обновляем состояние полей ввода
+                    nameInput.readOnly = true;
+                    surnameInput.readOnly = true;
+                    phoneInput.readOnly = true;
+                    loginInput.readOnly = true;
+                    // Меняем внешний вид кнопки обратно
+                    editButton.innerHTML = '<i class="bi bi-pencil"></i> Редактировать профиль';
+                    editButton.classList.remove('btn-success', 'btn-secondary');
+                    editButton.classList.add('btn-outline-primary');
+                    editButton.disabled = false;
+                }
+                // Если данные не прошли валидацию, кнопка будет неактивна
+            } else {
+                // Если мы не в режиме редактирования, просто включаем его
+                editing = true;
+
+                // Обновляем состояние полей ввода
+                nameInput.readOnly = false;
+                surnameInput.readOnly = false;
+                phoneInput.readOnly = false;
+                loginInput.readOnly = false;
+
+                // Меняем внешний вид кнопки
                 editButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
                 editButton.classList.remove('btn-outline-primary');
                 editButton.classList.add('btn-success');
-            } else {
-                // Отправляем форму
-                form.submit();
+
+                // Сразу проверяем валидность и устанавливаем состояние кнопки
+                formIsValid = validateProfileForm();
+                updateSaveButtonState();
+
+                // Добавляем обработчики событий для полей ввода
+                setupFieldValidation();
             }
         });
+
+        // Функция настройки валидации полей ввода в реальном времени
+        function setupFieldValidation() {
+            // Очищаем предыдущие обработчики (если были)
+            nameInput.removeEventListener('input', validateField);
+            surnameInput.removeEventListener('input', validateField);
+            phoneInput.removeEventListener('input', validateField);
+            loginInput.removeEventListener('input', validateField);
+
+            // Добавляем новые обработчики
+            nameInput.addEventListener('input', validateField);
+            surnameInput.addEventListener('input', validateField);
+            phoneInput.addEventListener('input', validateField);
+            loginInput.addEventListener('input', validateField);
+
+            // Также добавляем обработчики потери фокуса для более явной валидации
+            nameInput.addEventListener('blur', validateField);
+            surnameInput.addEventListener('blur', validateField);
+            phoneInput.addEventListener('blur', validateField);
+            loginInput.addEventListener('blur', validateField);
+        }
+
+               // Функция для валидации отдельного поля
+        function validateField(event) {
+            const field = event.target;
+
+            // Очищаем ошибку для данного поля
+            clearFieldError(field);
+
+            // Валидируем поле в зависимости от его id
+            switch(field.id) {
+                case 'name':
+                    if (!field.value.trim()) {
+                        showError(field, 'Введите имя');
+                    } else {
+                        const nameRegex = /^[А-ЯЁа-яёA-Za-z\s-]+$/;
+                        if (!nameRegex.test(field.value)) {
+                            showError(field, 'Имя может содержать только буквы, пробелы и дефисы');
+                        }
+                    }
+                    break;
+                case 'surname':
+                    if (!field.value.trim()) {
+                        showError(field, 'Введите фамилию');
+                    } else {
+                        const surnameRegex = /^[А-ЯЁа-яёA-Za-z\s-]+$/;
+                        if (!surnameRegex.test(field.value)) {
+                            showError(field, 'Фамилия может содержать только буквы, пробелы и дефисы');
+                        }
+                    }
+                    break;
+                case 'phone':
+                    if (!field.value.trim()) {
+                        showError(field, 'Введите номер телефона');
+                    } else {
+                        const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+                        if (!phoneRegex.test(field.value)) {
+                            showError(field, 'Неверный формат телефона');
+                        }
+                    }
+                    break;
+                case 'login':
+                    if (!field.value.trim()) {
+                        showError(field, 'Введите логин');
+                    } else if (field.value.length < 4) {
+                        showError(field, 'Логин должен содержать минимум 4 символа');
+                    } else {
+                        // Проверяем, что логин не изменился
+                        const originalLogin = field.getAttribute('data-original-value') || field.defaultValue;
+                        if (field.value !== originalLogin) {
+                            // Асинхронная проверка доступности логина
+                            checkLoginAvailability(field.value);
+                        }
+                    }
+                    break;
+            }
+
+            // Проверяем всю форму и обновляем состояние кнопки
+            formIsValid = validateProfileForm(false); // без отображения ошибок
+            updateSaveButtonState();
+        }
+
+        // Функция для проверки доступности логина
+        async function checkLoginAvailability(login) {
+            try {
+                // Добавляем индикатор загрузки
+                loginInput.classList.add('checking');
+
+                // Выполняем запрос к серверу
+                const response = await fetch(`/ConsumerAccount/CheckLoginAvailability?login=${encodeURIComponent(login)}`);
+                const data = await response.json();
+
+                // Удаляем индикатор загрузки
+                loginInput.classList.remove('checking');
+
+                if (!data.available) {
+                    showError(loginInput, data.message || 'Этот логин уже занят');
+                    formIsValid = false;
+                    updateSaveButtonState();
+                }
+            } catch (error) {
+                console.error('Ошибка при проверке логина:', error);
+                loginInput.classList.remove('checking');
+            }
+        }
+
+        // Очистка ошибки только для конкретного поля
+        function clearFieldError(field) {
+            field.classList.remove('is-invalid');
+            const errorMessages = field.parentNode.querySelectorAll('.invalid-feedback');
+            errorMessages.forEach(errorMsg => {
+                errorMsg.remove();
+            });
+        }
+
+        // Функция валидации формы профиля
+        function validateProfileForm(showErrors = true) {
+            // Если showErrors=false, то ошибки не отображаются, а только проверяется валидность
+            if (showErrors) {
+                clearValidationErrors();
+            }
+
+            let isValid = true;
+
+        // Проверка имени
+        if (!nameInput.value.trim()) {
+            if (showErrors) showError(nameInput, 'Введите имя');
+            isValid = false;
+        } else {
+            const nameRegex = /^[А-ЯЁа-яёA-Za-z\s-]+$/;
+            if (!nameRegex.test(nameInput.value)) {
+                if (showErrors) showError(nameInput, 'Имя может содержать только буквы, пробелы и дефисы');
+                isValid = false;
+            }
+        }
+
+        // Проверка фамилии
+        if (!surnameInput.value.trim()) {
+            if (showErrors) showError(surnameInput, 'Введите фамилию');
+            isValid = false;
+        } else {
+            const surnameRegex = /^[А-ЯЁа-яёA-Za-z\s-]+$/;
+            if (!surnameRegex.test(surnameInput.value)) {
+                if (showErrors) showError(surnameInput, 'Фамилия может содержать только буквы, пробелы и дефисы');
+                isValid = false;
+            }
+        }
+
+            // Проверка телефона
+            if (!phoneInput.value.trim()) {
+                if (showErrors) showError(phoneInput, 'Введите номер телефона');
+                isValid = false;
+            } else {
+                // Проверка формата телефона с использованием регулярного выражения
+                const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+                if (!phoneRegex.test(phoneInput.value)) {
+                    if (showErrors) showError(phoneInput, 'Неверный формат телефона');
+                    isValid = false;
+                }
+            }
+
+            // Проверка логина
+            if (!loginInput.value.trim()) {
+                if (showErrors) showError(loginInput, 'Введите логин');
+                isValid = false;
+            } else if (loginInput.value.length < 4) {
+                if (showErrors) showError(loginInput, 'Логин должен содержать минимум 4 символа');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Функция для отображения ошибки валидации
+        function showError(inputElement, errorMessage) {
+            inputElement.classList.add('is-invalid');
+
+            // Создаем элемент с сообщением об ошибке, если его еще нет
+            const existingError = inputElement.parentNode.querySelector('.invalid-feedback');
+            if (!existingError) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback';
+                errorDiv.innerText = errorMessage;
+
+                // Добавляем сообщение об ошибке после поля ввода
+                inputElement.parentNode.appendChild(errorDiv);
+            }
+        }
+
+        // Функция для очистки ошибок валидации
+        function clearValidationErrors() {
+            const invalidInputs = document.querySelectorAll('.is-invalid');
+            invalidInputs.forEach(input => {
+                input.classList.remove('is-invalid');
+            });
+
+            const errorMessages = document.querySelectorAll('.invalid-feedback');
+            errorMessages.forEach(errorMsg => {
+                errorMsg.remove();
+            });
+        }
 
         // Проверка совпадения паролей
         const newPasswordInput = document.getElementById('newPassword');
@@ -267,16 +518,7 @@
         newPasswordInput.addEventListener('input', checkPasswordMatch);
         confirmPasswordInput.addEventListener('input', checkPasswordMatch);
 
-        // Обработка отправки формы изменения пароля
-        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-            if (newPasswordInput.value !== confirmPasswordInput.value) {
-                e.preventDefault();
-                passwordMatchError.classList.remove('d-none');
-            }
-        });
-
-
-                // Обработчик для чекбокса фильтрации отмененных заказов
+        // Обработчик для чекбокса фильтрации отмененных заказов
         const hideCompletedOrdersCheckbox = document.getElementById('hideCompletedOrders');
         const orderItems = document.querySelectorAll('.accordion-item[data-status]');
 

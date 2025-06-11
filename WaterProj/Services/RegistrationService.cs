@@ -45,6 +45,7 @@ namespace WaterProj.Services
             }
         }
 
+
         public async Task<ServiceResult> RegisterCounsumerAsync(Consumer model)
         {
             try

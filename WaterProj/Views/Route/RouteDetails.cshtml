@@ -65,20 +65,20 @@
                 <h3 class="card-title text-primary">
                     <i class="bi bi-info-circle me-2"></i>Описание маршрута
                 </h3>
-                <p class="card-text">@Model.Route.Description</p>
+                <p class="card-text" style="white-space: pre-line;">@Model.Route.Description</p>
             </div>
         </div>
 
         <!-- Блок с минимальной ценой билета -->
         <div class="route-price card mb-4 shadow-lg overflow-hidden">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
+            <div class="card-body" style="text-align: left !important; padding-left: 15px !important;">
+                <div style="display: flex; align-items: center; justify-content: flex-start !important;">
+                    <div style="margin-right: 15px; flex-shrink: 0;">
                         <i class="bi bi-currency-exchange text-primary" style="font-size: 2rem;"></i>
                     </div>
-                    <div>
-                        <h4 class="mb-0">Цена от <span class="text-primary fw-bold">@Model.Route.Price.ToString("N0")</span> рублей</h4>
-                        <p class="mb-0 text-muted">Стоимость указана за одного пассажира, для получения более точной информации свяжитесь с перевозчиком</p>
+                    <div style="text-align: left !important;">
+                        <h4 style="margin-bottom: 0 !important; text-align: left !important;">Цена от <span class="text-primary fw-bold">@Model.Route.Price.ToString("N0")</span> рублей</h4>
+                        <p style="margin-bottom: 0 !important; text-align: left !important;" class="text-muted">Стоимость указана за одного пассажира, для получения более точной информации свяжитесь с перевозчиком</p>
                     </div>
                 </div>
             </div>
@@ -91,40 +91,42 @@
                             <i class="bi bi-calendar-week me-2"></i>Расписание
                         </h3>
 
-                <!-- Дни недели -->
+             <!-- Дни недели -->
                 @if (Model.Route.RouteDays != null && Model.Route.RouteDays.Any())
                 {
                     <div class="mb-3">
-                        <div class="d-flex flex-wrap">
-                            @foreach (var day in Model.Route.RouteDays.OrderBy(d => (int)d.DayOfWeek))
-                            {
-                                <span class="badge bg-primary me-2 mb-2 p-2">
-                                    @switch (day.DayOfWeek)
-                                    {
-                                        case DayOfWeek.Monday:
-                                            <text>Понедельник</text>
-                                            break;
-                                        case DayOfWeek.Tuesday:
-                                            <text>Вторник</text>
-                                            break;
-                                        case DayOfWeek.Wednesday:
-                                            <text>Среда</text>
-                                            break;
-                                        case DayOfWeek.Thursday:
-                                            <text>Четверг</text>
-                                            break;
-                                        case DayOfWeek.Friday:
-                                            <text>Пятница</text>
-                                            break;
-                                        case DayOfWeek.Saturday:
-                                            <text>Суббота</text>
-                                            break;
-                                        case DayOfWeek.Sunday:
-                                            <text>Воскресенье</text>
-                                            break;
-                                    }
-                                </span>
-                            }
+                        <div class="days-container">
+                            <div class="days-scroll d-inline-flex flex-wrap">
+                                @foreach (var day in Model.Route.RouteDays.OrderBy(d => ((int)d.DayOfWeek + 6) % 7))
+                                {
+                                    <div class="day-badge bg-primary text-white text-center me-1 mb-1 rounded px-2 py-1">
+                                        @switch (day.DayOfWeek)
+                                        {
+                                            case DayOfWeek.Monday:
+                                                <text>Пн</text>
+                                                break;
+                                            case DayOfWeek.Tuesday:
+                                                <text>Вт</text>
+                                                break;
+                                            case DayOfWeek.Wednesday:
+                                                <text>Ср</text>
+                                                break;
+                                            case DayOfWeek.Thursday:
+                                                <text>Чт</text>
+                                                break;
+                                            case DayOfWeek.Friday:
+                                                <text>Пт</text>
+                                                break;
+                                            case DayOfWeek.Saturday:
+                                                <text>Сб</text>
+                                                break;
+                                            case DayOfWeek.Sunday:
+                                                <text>Вс</text>
+                                                break;
+                                        }
+                                    </div>
+                                }
+                            </div>
                         </div>
                     </div>
                 }
@@ -137,7 +139,7 @@
 
                 <!-- Описание расписания -->
                 <h5 class="text-secondary">Подробное расписание:</h5>
-                <p class="card-text">@(string.IsNullOrEmpty(Model.Route.Schedule) ? "Подробное расписание не указано" : Model.Route.Schedule)</p>
+                <p class="card-text" style="white-space: pre-line;">@(string.IsNullOrEmpty(Model.Route.Schedule) ? "Подробное расписание не указано" : Model.Route.Schedule)</p>
             </div>
         </div>
 
@@ -263,10 +265,10 @@
 
                         <!-- Дополнительные данные -->
                         <div class="additional-info d-none border rounded p-3 mt-3 shadow-sm" id="additional-info-@routeRating.RouteRatingId">
-                            <h6 class="mt-3 text-primary"><i class="bi bi-hand-thumbs-up"></i> Преимущества:</h6>
-                            <p class="mt-2 text-muted">@routeRating.PositiveComments</p>
+                            <h6 class="mt-3 text-primary" style="white-space: pre-line;"><i class="bi bi-hand-thumbs-up"></i> Преимущества:</h6>
+                            <p class="mt-2 text-muted" style="white-space: pre-line;" >@routeRating.PositiveComments</p>
 
-                            <h6 class="mt-3 text-primary"><i class="bi bi-hand-thumbs-down"></i> Недостатки:</h6>
+                            <h6 class="mt-3 text-primary " style="white-space: pre-line;"><i class="bi bi-hand-thumbs-down"></i> Недостатки:</h6>
                             <p class="mt-2 text-muted">@routeRating.NegativeComments</p>
 
                             <h6 class="mt-3 text-primary"><i class="bi bi-images"></i> Фотографии:</h6>

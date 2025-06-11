@@ -23,7 +23,7 @@
 
                 <!-- Общая оценка маршрута -->
                 <div class="form-group mb-4">
-                    <label class="form-label fw-bold">Оценка маршрута</label>
+                    <label class="form-label fw-bold required-field">Оценка маршрута</label>
                     <div class="star-rating mb-2">
                         @for (int i = 5; i >= 1; i--)
                         {
@@ -38,14 +38,14 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="PositiveComments" class="form-label fw-bold">Положительные моменты</label>
+                            <label asp-for="PositiveComments" class="form-label fw-bold required-field">Положительные моменты</label>
                             <textarea asp-for="@Model.PositiveComments" class="form-control" rows="4"
                                       placeholder="Что вам понравилось в маршруте?"></textarea>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="NegativeComments" class="form-label fw-bold">Отрицательные моменты</label>
+                            <label asp-for="NegativeComments" class="form-label fw-bold required-field">Отрицательные моменты</label>
                             <textarea asp-for="@Model.NegativeComments" class="form-control" rows="4"
                                       placeholder="Что можно было бы улучшить?"></textarea>
                         </div>
@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="form-group mb-4">
-                    <label asp-for="Comment" class="form-label fw-bold">Основной комментарий</label>
+                    <label asp-for="Comment" class="form-label fw-bold required-field">Основной комментарий</label>
                     <textarea asp-for="@Model.Comment" class="form-control" rows="4"
                               placeholder="Поделитесь своими впечатлениями о маршруте"></textarea>
                 </div>
@@ -101,6 +101,14 @@
     </div>
 </div>
 
+<style>
+    /* Добавляем стиль для красной звездочки (если его еще нет в site.css) */
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
 
 <script>
     // Проверка размера загружаемых файлов
@@ -120,6 +128,73 @@
                 this.value = '';
                 return;
             }
+        }
+    });
+
+    // Получаем ссылку на кнопку отправки
+    const submitButton = document.querySelector('button[type="submit"]');
+    // По умолчанию деактивируем кнопку
+    submitButton.disabled = true;
+
+    // Функция для проверки валидности формы
+    function validateForm() {
+        // Проверка звездного рейтинга
+        const ratingSelected = document.querySelector('input[name="Stars"]:checked');
+
+        // Проверка текстовых полей
+        const positiveComments = document.querySelector('textarea[name="PositiveComments"]').value.trim();
+        const negativeComments = document.querySelector('textarea[name="NegativeComments"]').value.trim();
+        const mainComment = document.querySelector('textarea[name="Comment"]').value.trim();
+
+        // Активируем кнопку только если все поля заполнены
+        if (ratingSelected && positiveComments && negativeComments && mainComment) {
+            submitButton.disabled = false;
+        } else {
+            submitButton.disabled = true;
+        }
+    }
+
+    // Слушатели событий для всех требуемых полей
+    document.querySelectorAll('input[name="Stars"]').forEach(radio => {
+        radio.addEventListener('change', validateForm);
+    });
+
+    document.querySelector('textarea[name="PositiveComments"]').addEventListener('input', validateForm);
+    document.querySelector('textarea[name="NegativeComments"]').addEventListener('input', validateForm);
+    document.querySelector('textarea[name="Comment"]').addEventListener('input', validateForm);
+
+    // Валидация при отправке формы (на всякий случай)
+    document.querySelector('form').addEventListener('submit', function(event) {
+        // Проверка звездного рейтинга
+        const ratingSelected = document.querySelector('input[name="Stars"]:checked');
+        if (!ratingSelected) {
+            event.preventDefault();
+            alert('Пожалуйста, выберите оценку маршрута');
+            return false;
+        }
+
+        // Проверка положительных комментариев
+        const positiveComments = document.querySelector('textarea[name="PositiveComments"]').value.trim();
+        if (!positiveComments) {
+            event.preventDefault();
+            alert('Пожалуйста, заполните поле "Положительные моменты"');
+            return false;
+        }
+
+        // Проверка отрицательных комментариев
+        const negativeComments = document.querySelector('textarea[name="NegativeComments"]').value.trim();
+        if (!negativeComments) {
+            event.preventDefault();
+            alert('Пожалуйста, заполните поле "Отрицательные моменты"');
+            return false;
+        }
+
+        // Проверка основного комментария
+        const mainComment = document.querySelector('textarea[name="Comment"]').value.trim();
+        if (!mainComment) {
+            event.preventDefault();
+            alert('Пожалуйста, заполните поле "Основной комментарий"');
+            return false;
         }
     });
 </script>

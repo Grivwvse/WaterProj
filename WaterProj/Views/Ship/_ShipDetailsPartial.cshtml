@@ -17,22 +17,20 @@
             </div>
 
             <!-- Описание корабля -->
-            <p class="card-text text-muted mb-3">
+            <p class="card-text text-muted mb-3" style="white-space: pre-line;">
                 @Model.Ship.Description
             </p>
-
             <!-- Удобства на борту -->
             <h6 class="text-primary mb-2">
                 <i class="bi bi-star me-2"></i>Удобства на борту:
             </h6>
-            <div class="d-flex flex-wrap gap-2 mb-2">
+            <div class="d-flex flex-row flex-wrap gap-2 mb-2">
                 @foreach (var convenience in Model.ShipConveniences)
                 {
-                    <span class="badge bg-light text-dark">
+                    <span class="badge bg-light text-dark d-inline-block">
                         <i class="bi bi-cup-hot me-1"></i>@convenience.Name
                     </span>
                 }
-
             </div>
         </div>
 

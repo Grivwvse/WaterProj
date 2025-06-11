@@ -55,6 +55,30 @@ namespace WaterProj.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> CheckLoginAvailability(string login)
+        {
+            if (string.IsNullOrEmpty(login))
+            {
+                return Json(new { available = false, message = "Логин не может быть пустым" });
+            }
+
+            // Проверяем, соответствует ли логин требованиям формата
+            if (login.Length < 3 || !System.Text.RegularExpressions.Regex.IsMatch(login, @"^[a-zA-Z0-9_]+$"))
+            {
+                return Json(new { available = false, message = "Неверный формат логина" });
+            }
+
+            // Обращаемся к сервису для проверки доступности логина
+            bool isAvailable = await _registrationService.IsLoginAvailable(login);
+
+            return Json(new
+            {
+                available = isAvailable,
+                message = isAvailable ? "Логин доступен" : "Этот логин уже используется"
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> RegisterTransporter(Transporter model)
         {
