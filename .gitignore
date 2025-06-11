@@ -545,3 +545,7 @@ FodyWeavers.xsd
 
 # Ignore Images
    WaterProj/wwwroot/images/*
+
+# Игнорируем файлы, содержащие секреты 
+**/appsettings.Production.json
+**/appsettings.Development.json
