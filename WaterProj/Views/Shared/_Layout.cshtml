@@ -36,13 +36,13 @@
                             @if (User.IsInRole("transporter"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="TransporterAccount" asp-action="Account">Account</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="TransporterAccount" asp-action="Account">ЛИЧНЫЙ КАБИНЕТ</a>
                                 </li>
                             }
                             else if (User.IsInRole("consumer"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="ConsumerAccount" asp-action="Index">Account</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="ConsumerAccount" asp-action="Index">ЛИЧНЫЙ КАБИНЕТ</a>
                                 </li>
                             }
                             else if (User.IsInRole("admin"))
@@ -59,12 +59,12 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Authorization" asp-action="Index">Sign in</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Authorization" asp-action="Index">ВОЙТИ</a>
                             </li>
                         }
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">О НАС</a>
                         </li>
                     </ul>
                 </div>

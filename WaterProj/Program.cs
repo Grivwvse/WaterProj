@@ -1,15 +1,23 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using WaterProj.DB;
 using WaterProj.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// !!! Конфигурируем обработку пересылаемых заголовков запросов
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Authorization/Index";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // задаём время жизни cookie
+        options.ExpireTimeSpan = TimeSpan.FromHours(6); // задаём время жизни cookie
         options.SlidingExpiration = true; //  продление сессии при активности
         // options.LogoutPath = "/Authorization/Logout"; //  выход
     });
@@ -57,6 +65,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// !!! Добавляем в конвеер обработки HTTP-запроса компонент работы с пересылаемыми заголовками
+app.UseForwardedHeaders();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -68,5 +79,12 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Route}/{action=FindRoutes}/{id?}");
+
+//!!! Добавляем автоматическую миграцию БД если еще не выполнена
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();

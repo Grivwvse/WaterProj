@@ -46,7 +46,7 @@ namespace WaterProj.Services
                 var transporter = await AuthTransporter(login, password);
                 if (transporter == null)
                 {
-                    return new ServiceResult { Success = false, ErrorMessage = "Invalid login or password." };
+                    return new ServiceResult { Success = false, ErrorMessage = "Неверный логин или пароль" };
                 }
                 if (transporter.IsBlocked)
                 {
@@ -73,7 +73,7 @@ namespace WaterProj.Services
             }
 
 
-            return new ServiceResult { Success = false, ErrorMessage = "Invalid login or password." };
+            return new ServiceResult { Success = false, ErrorMessage = "Неверный логин или пароль" };
         }
 
         public async Task<Administrator> AuthAdmin(string login, string password)
