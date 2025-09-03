@@ -12,10 +12,10 @@ The project was developed as part of a thesis (Peter the Great St. Petersburg Po
 ## ___Technologies___ ##
 MAIN:
 * C#
-* ASP.Net Core
-* EntityFramework
+* ASP.Net Core 8
+* EntityFramework 9
 * Linq
-* PostrgeSQL
+* PostrgeSQL 17
 * **Necessary packages for the ASP.Net Core to work
   
 ADDITIONAL PACKEGES:
@@ -34,14 +34,14 @@ ADDITIONAL PACKEGES:
 
 
 ## ___Functional___ ##
-
+ The application have the following functionality:
   <div align="center">
-    The application have the following functionality:
     <img width="1921" height="700" alt="image" src="https://github.com/user-attachments/assets/78f9e2c4-31bb-447d-bdd2-e0d3fb0ea95c" />
   </div>
 
 
 ## ___Integration___ ##
+The web service was deployed according to the following scheme:
 <div align="center">
   <img width="371" height="769" alt="image" src="https://github.com/user-attachments/assets/9e015a72-a44e-41bd-aee1-961fbb0d42b5" />
 </div>
@@ -50,5 +50,5 @@ ADDITIONAL PACKEGES:
 <br>
 
 ## ___Common___ ##
-TODO: write common information
+The main difference of this web service is the integrated interactive map (Yandex Maps)
 
